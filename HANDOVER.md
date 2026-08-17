@@ -398,6 +398,70 @@ round" above (which by this point had already been redeployed).
   up -d --build`); confirmed live via browser on the production URL and
   confirmed the other four sites on the shared host still respond.
 
+## CANNOT-ranking, join-page clarity, and a participant cap (Owner-directed, 2026-08-17)
+
+Three more small rounds, made and deployed after the preset/missing-names
+round above.
+
+- **Ranking now factors in explicit CANNOTs**: the Owner asked whether
+  unmarked slots should be inferred as CAN or CANNOT depending on how a
+  participant used the two brushes (e.g. "if someone only ever marked
+  CANNOT, treat their silence elsewhere as CAN"). Recommended against that —
+  it makes a slot's meaning depend on *how* other people used the tool,
+  fragile and surprising the first time someone mixes both — and instead
+  proposed factoring `cannotCount` into the ranking directly, which the
+  Owner agreed to. `lib/results.ts::computeResults`'s sort now breaks ties
+  on `canCount` by ascending `cannotCount` (fewer explicit "I can't make it"
+  marks ranks higher) before falling through to `preferredCount` and
+  chronological order — a slot nobody's ruled out now correctly outranks an
+  equally-CAN slot someone has. Unmarked slots are still simply absent from
+  both counts, not inferred either way; that design question is otherwise
+  closed for now.
+- **Join-page clarity**: the name-entry page previously showed only the room
+  title (and, if applicable, the existing-participants list) — nothing told
+  a first-time visitor the room's date range/hours/timezone or what
+  entering a name was about to do. `join-form.tsx` now takes
+  `dateRangeLabel`/`hoursLabel`/`timezone` props (computed in
+  `app/r/[slug]/page.tsx` the same way the joined room page already does)
+  and renders them under the title, plus a short paragraph explaining the
+  join flow (no account, just a name, see combined results afterward).
+- **Participant cap**: raised by the Owner as an abuse-resistance question —
+  is there any limit on how many people can join one room? There wasn't.
+  Considered reCAPTCHA first and recommended against it: it needs a Google
+  account (an external-service dependency requiring Owner sign-off per
+  VALUES.md) and adds friction to every real join, which cuts directly
+  against the app's core "no accounts, frictionless" design. Landed on a
+  flat cap instead: `lib/validation.ts::MAX_PARTICIPANTS_PER_ROOM = 100`,
+  checked in `joinRoom` (`app/r/[slug]/actions.ts`) only on the
+  new-participant path — reclaiming an existing name via the collision flow
+  doesn't create a row, so it still works past the cap, which is correct
+  (it's not adding a new participant). Chosen as a defensive backstop
+  against scripted join-spam (no accounts/CAPTCHA exist to stop that
+  otherwise), not a limit real group usage would approach; not
+  transaction-guarded against a race at the exact boundary since being off
+  by a few during a burst doesn't matter for what this is defending against.
+- **Verified**: the CANNOT-ranking fix was checked by seeding two
+  equally-CAN slots in the local dev DB with different `cannotCount`s (one
+  participant explicitly CANNOT on one slot, simply unmarked on the other)
+  and confirming via the real results page that the zero-cannot slot ranked
+  first despite being chronologically later — plus a new unit test
+  (`tests/unit/results.spec.ts`) covering the same case. The participant cap
+  was checked by seeding a room with exactly 100 participants directly in
+  Postgres and confirming, in a real browser, that joining as a 101st
+  produces the limit error while reclaiming one of the existing 100 names
+  still works normally. tsc/eslint clean, 47 unit + 5 e2e tests green.
+  Pushed and redeployed to https://meet.app.julienika.cz across two rounds
+  (ranking fix, then join-clarity + cap together); confirmed live via
+  browser both times and confirmed the other sites on the shared host
+  stayed unaffected. All manual test rooms cleaned up from both the local
+  dev and production databases afterward.
+- **Not automated**: the participant-cap check has no dedicated unit or e2e
+  test (seeding 100 real participants through an e2e flow would be slow and
+  the underlying logic is a one-line count comparison) — verified manually
+  as described above, consistent with how the join-race fix in D4 was
+  verified against the dev database directly rather than forced through
+  live HTTP concurrency.
+
 ## Git remote & deployment (post-M5, Owner-directed, 2026-08-17)
 
 **GitHub**: `origin` is `git@github.com:yunniko/when-we-meet.git`, pushed
@@ -700,21 +764,19 @@ currently doesn't).
    live** at https://meet.app.julienika.cz (see "Git remote & deployment").
    G-001's original acceptance criteria are all met. Every round of
    post-launch changes since (weekend shading/sticky-header, leave-room +
-   ownership transfer, daily-time-window presets, Best Times missing-names)
-   is committed, pushed, and live on production as of this writing.
+   ownership transfer, daily-time-window presets, Best Times missing-names,
+   CANNOT-count ranking, join-page clarity, 100-participant cap) is
+   committed, pushed, and live on production as of this writing.
 2. **Missing test coverage**: the creator-leaves-and-ownership-transfers
    case (see "Post-launch UX round" above) was verified manually
    (real browser + SQL check) but has no automated e2e spec yet. Worth
    adding to `tests/e2e/leave-room.spec.ts` if this area sees more changes.
-3. **Open design question from the Owner, not yet decided**: whether/how to
-   infer CAN vs. CANNOT for slots a participant never marked at all — right
-   now an unmarked slot simply doesn't count toward `canCount` either way
-   (it's neither "can" nor "can't," just silent). The Owner asked about
-   three options: (a) if someone only ever marked CANNOT, treat their
-   unmarked slots as CAN; if they only ever marked CAN, treat unmarked as
-   CANNOT; if they used both, treat unmarked as a third "undecided" state;
-   (b) remove CANNOT marking entirely; (c) leave it as-is. Not implemented —
-   this needs an explicit Owner decision before any code changes here.
+   The 100-participant cap (see "CANNOT-ranking, join-page clarity, and a
+   participant cap" above) is similarly manual-only.
+3. **Resolved**: the CAN/CANNOT-inference design question (previously open
+   here) was settled — see "CANNOT-ranking, join-page clarity, and a
+   participant cap" above. Ranking now factors in explicit CANNOT counts;
+   unmarked slots stay uninferred either way.
 4. Open questions/flags for the Owner, none blocking:
    - Touch drag-painting (both the brush paint and the Prefer toggle) is
      implemented with the standard pointer-event technique and touch-target

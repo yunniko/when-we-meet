@@ -148,6 +148,29 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       tsc/eslint clean throughout.
 
 **Progress log** (newest first; The Company appends at every stopping point):
+- 2026-08-17 — **CANNOT-ranking, join-page clarity, and a 100-participant
+  cap**, Owner-directed, pushed and redeployed live (two rounds). Owner
+  asked whether unmarked slots should be inferred as CAN/CANNOT based on
+  how a participant used the two brushes — recommended against it as
+  fragile (a slot's meaning shouldn't depend on someone else's marking
+  habits) and proposed factoring explicit CANNOT counts into the ranking
+  instead, which the Owner agreed to: `computeResults` now ranks a slot
+  with fewer explicit CANNOTs above an equally-CAN slot with more, verified
+  live (seeded two equal-CAN slots with different cannot counts, confirmed
+  the zero-cannot one ranked first despite being chronologically later) and
+  with a new unit test. Owner then asked for more context on the join/name
+  page — it previously showed only the room title; now shows the date
+  range/hours/timezone and a short explanation of what joining does,
+  before the visitor types anything. Owner also asked whether room
+  participant counts are limited (they weren't) and whether reCAPTCHA would
+  help — recommended against reCAPTCHA (needs a Google account, adds
+  friction to every real join, works against the app's frictionless-by-design
+  goal) in favor of a flat cap: rooms now reject new joins past 100
+  participants (`lib/validation.ts::MAX_PARTICIPANTS_PER_ROOM`), verified by
+  seeding exactly 100 participants directly in Postgres and confirming a
+  101st join is rejected while reclaiming an existing name still works.
+  47 unit + 5 e2e tests green, tsc/eslint clean throughout. All test rooms
+  cleaned up from local dev and production afterward.
 - 2026-08-17 — **Daily time-window presets + Best Times missing-names**,
   Owner-directed, pushed and redeployed live. Room creation's "whole day"
   checkbox replaced with five radio presets (Evening/Whole day/Morning/
