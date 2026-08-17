@@ -542,9 +542,67 @@ Pushed and redeployed to https://meet.app.julienika.cz; confirmed live in
 Russian in a real browser and confirmed the other sites on the shared host
 stayed up.
 
-**Stopping here per OPERATIONS.md milestone checkpoint** — M3 (room/grid
-page: join form, availability grid toolbar, finalize banner, leave-room,
-new-event button) is next, pending Owner review of M2.
+**M3 — room/grid page translated — done** (Owner said "go ahead" after
+reviewing M2). Every string across `join-form.tsx`, `app/r/[slug]/page.tsx`'s
+header, `availability-grid.tsx`'s brush toolbar and save-state text,
+`finalized-banner.tsx`, `leave-room-button.tsx`, and the shared
+`new-event-button.tsx` now goes through next-intl in all four languages.
+`joinRoom`'s error strings (`app/r/[slug]/actions.ts`) became i18n keys
+too — moved into M3 rather than M4 as originally scoped in the milestone
+plan, since they render on this page (the join form), not the results
+page; the milestone plan is corrected accordingly.
+
+The name-collision "is this you?" flow needed `next-intl`'s `t.rich()`
+rather than plain `t()`: the original English had a bolded name embedded
+mid-sentence ("**Alice** already has marks in this room:"), and splitting
+that into separate translated fragments before/after a hardcoded name
+position would produce wrong word order in German/Czech, which put verbs
+and the name in different relative positions than English does. `t.rich`
+lets the message itself carry a `<b>{name}</b>` placeholder, with the
+component supplying `(chunks) => <span className="font-medium">{chunks}</span>`
+as the tag renderer, so each language's translator controls where in the
+sentence the name goes. The same pattern covers "Marking as **Alice**" on
+the room page header.
+
+Two things stayed deliberately untranslated, matching a call made and
+logged back at G-002's creation: `lib/slots.ts::formatDayLabel`'s day/month
+labels and every hour digit anywhere in the app. These are pinned
+formatting (see D2, and the M5 hydration-mismatch bug that's the whole
+reason `formatDayLabel` is pinned to `"en-GB"` rather than the runtime
+default locale) — making them follow the UI language would mean computing
+them via the request's next-intl locale instead, which is *possible*
+without reintroducing that specific bug (next-intl's locale is
+consistently available both server- and client-side, unlike the original
+bug's ambient-runtime-default problem), but the Owner's brief was
+explicitly "without messing with formats, just translations," so this was
+treated as in-scope-to-leave-alone rather than an oversight to fix. Flagged
+in "Next steps" in case that reading is wrong. The IANA timezone picker's
+few hundred city names are similarly left in English/IANA form — no
+general "translate an arbitrary city name" API exists, and localizing that
+list is disproportionate to the ask.
+
+**Verified**: live in a real browser in German and Russian, plus a raw SSR
+`curl` check (with `locale` and participant cookies set directly) in Czech
+against a seeded finalized-room fixture to reach `finalized-banner.tsx`
+without a slow manual walk through the finalize flow. Hit a genuine
+testing-environment annoyance along the way: Chrome's own built-in
+page-translate feature kept auto-triggering partway through the session
+(visible as `translated-ltr` on `<html>` and a `.goog-te-banner-frame`
+node) and silently overwrote several screenshots with its own machine
+translation of the page — recognizable once noticed by giveaways like
+`"7:00 PM"` appearing where the app only ever renders 24-hour `"19:00"`.
+Confirmed this was Chrome, not a real bug, two ways: a raw `curl` fetch of
+the same URL always showed the genuine server-rendered translation, and a
+hard (non-client-side) navigation followed by an *immediate* screenshot
+also showed genuine content, before Chrome's translate pass had a chance
+to run. 53 unit + 5 e2e tests green, tsc/eslint clean. Pushed and
+redeployed to https://meet.app.julienika.cz; confirmed live and confirmed
+the other sites on the shared host stayed unaffected.
+
+**Stopping here per OPERATIONS.md milestone checkpoint** — M4 (results
+page: `results/page.tsx`, `results-board.tsx`, and the remaining
+`selectFinalSlot`/`deselectFinalSlot` error strings) is next, pending Owner
+review of M3.
 
 ## Git remote & deployment (post-M5, Owner-directed, 2026-08-17)
 
@@ -888,10 +946,20 @@ currently doesn't).
    ownership transfer, daily-time-window presets, Best Times missing-names,
    CANNOT-count ranking, join-page clarity, 100-participant cap) is
    committed, pushed, and live on production as of this writing.
-1a. **G-002 (multi-language UI) is now the active goal.** M1 (i18n
-    infrastructure) is done — see "Multi-language UI — G-002, M1 done"
-    above. M2-M5 (translating every page, four languages) are next,
-    pending Owner review of M1.
+1a. **G-002 (multi-language UI) is now the active goal.** M1-M3 are done
+    (infrastructure, landing/create-room page, room/grid page) — see the
+    "Multi-language UI"/"CANNOT-ranking..." and dedicated M3 HANDOVER
+    entries. M4 (results page) and M5 (QA/deploy sign-off) are next,
+    pending Owner review of M3.
+1b. **Flag for the Owner**: day/month labels and hour digits are
+    deliberately left unlocalized everywhere (still always "Tue 5 Oct",
+    "14:00" regardless of UI language) — read as in-scope for "without
+    messing with formats, just translations." If that reading's wrong and
+    day/month names should follow the UI language too, it's a contained
+    change (next-intl's locale is available consistently server- and
+    client-side, so it wouldn't reintroduce the hydration-mismatch bug
+    that's the reason `formatDayLabel` is pinned to `"en-GB"` today) — just
+    not started, since the brief read as "leave formats alone."
 2. **Missing test coverage**: the creator-leaves-and-ownership-transfers
    case (see "Post-launch UX round" above) was verified manually
    (real browser + SQL check) but has no automated e2e spec yet. Worth

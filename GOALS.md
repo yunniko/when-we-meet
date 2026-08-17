@@ -434,14 +434,23 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       title/meta description are now locale-aware too
       (`generateMetadata` in `app/layout.tsx`). 53 unit + 5 e2e tests green,
       tsc/eslint clean.
-- [ ] M3 — Room pages translated: `join-form.tsx`, `app/r/[slug]/page.tsx`
+- [x] M3 — Room pages translated: `join-form.tsx`, `app/r/[slug]/page.tsx`
       (grid header, "Not you?"/"Leave the room"), `availability-grid.tsx`
       toolbar, `finalized-banner.tsx`, `leave-room-button.tsx`,
-      `new-event-button.tsx`.
-- [ ] M4 — Results page and remaining server-action error strings
-      translated: `results/page.tsx`, `results-board.tsx`, plus
-      `joinRoom`/`saveAvailability`/`selectFinalSlot`/`deselectFinalSlot`
-      error messages in `app/r/[slug]/actions.ts`.
+      `new-event-button.tsx`. ✔ 2026-08-17. Also covered `joinRoom`'s error
+      strings here (not M4 as originally scoped — they render on this
+      page, so moving them here was the natural boundary). Verified live:
+      RU/DE via real browser sessions (Chrome's own auto-translate feature
+      repeatedly interfered with screenshots mid-session — confirmed via
+      raw `curl` SSR fetches and hard-navigation-then-immediate-screenshot,
+      both bypass it and show genuinely correct output) and CZ via a
+      seeded finalized-room fixture checked through raw SSR. 53 unit + 5
+      e2e tests green, tsc/eslint clean.
+- [ ] M4 — Results page translated: `results/page.tsx`, `results-board.tsx`,
+      plus `selectFinalSlot`/`deselectFinalSlot` error strings (the only
+      ones from `app/r/[slug]/actions.ts` not already covered — `joinRoom`
+      moved into M3, `saveAvailability`'s error is never actually rendered
+      to the user so needs no translation).
 - [ ] M5 — QA & deploy: full manual pass in each of the four languages
       (switch language, create a room, join, mark availability, view
       results, finalize a meeting time, leave a room) confirming no
@@ -451,6 +460,31 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       HANDOVER; push and redeploy to https://meet.app.julienika.cz.
 
 **Progress log** (newest first; The Company appends at every stopping point):
+- 2026-08-17 — **M3 done** (Owner said "go ahead" after M2 review).
+  Translated every string on the room/grid pages in EN/RU/CZ/DE:
+  `join-form.tsx` (including the name-collision flow — used next-intl's
+  `t.rich` to keep a bolded name embedded in a translated sentence with
+  natural word order per language, rather than splitting the sentence
+  around a hardcoded position), `app/r/[slug]/page.tsx`'s header,
+  `availability-grid.tsx`'s brush toolbar and save-state text,
+  `finalized-banner.tsx`, `leave-room-button.tsx`, and the shared
+  `new-event-button.tsx`. `joinRoom`'s error strings (in
+  `app/r/[slug]/actions.ts`) became i18n keys too, same pattern as M2's
+  `createRoom` — moved out of the M4 plan into M3 since they render on
+  this page, not the results page. Deliberately left untranslated: day/
+  month labels and hour digits (pinned formatting, not copy — translating
+  them would risk reintroducing the server/client hydration mismatch
+  fixed by pinning to en-GB) and the IANA timezone picker's city names.
+  Verified live across languages, working around a real annoyance: Chrome's
+  own built-in page-translate feature kept auto-triggering mid-session and
+  overwriting screenshots with its own machine translation (recognizable by
+  reformatted 12-hour times and paraphrased text) — confirmed genuine
+  correctness instead via raw `curl` SSR fetches and by screenshotting
+  immediately after a hard navigation, before Chrome's translate has a
+  chance to run. 53 unit + 5 e2e tests green, tsc/eslint clean. Pushed and
+  redeployed; confirmed live and confirmed other sites on the shared host
+  unaffected. **Stopping here per OPERATIONS.md milestone checkpoint —
+  awaiting Owner review before starting M4** (results page).
 - 2026-08-17 — **M2 done** (Owner said "go ahead" after M1 review). Fully
   translated the landing/create-room page in EN/RU/CZ/DE:
   `messages/{en,ru,cs,de}.json`'s new `Landing`/`CreateRoom`/`Metadata`
