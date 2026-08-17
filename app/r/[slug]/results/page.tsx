@@ -8,6 +8,7 @@ import { dateOnly, enumerateDates, enumerateHours, formatDateRange, formatHoursW
 import { computeResults } from "@/lib/results";
 import { FinalizedBanner } from "@/app/r/[slug]/finalized-banner";
 import { ResultsBoard } from "@/app/r/[slug]/results-board";
+import { NewEventButton } from "@/app/new-event-button";
 
 export default async function ResultsPage({
   params,
@@ -68,9 +69,12 @@ export default async function ResultsPage({
             Participants: {participants.map((p) => p.name).join(", ")}
           </p>
         </div>
-        <Link href={`/r/${room.slug}`} className="text-sm font-medium text-accent underline hover:text-accent-hover">
-          ← Edit my availability
-        </Link>
+        <div className="flex flex-col items-end gap-2">
+          <NewEventButton />
+          <Link href={`/r/${room.slug}`} className="text-sm font-medium text-accent underline hover:text-accent-hover">
+            ← Edit my availability
+          </Link>
+        </div>
       </div>
 
       {isFinalized && (

@@ -180,7 +180,7 @@ export function CreateRoomForm() {
       </div>
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="text-sm font-medium">Daily time window</legend>
+        <legend className="mb-2 text-sm font-medium">Daily time window</legend>
         {PRESET_OPTIONS.map((p) => (
           <label key={p.value} className="flex items-center gap-2 text-sm">
             <input

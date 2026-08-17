@@ -11,6 +11,7 @@ import { AvailabilityGrid } from "@/app/r/[slug]/availability-grid";
 import { FinalizedBanner } from "@/app/r/[slug]/finalized-banner";
 import { LeaveRoomButton } from "@/app/r/[slug]/leave-room-button";
 import { leaveIdentity } from "@/app/r/[slug]/actions";
+import { NewEventButton } from "@/app/new-event-button";
 
 export default async function RoomPage({
   params,
@@ -43,6 +44,9 @@ export default async function RoomPage({
   if (!participant) {
     return (
       <div className="mx-auto w-full max-w-md px-4 pt-12">
+        <div className="flex justify-end">
+          <NewEventButton />
+        </div>
         {banner}
         <JoinForm
           roomId={room.id}
@@ -86,6 +90,9 @@ export default async function RoomPage({
           </p>
         </div>
         <div className="text-right text-sm">
+          <div className="mb-2">
+            <NewEventButton />
+          </div>
           <p>
             Marking as <span className="font-medium">{participant.name}</span>
           </p>
