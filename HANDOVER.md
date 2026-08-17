@@ -599,10 +599,52 @@ to run. 53 unit + 5 e2e tests green, tsc/eslint clean. Pushed and
 redeployed to https://meet.app.julienika.cz; confirmed live and confirmed
 the other sites on the shared host stayed unaffected.
 
-**Stopping here per OPERATIONS.md milestone checkpoint** — M4 (results
-page: `results/page.tsx`, `results-board.tsx`, and the remaining
-`selectFinalSlot`/`deselectFinalSlot` error strings) is next, pending Owner
-review of M3.
+**M4 — results page translated — done** (Owner said "go ahead" after
+reviewing M3). Every string on `results/page.tsx` and `results-board.tsx`
+now goes through next-intl: the page header, the heatmap legend, grid cell
+tooltips, the Best Times list, and the missing-names line.
+
+The participant count needed more than a simple `t()` call: the original
+code was `{totalParticipants} {totalParticipants === 1 ? "person" :
+"people"}` — an English-only singular/plural rule that doesn't generalize.
+Russian has four plural categories (one/few/many/other — e.g. "1 участник"
+/"3 участника"/"5 участников"), Czech has three (one/few/other — "1 osoba"
+/"3 osoby"/"5 osob"), German has the same two as English. Rather than
+hand-rolling per-locale conditionals, used next-intl's ICU `plural` syntax
+directly in the message string (`"{count, plural, one {# person} other {#
+people}}"`, with `few`/`many` branches added for ru/cs) — the library picks
+the right CLDR plural category for the active locale automatically.
+Verified this actually works, not just that it doesn't throw: seeded a
+room with exactly 3 participants (a number that lands in Russian's and
+Czech's `few` category, not their `other`/default) and confirmed via raw
+SSR that Russian renders "3 участника" and Czech "3 osoby", not the
+generic form.
+
+`selectFinalSlot`'s error strings (`app/r/[slug]/actions.ts`) became i18n
+keys, the same pattern as `createRoom`/`joinRoom`. `deselectFinalSlot`'s
+and `saveAvailability`'s error strings were deliberately left in English —
+grep-checked both call sites and confirmed neither actually renders the
+returned error to the user (both discard it after checking `.ok`), so
+there's nothing to translate; converting them would be effort spent on
+values nobody ever sees.
+
+**Verified**: raw SSR `curl` checks (locale + participant cookies set
+directly) across all four languages against a seeded 3-participant, mixed-
+availability fixture (one CANNOT, one preferred CAN, one plain CAN) —
+confirmed the page title, pluralized participant count, participant list,
+edit link, heatmap legend, grid cell tooltips (base + preferred + cannot
+segments all composing correctly), Best Times heading/empty-state/pick-
+button text, the "everyone" full-group badge, and the missing-names line
+all render correctly in every language, not just English. 53 unit + 5 e2e
+tests green, tsc/eslint clean. Pushed and redeployed to
+https://meet.app.julienika.cz; confirmed live and confirmed the other
+sites on the shared host stayed unaffected.
+
+This closes out G-002's page-by-page translation work (M1-M4 all done).
+
+**Stopping here per OPERATIONS.md milestone checkpoint** — M5 (a full
+manual QA pass in each of the four languages, end to end, before Owner
+sign-off) is next, pending Owner review of M4.
 
 ## Git remote & deployment (post-M5, Owner-directed, 2026-08-17)
 
@@ -946,11 +988,11 @@ currently doesn't).
    ownership transfer, daily-time-window presets, Best Times missing-names,
    CANNOT-count ranking, join-page clarity, 100-participant cap) is
    committed, pushed, and live on production as of this writing.
-1a. **G-002 (multi-language UI) is now the active goal.** M1-M3 are done
-    (infrastructure, landing/create-room page, room/grid page) — see the
-    "Multi-language UI"/"CANNOT-ranking..." and dedicated M3 HANDOVER
-    entries. M4 (results page) and M5 (QA/deploy sign-off) are next,
-    pending Owner review of M3.
+1a. **G-002 (multi-language UI) is now the active goal.** M1-M4 are done
+    (infrastructure, landing/create-room page, room/grid page, results
+    page) — every page's UI text is now translated in all four languages.
+    Only M5 (a full manual QA pass across all four languages, end to end,
+    before sign-off) remains, pending Owner review of M4.
 1b. **Flag for the Owner**: day/month labels and hour digits are
     deliberately left unlocalized everywhere (still always "Tue 5 Oct",
     "14:00" regardless of UI language) — read as in-scope for "without

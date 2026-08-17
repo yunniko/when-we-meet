@@ -446,11 +446,14 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       both bypass it and show genuinely correct output) and CZ via a
       seeded finalized-room fixture checked through raw SSR. 53 unit + 5
       e2e tests green, tsc/eslint clean.
-- [ ] M4 — Results page translated: `results/page.tsx`, `results-board.tsx`,
-      plus `selectFinalSlot`/`deselectFinalSlot` error strings (the only
-      ones from `app/r/[slug]/actions.ts` not already covered — `joinRoom`
-      moved into M3, `saveAvailability`'s error is never actually rendered
-      to the user so needs no translation).
+- [x] M4 — Results page translated: `results/page.tsx`, `results-board.tsx`,
+      plus `selectFinalSlot` error strings (`deselectFinalSlot`'s and
+      `saveAvailability`'s errors are never rendered, so left as-is). ✔
+      2026-08-17. Participant count uses a real ICU `plural` rule, not an
+      English-only singular/other ternary — verified against Russian's and
+      Czech's "few" category (3 → "3 участника"/"3 osoby") via raw SSR with
+      a 3-participant fixture. 53 unit + 5 e2e tests green, tsc/eslint
+      clean.
 - [ ] M5 — QA & deploy: full manual pass in each of the four languages
       (switch language, create a room, join, mark availability, view
       results, finalize a meeting time, leave a room) confirming no
@@ -460,6 +463,25 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       HANDOVER; push and redeploy to https://meet.app.julienika.cz.
 
 **Progress log** (newest first; The Company appends at every stopping point):
+- 2026-08-17 — **M4 done** (Owner said "go ahead" after M3 review).
+  Translated the results page in EN/RU/CZ/DE: `results/page.tsx`'s header
+  (title, participant count, participant list, edit link) and
+  `results-board.tsx` (heatmap legend, grid cell tooltips, Best Times list,
+  missing-names line). The participant count uses next-intl's ICU `plural`
+  syntax instead of the old `count === 1 ? "person" : "people"` ternary,
+  since that English-only rule doesn't generalize — Russian needs
+  one/few/many/other, Czech needs one/few/other. Verified correct via raw
+  SSR against a seeded 3-participant fixture: Russian correctly shows "3
+  участника" (few category) and Czech "3 osoby" (few category), not a
+  naive "other" fallback. `selectFinalSlot`'s error strings became i18n
+  keys too, same pattern as M2/M3; `deselectFinalSlot`'s and
+  `saveAvailability`'s stayed English since neither is ever actually shown
+  to a user. This closes out the page-by-page translation work (M1-M4); M5
+  is a QA/deploy pass across all four languages before sign-off. 53 unit +
+  5 e2e tests green, tsc/eslint clean. Pushed and redeployed; confirmed
+  live via raw SSR fetch and confirmed other sites on the shared host
+  unaffected. **Stopping here per OPERATIONS.md milestone checkpoint —
+  awaiting Owner review before starting M5** (final QA pass).
 - 2026-08-17 — **M3 done** (Owner said "go ahead" after M2 review).
   Translated every string on the room/grid pages in EN/RU/CZ/DE:
   `join-form.tsx` (including the name-collision flow — used next-intl's
