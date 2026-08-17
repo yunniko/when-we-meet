@@ -26,6 +26,16 @@
   --font-mono: var(--font-geist-mono);
 }
 
+html {
+  /* Explicit, not left to the browser default — some browsers apply a
+     different default root size per writing script (observed: Firefox
+     rendering 1rem as 15px instead of 16px specifically on the Russian
+     UI, via its per-script font-size preferences), which would throw off
+     every rem-based measurement in the app. Pinning it here means 1rem is
+     always 16px regardless of the page's language/script. */
+  font-size: 16px;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
