@@ -1,11 +1,14 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
-import { generateParticipantToken } from "@/lib/slug";
+import { generateCookieToken } from "@/lib/slug";
 import { setParticipantCookie, clearParticipantCookie } from "@/lib/cookies";
 import { getCurrentParticipant } from "@/lib/participant";
+import { claimCreatorIfEligible, isRoomOwner } from "@/lib/owner";
+import { isSlotInFuture } from "@/lib/time";
 import { summarizeAvailability, type MarkSummary } from "@/lib/slots";
 import type { SlotStatus } from "@/lib/slots";
 
@@ -40,6 +43,7 @@ export async function joinRoom(
       return { step: "form", error: "That didn't work — try entering your name again." };
     }
     await setParticipantCookie(ctx.roomId, participant.cookieToken);
+    await claimCreatorIfEligible(ctx.roomId, participant.id);
     redirect(`/r/${ctx.slug}`);
   }
 
@@ -59,10 +63,11 @@ export async function joinRoom(
           roomId: ctx.roomId,
           name,
           nameKey,
-          cookieToken: generateParticipantToken(),
+          cookieToken: generateCookieToken(),
         },
       });
       await setParticipantCookie(ctx.roomId, created.cookieToken);
+      await claimCreatorIfEligible(ctx.roomId, created.id);
       redirect(`/r/${ctx.slug}`);
     } catch (err) {
       // Two people submitting the same new name at the same instant can
@@ -107,6 +112,11 @@ export async function saveAvailability(
 
   const room = await prisma.room.findUnique({ where: { id: roomId } });
   if (!room) return { ok: false, error: "Room not found." };
+  if (room.selectedDate !== null) {
+    // Never trust the client to have hidden the grid controls — the lock is
+    // a data-integrity rule, enforced here regardless of what the UI shows.
+    return { ok: false, error: "The meeting time has been set — availability marking is closed." };
+  }
 
   const validSlots = slots.filter((s) => {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(s.date)) return false;
@@ -147,5 +157,56 @@ export async function saveAvailability(
     }),
   );
 
+  return { ok: true };
+}
+
+// Both the creator-only checks below are re-verified here even though the
+// UI only shows these controls to the creator — the same "never trust the
+// client" rule as everywhere else in this file.
+export async function selectFinalSlot(
+  ctx: { roomId: string; slug: string },
+  date: string,
+  hour: number,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const room = await prisma.room.findUnique({ where: { id: ctx.roomId } });
+  if (!room) return { ok: false, error: "Room not found." };
+  if (!(await isRoomOwner(room))) {
+    return { ok: false, error: "Only the room's creator can set the meeting time." };
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isInteger(hour) || hour < 0 || hour > 23) {
+    return { ok: false, error: "Invalid slot." };
+  }
+  const slotDate = new Date(`${date}T00:00:00Z`);
+  if (slotDate < room.startDate || slotDate > room.endDate || hour < room.dayStartHour || hour >= room.dayEndHour) {
+    return { ok: false, error: "That slot isn't in this room's range." };
+  }
+  if (!isSlotInFuture(date, hour, room.timezone)) {
+    return { ok: false, error: "You can only pick a time in the future." };
+  }
+
+  await prisma.room.update({
+    where: { id: ctx.roomId },
+    data: { selectedDate: slotDate, selectedHour: hour },
+  });
+  revalidatePath(`/r/${ctx.slug}`);
+  revalidatePath(`/r/${ctx.slug}/results`);
+  return { ok: true };
+}
+
+export async function deselectFinalSlot(
+  ctx: { roomId: string; slug: string },
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const room = await prisma.room.findUnique({ where: { id: ctx.roomId } });
+  if (!room) return { ok: false, error: "Room not found." };
+  if (!(await isRoomOwner(room))) {
+    return { ok: false, error: "Only the room's creator can clear the meeting time." };
+  }
+
+  await prisma.room.update({
+    where: { id: ctx.roomId },
+    data: { selectedDate: null, selectedHour: null },
+  });
+  revalidatePath(`/r/${ctx.slug}`);
+  revalidatePath(`/r/${ctx.slug}/results`);
   return { ok: true };
 }

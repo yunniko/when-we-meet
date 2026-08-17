@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { findActiveRoom } from "@/lib/room-access";
 import { getCurrentParticipant } from "@/lib/participant";
+import { isRoomOwner } from "@/lib/owner";
 import { dateOnly, enumerateDates, enumerateHours, formatDateRange, formatHoursWindow } from "@/lib/slots";
 import type { CellMark } from "@/lib/slots";
 import { JoinForm } from "@/app/r/[slug]/join-form";
 import { AvailabilityGrid } from "@/app/r/[slug]/availability-grid";
+import { FinalizedBanner } from "@/app/r/[slug]/finalized-banner";
 import { leaveIdentity } from "@/app/r/[slug]/actions";
 
 export default async function RoomPage({
@@ -14,8 +17,20 @@ export default async function RoomPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const room = await prisma.room.findUnique({ where: { slug } });
+  const room = await findActiveRoom(slug);
   if (!room) notFound();
+
+  const isFinalized = room.selectedDate !== null && room.selectedHour !== null;
+  const isOwner = await isRoomOwner(room);
+  const banner = isFinalized && (
+    <FinalizedBanner
+      roomId={room.id}
+      slug={room.slug}
+      date={dateOnly(room.selectedDate!)}
+      hour={room.selectedHour!}
+      isOwner={isOwner}
+    />
+  );
 
   const participant = await getCurrentParticipant(room.id);
   const otherParticipants = await prisma.participant.findMany({
@@ -26,12 +41,15 @@ export default async function RoomPage({
 
   if (!participant) {
     return (
-      <JoinForm
-        roomId={room.id}
-        slug={room.slug}
-        roomTitle={room.title}
-        participantNames={otherParticipants.map((p) => p.name)}
-      />
+      <div className="mx-auto w-full max-w-md px-4 pt-12">
+        {banner}
+        <JoinForm
+          roomId={room.id}
+          slug={room.slug}
+          roomTitle={room.title}
+          participantNames={otherParticipants.map((p) => p.name)}
+        />
+      </div>
     );
   }
 
@@ -78,6 +96,8 @@ export default async function RoomPage({
         </div>
       </div>
 
+      {banner}
+
       <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           {otherParticipants.length > 0 ? (
@@ -95,12 +115,18 @@ export default async function RoomPage({
           </Link>
         </div>
 
-        <AvailabilityGrid
-          roomId={room.id}
-          dates={dates}
-          hours={hours}
-          initialAvailability={initialAvailability}
-        />
+        {isFinalized ? (
+          <p className="rounded-md border border-dashed border-border px-4 py-6 text-center text-sm text-muted">
+            The meeting time has been set — availability marking is closed.
+          </p>
+        ) : (
+          <AvailabilityGrid
+            roomId={room.id}
+            dates={dates}
+            hours={hours}
+            initialAvailability={initialAvailability}
+          />
+        )}
       </div>
     </div>
   );

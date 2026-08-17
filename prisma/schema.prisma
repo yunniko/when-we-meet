@@ -28,6 +28,24 @@ model Room {
   dayEndHour   Int      @default(24)
   createdAt    DateTime @default(now())
 
+  // Opaque cookie token identifying the browser that created the room (see
+  // G-001 trust model — no accounts). Used exactly once: to auto-tag that
+  // browser's first joined Participant as `creator` below. After that, the
+  // token is inert — creator permissions live on `creatorParticipantId`, not
+  // this token, precisely so the creator can recover them on any device by
+  // rejoining under the same name (the ordinary name-collision "is this
+  // you?" flow) rather than being locked out by losing a cookie.
+  ownerToken            String       @unique
+  creatorParticipantId  String?      @unique
+  creator               Participant? @relation("RoomCreator", fields: [creatorParticipantId], references: [id])
+
+  // The creator's finalized meeting slot, if any. Same wall-clock (date,
+  // hour) convention as Availability — never a converted instant. Once set,
+  // participant availability marking is locked (see saveAvailability) and
+  // this is also what room expiry counts from (see lib/expiry.ts).
+  selectedDate DateTime? @db.Date
+  selectedHour Int?
+
   participants Participant[]
 
   @@index([slug])
@@ -48,6 +66,10 @@ model Participant {
   updatedAt   DateTime @updatedAt
 
   availability Availability[]
+  // Back-relation for Room.creator — at most one Room can point to a given
+  // Participant as its creator (enforced by Room.creatorParticipantId being
+  // @unique).
+  createdRoom  Room?          @relation("RoomCreator")
 
   @@unique([roomId, nameKey])
 }

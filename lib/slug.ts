@@ -10,8 +10,9 @@ export function generateRoomSlug(): string {
   return generate();
 }
 
-// Cookie identity token — never typed or shared, so full nanoid entropy
-// (not the unambiguous slug alphabet) is fine here.
-export function generateParticipantToken(): string {
+// Cookie identity token (participants and room owners alike) — never typed
+// or shared, so full nanoid entropy (not the unambiguous slug alphabet) is
+// fine here.
+export function generateCookieToken(): string {
   return nanoid(32);
 }

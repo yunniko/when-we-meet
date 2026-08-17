@@ -46,5 +46,22 @@ services:
     ports:
       - "127.0.0.1:30010:3000"
 
+  # Rooms are also expired lazily on access (lib/room-access.ts), but a room
+  # nobody ever revisits would otherwise sit in the database forever — this
+  # sweeps those up once a day. No queue/scheduler infra (per D1), so it's
+  # just a loop around the same script `npm run cleanup` runs locally.
+  cleanup:
+    profiles: ["app"]
+    build:
+      context: .
+      target: build
+    command: sh -c "while true; do npx tsx scripts/cleanup-expired-rooms.ts; sleep 86400; done"
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgresql://wwm:wwm@db:5432/when_we_meet
+
 volumes:
   db-data:

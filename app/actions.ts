@@ -2,8 +2,9 @@
 
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { generateRoomSlug } from "@/lib/slug";
+import { generateRoomSlug, generateCookieToken } from "@/lib/slug";
 import { createRoomSchema } from "@/lib/validation";
+import { setOwnerCookie } from "@/lib/cookies";
 
 export type CreateRoomState = {
   error?: string;
@@ -58,6 +59,7 @@ export async function createRoom(
     slug = generateRoomSlug();
   }
 
+  const ownerToken = generateCookieToken();
   const room = await prisma.room.create({
     data: {
       slug,
@@ -67,8 +69,10 @@ export async function createRoom(
       endDate: new Date(`${data.endDate}T00:00:00Z`),
       dayStartHour: data.dayStartHour,
       dayEndHour: data.dayEndHour,
+      ownerToken,
     },
   });
+  await setOwnerCookie(room.id, ownerToken);
 
   redirect(`/r/${room.slug}`);
 }

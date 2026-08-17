@@ -32,3 +32,23 @@ export async function clearParticipantCookie(roomId: string): Promise<void> {
   const store = await cookies();
   store.delete(cookieName(roomId));
 }
+
+function ownerCookieName(roomId: string): string {
+  return `wwm_owner_${roomId}`;
+}
+
+export async function getOwnerToken(roomId: string): Promise<string | undefined> {
+  const store = await cookies();
+  return store.get(ownerCookieName(roomId))?.value;
+}
+
+export async function setOwnerCookie(roomId: string, token: string): Promise<void> {
+  const store = await cookies();
+  store.set(ownerCookieName(roomId), token, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: COOKIE_MAX_AGE,
+  });
+}
