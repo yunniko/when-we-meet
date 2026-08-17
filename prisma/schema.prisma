@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// A planning room. Times are never converted between timezones — `timezone`
+// is a display label only, and every slot is stored as a plain wall-clock
+// (date, hour) pair. This sidesteps DST/UTC-conversion bugs entirely and
+// matches the product decision that a room has one implicit timezone that
+// everyone marks and views in (see GOALS.md scope decisions, 2026-08-17).
+model Room {
+  id           String   @id @default(cuid())
+  // Unguessable URL token (not the internal id, so ids can stay short/
+  // sequential-feeling without making rooms enumerable).
+  slug         String   @unique
+  title        String?
+  timezone     String
+  startDate    DateTime @db.Date
+  endDate      DateTime @db.Date
+  // Daily window applied to every day in [startDate, endDate], in the room's
+  // timezone. Defaults to the full day. dayEndHour is exclusive (24 = through
+  // 23:00-24:00).
+  dayStartHour Int      @default(0)
+  dayEndHour   Int      @default(24)
+  createdAt    DateTime @default(now())
+
+  participants Participant[]
+
+  @@index([slug])
+}
+
+// A named participant in a room, identified across visits by a random
+// cookie token (no password — see G-001 trust model). `nameKey` is the
+// normalized (trimmed, lowercased) name, unique per room, used to detect the
+// "this name already exists — is this you?" case.
+model Participant {
+  id          String   @id @default(cuid())
+  roomId      String
+  room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  name        String
+  nameKey     String
+  cookieToken String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  availability Availability[]
+
+  @@unique([roomId, nameKey])
+}
+
+enum AvailabilityStatus {
+  CAN
+  CANNOT
+}
+
+// One 1-hour slot mark for a participant. No row = unknown (not "cannot").
+// `preferred` is only meaningful when status is CAN; enforced in application
+// code, not the schema.
+model Availability {
+  id            String             @id @default(cuid())
+  participantId String
+  participant   Participant        @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  slotDate      DateTime           @db.Date
+  slotHour      Int
+  status        AvailabilityStatus
+  preferred     Boolean            @default(false)
+
+  @@unique([participantId, slotDate, slotHour])
+  @@index([participantId])
+}

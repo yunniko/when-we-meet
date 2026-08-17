@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: wwm
+      POSTGRES_PASSWORD: wwm
+      POSTGRES_DB: when_we_meet
+    ports:
+      - "127.0.0.1:54321:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wwm -d when_we_meet"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Production-style app container — opt in with:
+  #   docker compose --profile app up -d --build
+  # (dev flow stays `docker compose up -d` for db + `npm run dev`)
+
+  migrate:
+    profiles: ["app"]
+    build:
+      context: .
+      target: build
+    command: npx prisma migrate deploy
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://wwm:wwm@db:5432/when_we_meet
+
+  app:
+    profiles: ["app"]
+    build: .
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgresql://wwm:wwm@db:5432/when_we_meet
+      APP_URL: ${APP_URL:-http://localhost:30010}
+    ports:
+      - "127.0.0.1:30010:3000"
+
+volumes:
+  db-data:
