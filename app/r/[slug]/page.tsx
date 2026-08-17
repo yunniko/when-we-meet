@@ -48,6 +48,9 @@ export default async function RoomPage({
           roomId={room.id}
           slug={room.slug}
           roomTitle={room.title}
+          dateRangeLabel={formatDateRange(room.startDate, room.endDate)}
+          hoursLabel={formatHoursWindow(room.dayStartHour, room.dayEndHour)}
+          timezone={room.timezone}
           participantNames={otherParticipants.map((p) => p.name)}
         />
       </div>

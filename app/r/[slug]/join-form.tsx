@@ -10,11 +10,17 @@ export function JoinForm({
   roomId,
   slug,
   roomTitle,
+  dateRangeLabel,
+  hoursLabel,
+  timezone,
   participantNames,
 }: {
   roomId: string;
   slug: string;
   roomTitle: string | null;
+  dateRangeLabel: string;
+  hoursLabel: string;
+  timezone: string;
   participantNames: string[];
 }) {
   const boundJoin = joinRoom.bind(null, { roomId, slug });
@@ -27,8 +33,17 @@ export function JoinForm({
       <h1 className="text-2xl font-semibold tracking-tight">
         {roomTitle || "Untitled room"}
       </h1>
+      <p className="mt-1 text-sm text-muted">
+        {dateRangeLabel} · {hoursLabel} · {timezone}
+      </p>
+      <p className="mt-2 text-sm text-muted">
+        You&apos;re about to join this room to mark which of the times above
+        you&apos;re free. No account needed — just a name the rest of the
+        group will see. Once you&apos;re in, you can see everyone&apos;s
+        combined availability on the results page.
+      </p>
       {participantNames.length > 0 && (
-        <div className="mt-2 text-sm text-muted">
+        <div className="mt-3 text-sm text-muted">
           Already in this room:{" "}
           {participantNames.map((name, i) => (
             <span key={name}>
