@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useTransition, type FormEvent } from "react";
 import { createRoom, type CreateRoomState } from "@/app/actions";
+import { DAILY_PRESETS, type DailyPresetKey } from "@/lib/room-presets";
 
 const inputClass =
   "rounded-md border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-accent";
@@ -39,29 +40,55 @@ function timezoneLabel(zone: string): string {
   return zone.slice(zone.indexOf("/") + 1).replaceAll("_", " ").replaceAll("/", " / ");
 }
 
+const PRESET_OPTIONS: { value: DailyPresetKey; label: string }[] = [
+  ...Object.entries(DAILY_PRESETS).map(([value, p]) => ({
+    value: value as DailyPresetKey,
+    label: p.label,
+  })),
+  { value: "custom", label: "Custom range" },
+];
+
 const initialState: CreateRoomState = {
   values: {
     title: "",
     timezone: "",
     startDate: "",
     endDate: "",
-    allDay: true,
-    dayStartHour: "9",
-    dayEndHour: "17",
+    dayStartHour: "17",
+    dayEndHour: "22",
   },
 };
 
 export function CreateRoomForm() {
-  const [state, formAction, pending] = useActionState(
+  const [state, formAction] = useActionState(
     createRoom,
     initialState,
   );
-  const [allDay, setAllDay] = useState(state.values.allDay);
+  const [isPending, startTransition] = useTransition();
   const [timezone] = useState(() => state.values.timezone || guessTimezone());
   const zoneGroups = groupedTimezoneOptions();
+  const [preset, setPreset] = useState<DailyPresetKey>("evening");
+  const showCustom = preset === "custom";
+
+  // Submitting via <form action={formAction}> (native form submission) is
+  // what triggers React 19's automatic post-action form reset — and that
+  // reset mutates radio/checkbox `checked` via the raw DOM (each control's
+  // defaultChecked attribute, frozen at mount) rather than through React,
+  // so it desyncs from a controlled `checked` prop and React's reconciler
+  // doesn't always notice/repair it on the next render. Dispatching the
+  // action ourselves, outside the form's native action wiring, sidesteps
+  // that reset path entirely — nothing here ever calls the real
+  // HTMLFormElement.reset().
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    startTransition(() => {
+      formAction(data);
+    });
+  }
 
   return (
-    <form action={formAction} className="flex flex-col gap-5">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       {state.error && (
         <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
           {state.error}
@@ -152,18 +179,22 @@ export function CreateRoomForm() {
         )}
       </div>
 
-      <div className="flex flex-col gap-2">
-        <label className="flex items-center gap-2 text-sm font-medium">
-          <input
-            type="checkbox"
-            name="allDay"
-            checked={allDay}
-            onChange={(e) => setAllDay(e.target.checked)}
-            className="size-4 accent-accent"
-          />
-          Whole day, every day in range
-        </label>
-        {!allDay && (
+      <fieldset className="flex flex-col gap-2">
+        <legend className="text-sm font-medium">Daily time window</legend>
+        {PRESET_OPTIONS.map((p) => (
+          <label key={p.value} className="flex items-center gap-2 text-sm">
+            <input
+              type="radio"
+              name="preset"
+              value={p.value}
+              checked={preset === p.value}
+              onChange={() => setPreset(p.value)}
+              className="size-4 accent-accent"
+            />
+            {p.label}
+          </label>
+        ))}
+        {showCustom && (
           <div className="grid grid-cols-2 gap-4 pl-6">
             <div className="flex flex-col gap-1.5">
               <label htmlFor="dayStartHour" className="text-xs">
@@ -200,14 +231,14 @@ export function CreateRoomForm() {
             {state.fieldErrors.dayEndHour}
           </p>
         )}
-      </div>
+      </fieldset>
 
       <button
         type="submit"
-        disabled={pending}
+        disabled={isPending}
         className="mt-2 rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
       >
-        {pending ? "Creating…" : "Create room & get link"}
+        {isPending ? "Creating…" : "Create room & get link"}
       </button>
     </form>
   );

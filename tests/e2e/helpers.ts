@@ -14,6 +14,10 @@ export async function createRoom(
   // here since the app never converts stored slots through it (see D2) —
   // it's a display label.
   await page.getByLabel("Timezone", { exact: true }).selectOption("Europe/London");
+  // The default preset is "Evening" (17:00-22:00); existing specs paint
+  // morning/9am-ish slots, so pick "Whole day" (07:00-22:00) explicitly to
+  // keep those hours in range.
+  await page.getByLabel("Whole day (07:00–22:00)").check();
   await page.getByRole("button", { name: "Create room & get link" }).click();
   await page.waitForURL(/\/r\/[a-z0-9]+$/);
   const slug = new URL(page.url()).pathname.split("/r/")[1];

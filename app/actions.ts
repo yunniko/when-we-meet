@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { generateRoomSlug, generateCookieToken } from "@/lib/slug";
 import { createRoomSchema } from "@/lib/validation";
 import { setOwnerCookie } from "@/lib/cookies";
+import { DAILY_PRESETS, isPresetKey } from "@/lib/room-presets";
 
 export type CreateRoomState = {
   error?: string;
@@ -14,7 +15,6 @@ export type CreateRoomState = {
     timezone: string;
     startDate: string;
     endDate: string;
-    allDay: boolean;
     dayStartHour: string;
     dayEndHour: string;
   };
@@ -24,17 +24,20 @@ export async function createRoom(
   _prevState: CreateRoomState,
   formData: FormData,
 ): Promise<CreateRoomState> {
-  const allDay = formData.get("allDay") === "on";
+  const presetRaw = String(formData.get("preset") ?? "");
+  const preset = isPresetKey(presetRaw) ? presetRaw : "custom";
+  const fromPreset = preset !== "custom" ? DAILY_PRESETS[preset] : null;
+
   const raw = {
     title: String(formData.get("title") ?? ""),
     timezone: String(formData.get("timezone") ?? ""),
     startDate: String(formData.get("startDate") ?? ""),
     endDate: String(formData.get("endDate") ?? ""),
-    dayStartHour: allDay ? "0" : String(formData.get("dayStartHour") ?? "0"),
-    dayEndHour: allDay ? "24" : String(formData.get("dayEndHour") ?? "24"),
+    dayStartHour: fromPreset ? String(fromPreset.start) : String(formData.get("dayStartHour") ?? "0"),
+    dayEndHour: fromPreset ? String(fromPreset.end) : String(formData.get("dayEndHour") ?? "24"),
   };
 
-  const values = { ...raw, allDay };
+  const values = raw;
 
   const parsed = createRoomSchema.safeParse(raw);
   if (!parsed.success) {
