@@ -462,6 +462,37 @@ round above.
   verified against the dev database directly rather than forced through
   live HTTP concurrency.
 
+## Multi-language UI — G-002, M1 done (Owner-directed, 2026-08-17)
+
+A new goal (`GOALS.md` G-002), not a post-launch tweak to G-001 — the Owner
+asked for full EN/RU/CZ/DE UI translation, confirmed as "a big task"
+deserving its own milestone plan per OPERATIONS.md rather than another
+progress-log bullet under G-001. See D8 for the technical design (copied
+from listing-studio's established `next-intl` pattern).
+
+**M1 — i18n infrastructure — done.** `next-intl` installed and wired
+(`next.config.ts`, `i18n/request.ts`, `app/layout.tsx`'s
+`NextIntlClientProvider` + `lang={locale}`), cookie-based locale resolution
+with English-fallback deep-merge, a language switcher visible on every page
+(added once in the root layout rather than per-page, so M2-M4 don't need to
+touch every page just to add it), and `messages/{en,ru,cs,de}.json` proving
+the pipeline on one real string (the switcher's own "Language" label,
+translated in all four). No page content is translated yet — that's M2-M4.
+
+**Verified**: switched language live in a real browser, confirmed the
+switcher's own label re-renders in the new language, confirmed the `locale`
+cookie is set and survives a real (non-client-side) navigation, confirmed
+falling back to English round-trips correctly. `npx tsc --noEmit` clean,
+`npx eslint .` clean (pre-existing unrelated warnings only), 53 unit tests
+green (`tests/unit/ui-locales.spec.ts` new, covering `mergeMessages`,
+`localeDisplayName`, `isUiLocale`), 5 e2e tests green unchanged (they run
+against the default English locale, no cookie set, so nothing needed to
+change there). **Not yet deployed as of this note** — see "Next steps".
+
+**Stopping here per OPERATIONS.md milestone checkpoint** — M2 (translate the
+landing/create-room page, including the validation-error-as-i18n-key
+pattern copied from listing-studio) is next, pending Owner review of M1.
+
 ## Git remote & deployment (post-M5, Owner-directed, 2026-08-17)
 
 **GitHub**: `origin` is `git@github.com:yunniko/when-we-meet.git`, pushed
@@ -607,6 +638,11 @@ earlier remains a documented future direction, not started).
 - `prisma/schema.prisma` — see D2 below for why slots are plain
   `(date, hour)` pairs, not `DateTime` instants; D7 for the
   `creatorParticipantId` relation design.
+- `i18n/request.ts` / `lib/ui-locales.ts` / `lib/locale-actions.ts` /
+  `app/locale-switcher.tsx` + `app/locale-select.tsx` — the multi-language
+  plumbing; see D8 for why this exact shape (copied from listing-studio).
+  `messages/{en,ru,cs,de}.json` are the translation files, English always
+  the complete source of truth every other locale falls back to per-key.
 
 ## Decision record (append-only; newest last)
 
@@ -744,6 +780,38 @@ standalone owner cookie as the only mechanism — rejected once the
 no-recovery-path gap was identified; a Google-account-style "transfer
 ownership" flow — out of scope, no accounts exist in this app by design.
 
+### D8 — Multi-language UI reuses listing-studio's next-intl pattern; fixed 4-locale set, not env-driven (2026-08-17)
+**Why:** G-002 (Owner request: EN/RU/CZ/DE UI). Per STANDARDS.md "minimize
+spread," surveyed `listing-studio` before picking an approach — it already
+solved this exact problem (`next-intl`, cookie-based locale, no URL
+segment, English-fallback deep-merge for partial translations, a `key`-remount
+fix for a `<select>`-staleness bug) — so this project copies that pattern
+rather than inventing a new one. Copied as-is: `next-intl@^4.13.1`,
+`i18n/request.ts` (cookie → locale, `mergeMessages` fallback),
+`lib/locale-actions.ts` (`setLocaleAction`), the switcher's server/client
+split (`app/locale-switcher.tsx` + `app/locale-select.tsx`, the latter using
+listing-studio's exact `key={current}` remount trick). **Deviated on one
+point:** listing-studio's `enabledUiLocales()` is env-driven
+(`UI_LANGUAGES`), built for *staging in* languages incrementally as
+translations land. This project was asked for a fixed set (EN/RU/CZ/DE) with
+no staged-rollout requirement, so `lib/ui-locales.ts::enabledUiLocales()`
+returns a hardcoded four-element array instead of parsing an env var —
+simpler, and there's nothing to configure. The English-fallback
+`mergeMessages` behavior is kept identically, so an individual locale can
+still ship with partial translation coverage without breaking.
+**Considered:** URL locale segments (`/ru/r/slug`) — rejected for the same
+reason listing-studio's D2 rejected it, doubled here by an app-specific
+concern: room URLs are shared between people who may prefer different
+languages, and a locale segment would make the *same room* resolve to
+different-looking URLs depending on who generated the link, which is a
+worse fit for this app than for listing-studio's marketing pages. Locale
+stays a pure display preference, cookie-only, completely orthogonal to
+`Room.timezone` (D2) and the room's URL/slug.
+**Font note:** `next/font/google`'s Geist/Geist Mono default to a
+`latin`-only subset; added `latin-ext` (Czech/German diacritics) and
+`cyrillic` (Russian) — without this, Cyrillic text would silently fall back
+to a system font instead of rendering in Geist.
+
 ## Future direction (not building yet — Owner flagged 2026-08-17)
 
 The Owner wants to keep the door open for **participant profiles**: a
@@ -767,6 +835,10 @@ currently doesn't).
    ownership transfer, daily-time-window presets, Best Times missing-names,
    CANNOT-count ranking, join-page clarity, 100-participant cap) is
    committed, pushed, and live on production as of this writing.
+1a. **G-002 (multi-language UI) is now the active goal.** M1 (i18n
+    infrastructure) is done — see "Multi-language UI — G-002, M1 done"
+    above. M2-M5 (translating every page, four languages) are next,
+    pending Owner review of M1.
 2. **Missing test coverage**: the creator-leaves-and-ownership-transfers
    case (see "Post-launch UX round" above) was verified manually
    (real browser + SQL check) but has no automated e2e spec yet. Worth

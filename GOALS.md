@@ -368,3 +368,108 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
   followed portfolio precedent (TypeScript/Next.js/PostgreSQL/Prisma, per
   listing-studio D1) minus the pieces this project doesn't need (no Auth.js,
   no Redis/BullMQ, no Stripe — no accounts/payments/queues here).
+
+---
+
+### G-002 · Multi-language UI (EN/RU/CZ/DE) — ACTIVE
+- **What:** All user-facing UI text (labels, buttons, headings, help copy,
+  validation/error messages) available in English, Russian, Czech, and
+  German, switchable per visitor without affecting date/hour formatting or
+  room URLs. English is always the fallback for any string not yet
+  translated in another locale, so partial translation coverage never
+  breaks the app.
+- **Why:** Owner request — the app currently only speaks English, which
+  limits who can actually use it.
+- **Acceptance criteria:**
+  1. A language switcher, visible on every page, lets a visitor pick
+     EN/RU/CZ/DE; the choice persists across navigation and return visits
+     (cookie-based, no login).
+  2. Switching language does not change the room's URL/slug, and does not
+     change how dates/hours are stored, computed, or displayed — the
+     "everyone marks and sees times in the room's single declared
+     timezone, wall-clock, en-GB-formatted" behavior (HANDOVER D2) is
+     completely unaffected by UI language.
+  3. Every string a visitor can see — landing/create-room page, join page,
+     room/grid page, results page, all buttons/banners/error messages — is
+     translated in all four languages, with English as an automatic
+     fallback for any individual key missing in another locale.
+  4. Existing automated test suite (unit + e2e) still passes, exercising
+     the app in its default (English) locale.
+- **Constraints:** no deadline; budget = none; no new paid/external
+  services (rules out any translation-management SaaS — translations are
+  authored directly as JSON, same as listing-studio's pattern). Reuse the
+  established portfolio pattern from `listing-studio` (`next-intl`,
+  cookie-based locale, no URL locale segment) rather than inventing a new
+  approach — see HANDOVER decision record for what was reused vs. adapted.
+
+**Milestones**:
+- [x] M1 — i18n infrastructure: `next-intl` wired in (config, root layout,
+      `next.config.ts`), cookie-based locale resolution with English-fallback
+      deep-merge (mirroring listing-studio's `mergeMessages`), a language
+      switcher component (with the known `key`-remount fix for the
+      `<select>` staleness bug listing-studio already hit and documented),
+      and a minimal `messages/{en,ru,cs,de}.json` proving the pipeline
+      end-to-end on one real string. No visible page content translated yet
+      — this milestone is the plumbing. ✔ 2026-08-17. Verified live in a
+      browser (switcher label re-renders per language, cookie persists
+      across a real navigation) plus a new unit test
+      (`tests/unit/ui-locales.spec.ts`); 53 unit + 5 e2e tests green;
+      tsc/eslint clean.
+- [ ] M2 — Landing/create-room page fully translated in all four languages:
+      `app/page.tsx`, `create-room-form.tsx` (including the daily-time-window
+      preset labels). Also covers the Zod validation error messages here —
+      per listing-studio's actual pattern (confirmed by re-reading its
+      source, not just recalled from the earlier survey): schema `.min()`/
+      `.refine()` messages are bare i18n KEY strings (e.g. `"nameRequired"`,
+      not a sentence), passed through untranslated by the server action, and
+      translated client-side as `t(`errors.${key}`)` in a per-form
+      namespace. No translator-aware schema factory needed — simpler than
+      first planned.
+- [ ] M3 — Room pages translated: `join-form.tsx`, `app/r/[slug]/page.tsx`
+      (grid header, "Not you?"/"Leave the room"), `availability-grid.tsx`
+      toolbar, `finalized-banner.tsx`, `leave-room-button.tsx`,
+      `new-event-button.tsx`.
+- [ ] M4 — Results page and remaining server-action error strings
+      translated: `results/page.tsx`, `results-board.tsx`, plus
+      `joinRoom`/`saveAvailability`/`selectFinalSlot`/`deselectFinalSlot`
+      error messages in `app/r/[slug]/actions.ts`.
+- [ ] M5 — QA & deploy: full manual pass in each of the four languages
+      (switch language, create a room, join, mark availability, view
+      results, finalize a meeting time, leave a room) confirming no
+      untranslated/fallback-to-English text appears anywhere it shouldn't
+      and that date/hour formatting is genuinely unaffected by UI language;
+      confirm the full automated suite is still green; update README/
+      HANDOVER; push and redeploy to https://meet.app.julienika.cz.
+
+**Progress log** (newest first; The Company appends at every stopping point):
+- 2026-08-17 — **M1 done.** Installed `next-intl@^4.13.1` (matching
+  listing-studio's pin), wired `next.config.ts`/`i18n/request.ts`/
+  `app/layout.tsx` for cookie-based locale resolution with English-fallback
+  deep-merge, added a language switcher (`app/locale-switcher.tsx` +
+  `app/locale-select.tsx`, server/client split, the client half using
+  listing-studio's `key={current}` remount fix for a `<select>`-staleness
+  bug) visible on every page via the root layout — added once globally
+  rather than per-page. Added `latin-ext`/`cyrillic` font subsets to Geist
+  (was `latin`-only, which would have silently dropped Russian text to a
+  system font). `lib/ui-locales.ts` deviates from listing-studio's
+  env-driven locale list: hardcoded to the fixed EN/RU/CZ/DE set the Owner
+  asked for, since there's no staged-rollout need here (see HANDOVER D8).
+  Verified live in a browser: switcher shows all four native language names
+  correctly, switching actually round-trips through the server action and
+  cookie, persists across a real (non-client-side) navigation. New unit
+  test file `tests/unit/ui-locales.spec.ts`. 53 unit + 5 e2e tests green
+  (e2e unaffected — runs against the default English locale with no cookie
+  set), tsc/eslint clean. **Stopping here per OPERATIONS.md milestone
+  checkpoint — awaiting Owner review before starting M2** (translate the
+  landing/create-room page).
+- 2026-08-17 — Goal created and planned with the Owner. Surveyed
+  `listing-studio` first (per STANDARDS.md "minimize spread") rather than
+  picking an i18n approach cold: it already uses `next-intl` with a
+  cookie-based locale (no URL segment), English-fallback deep-merge for
+  partial translations, and a `key`-remount fix for a known `<select>`
+  staleness bug — this project will copy that pattern rather than invent
+  a new one. Recommended against reCAPTCHA-adjacent or URL-prefix
+  approaches to the Owner earlier in the conversation for unrelated
+  reasons (frictionless-by-design); the same "don't add friction to a
+  no-account app" reasoning is why locale stays cookie-based here too, not
+  a login preference. Not started yet — M1 is next.
