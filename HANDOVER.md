@@ -538,10 +538,13 @@ which localized it to stale Next.js client-router-cache state in that one
 test tab rather than a bug in `localeDisplayName` or the translation
 pipeline. 53 unit + 5 e2e tests green, tsc/eslint clean.
 
+Pushed and redeployed to https://meet.app.julienika.cz; confirmed live in
+Russian in a real browser and confirmed the other sites on the shared host
+stayed up.
+
 **Stopping here per OPERATIONS.md milestone checkpoint** — M3 (room/grid
 page: join form, availability grid toolbar, finalize banner, leave-room,
-new-event button) is next, pending Owner review of M2. **Not yet deployed
-as of this note** — see "Next steps".
+new-event button) is next, pending Owner review of M2.
 
 ## Git remote & deployment (post-M5, Owner-directed, 2026-08-17)
 
