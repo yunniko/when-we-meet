@@ -3,7 +3,7 @@ import type { CSSProperties } from "react";
 import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentParticipant } from "@/lib/participant";
-import { dateOnly, enumerateDates, enumerateHours, formatDayLabel, formatHour, formatHoursWindow, slotKey } from "@/lib/slots";
+import { enumerateDates, enumerateHours, formatDateRange, formatDayLabel, formatHour, formatHoursWindow, slotKey } from "@/lib/slots";
 import { computeResults, type SlotResult } from "@/lib/results";
 
 function cellStyle(result: SlotResult): CSSProperties {
@@ -43,7 +43,7 @@ export default async function ResultsPage({
             {room.title || "Untitled room"} — results
           </h1>
           <p className="mt-1 text-sm text-foreground/60">
-            {dateOnly(room.startDate)} – {dateOnly(room.endDate)} ·{" "}
+            {formatDateRange(room.startDate, room.endDate)} ·{" "}
             {formatHoursWindow(room.dayStartHour, room.dayEndHour)} · {room.timezone} ·{" "}
             {totalParticipants} {totalParticipants === 1 ? "person" : "people"}
           </p>
@@ -92,7 +92,7 @@ export default async function ResultsPage({
               {dates.map((date) => {
                 const key = slotKey(date, hour);
                 const result = resultByKey.get(key);
-                if (!result) return <div key={key} className="h-8 border-l border-t border-black/10 dark:border-white/15" />;
+                if (!result) return <div key={key} className="h-10 border-l border-t border-black/10 dark:border-white/15" />;
                 return (
                   <div
                     key={key}
@@ -100,7 +100,7 @@ export default async function ResultsPage({
                       result.preferredCount > 0 ? `, ${result.preferredCount} prefer` : ""
                     }${result.cannotCount > 0 ? `, ${result.cannotCount} can't` : ""}`}
                     style={cellStyle(result)}
-                    className={`relative h-8 border-l border-t border-black/10 dark:border-white/15 ${
+                    className={`relative h-10 border-l border-t border-black/10 dark:border-white/15 ${
                       result.isFullGroup ? "ring-2 ring-inset ring-amber-400" : ""
                     }`}
                   >

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentParticipant } from "@/lib/participant";
-import { dateOnly, enumerateDates, enumerateHours, formatHoursWindow } from "@/lib/slots";
+import { dateOnly, enumerateDates, enumerateHours, formatDateRange, formatHoursWindow } from "@/lib/slots";
 import type { CellMark } from "@/lib/slots";
 import { JoinForm } from "@/app/r/[slug]/join-form";
 import { AvailabilityGrid } from "@/app/r/[slug]/availability-grid";
@@ -59,7 +59,7 @@ export default async function RoomPage({
             {room.title || "Untitled room"}
           </h1>
           <p className="mt-1 text-sm text-foreground/60">
-            {dateOnly(room.startDate)} – {dateOnly(room.endDate)} ·{" "}
+            {formatDateRange(room.startDate, room.endDate)} ·{" "}
             {hoursLabel} · {room.timezone}
           </p>
         </div>

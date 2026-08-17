@@ -6,8 +6,8 @@ and milestone plan live in `GOALS.md`; project conventions in `AGENTS.md`.
 
 ## Current state
 
-**M1 (Foundation), M2 (Join & mark availability), and M3 (Preferred layer +
-results) — done.** M1:
+**M1 (Foundation), M2 (Join & mark availability), M3 (Preferred layer +
+results), and M4 (Edge cases & polish) — done.** M1:
 
 - Next.js 16 (App Router, Turbopack) + TypeScript + Tailwind v4 scaffold,
   matching the portfolio's `create-next-app` defaults (see D1).
@@ -110,10 +110,48 @@ M3:
   afterward.
 - `npx tsc --noEmit` and `npx eslint .` both clean throughout.
 
+M4:
+
+- **Bug fix — join-name race condition**: `joinRoom`'s "is this a new name"
+  check (`findUnique` then `create`) had a TOCTOU gap — two people submitting
+  the same brand-new name close enough together could both pass the
+  `findUnique` before either `create()` committed, and the loser would hit
+  the `(roomId, nameKey)` unique constraint and throw, surfacing as an
+  unhandled 500 instead of the intended "is this you?" prompt. Fixed by
+  catching `Prisma.PrismaClientKnownRequestError` with `code === "P2002"`
+  around the `create()` call and recovering via the same `collisionState`
+  helper the ordinary collision path uses (factored out of the old inline
+  code specifically for this reuse). See D4 for how this was verified.
+- **Single-day/fixed-hours event mode**: no code changes were needed for the
+  mode itself (a room with `startDate === endDate` and a narrow
+  `dayStartHour`/`dayEndHour` already "just works" — the grid renders one
+  date column). Verifying it did surface a small display bug: the room and
+  results headers showed a redundant `"2026-09-05 – 2026-09-05"` for a
+  single-day room. Fixed with `lib/slots.ts::formatDateRange`, which collapses
+  to one date when `startDate === endDate`.
+- **Mobile/responsive pass**: `mcp__claude-in-chrome__resize_window` wasn't
+  actually changing the tab's viewport in this environment (`window.innerWidth`
+  stayed at the host window's size after calling it), so the check was done
+  by embedding the app in a 390×844 `<iframe>` on a blank page instead — a
+  legitimate way to force a narrow viewport for layout purposes. All three
+  pages (create-room, join/grid, results) held up with no horizontal
+  overflow; the toolbar and header already had `flex-wrap`. Bumped
+  touch-target sizing as a precaution since real-device touch testing is
+  still outstanding (see M2 verification notes): grid cells `h-8`→`h-10`
+  (32px→40px) in both `availability-grid.tsx` and `results/page.tsx`, brush
+  button padding `px-2.5 py-1.5`→`px-3 py-2`.
+- **Timezone picker**: regrouped the flat ~400-entry `<select>` into region
+  `<optgroup>`s (`groupedTimezoneOptions()` in `create-room-form.tsx`,
+  grouping by the part of the IANA name before the first `/`) with
+  underscore-free labels (e.g. "Los Angeles" instead of "Los_Angeles").
+- **Abuse-resistance review** (see D4): no code changes — reviewed and
+  confirmed adequate.
+- `npx tsc --noEmit` and `npx eslint .` both clean throughout.
+
 **Not started yet:** all automated tests (Vitest/Playwright — deliberately
-deferred to M5; verification through M1-M3 has been manual/browser-driven
-per milestone, per the checkpoint discipline in OPERATIONS.md) and the M4
-edge cases/polish pass. See `GOALS.md`.
+deferred to M5; verification through M1-M4 has been manual/browser-driven
+per milestone, per the checkpoint discipline in OPERATIONS.md). See
+`GOALS.md`.
 
 ## How things fit together
 
@@ -187,6 +225,30 @@ product requirement from the Owner — a pragmatic guard so a mis-typed date
 range can't produce an unusably huge availability grid in M2. Revisit if a
 real use case needs a longer range.
 
+### D4 — Room-slug/cookie-token entropy is adequate as-is; no rate-limiting added (2026-08-17)
+**Why:** M4's "basic abuse-resistance" pass reviewed this rather than adding
+new mechanisms. Room slugs are 12 characters from a 32-symbol alphabet
+(`lib/slug.ts`) — roughly 60 bits of entropy, i.e. not brute-forceable, and
+there is no listing/enumeration endpoint anywhere in the app (no admin page,
+no "recent rooms" feature) so guessing is the only avenue. Participant
+cookie tokens are 32-character nanoid strings (~190 bits) and httpOnly, so
+not readable via client-side script even on the same origin. No
+rate-limiting was added to room/participant creation — there's no
+infrastructure for it yet (no Redis, per D1) and the trust-model/no-budget
+constraints in G-001 don't call for it at this scale; revisit if the app
+ever gets exposed to genuinely adversarial traffic rather than friend
+groups. The join-name race fix (see "M4" above) was verified by directly
+reproducing the underlying Prisma behavior it depends on — two concurrent
+`participant.create()` calls for the same `(roomId, nameKey)` were run via a
+standalone script against the dev database, confirming one fulfills and the
+other rejects with `Prisma.PrismaClientKnownRequestError` / `code: "P2002"`
+— rather than by forcing the exact race through two live HTTP requests,
+which proved unreliable to trigger deterministically via browser automation
+(two "simultaneous" tool-driven form submissions weren't fast enough to
+land inside the race window in testing). The recovery code path itself
+(`collisionState` helper) is exercised by the ordinary, non-raced collision
+flow, which is the same code.
+
 ## Future direction (not building yet — Owner flagged 2026-08-17)
 
 The Owner wants to keep the door open for **participant profiles**: a
@@ -203,29 +265,29 @@ currently doesn't).
 
 ## Next steps
 
-1. M1, M2, and M3 are all done and verified — nothing blocking. Next action
+1. M1 through M4 are all done and verified — nothing blocking. Next action
    is the Owner checkpoint (per OPERATIONS.md, stop at milestone boundaries)
-   before starting M4.
-2. M4 (edge cases & polish, per GOALS.md): strict single-day/fixed-hours
-   event mode (largely already possible — a room with `startDate ===
-   endDate` and a narrow `dayStartHour`/`dayEndHour` window — worth
-   confirming the UI reads well for that case specifically), empty/error
-   states (room not found is handled; a name colliding with a *different*
-   confirmed identity mid-session isn't specifically tested), a responsive/
-   mobile pass, and basic abuse-resistance review (slug unguessability is
-   already reasonable per `lib/slug.ts`, worth a second look at whether
-   anything else needs rate-limiting).
+   before starting M5.
+2. M5 (testing & sign-off, per GOALS.md): Vitest unit tests for the pure
+   modules (`lib/slots.ts`, `lib/results.ts`, `lib/validation.ts` are all
+   Next/Prisma-free and ready for this — the overlap/ranking algorithm in
+   particular deserves direct coverage of its sort order and edge cases like
+   zero participants or a slot nobody marked), Playwright e2e for
+   create → join → mark → view-results and the name-collision flow. All
+   verification through M1-M4 has been manual/browser-driven per milestone;
+   M5 is where that gets automated so future changes don't need a full
+   manual pass every time.
 3. Open questions/flags for the Owner, none blocking:
-   - The timezone `<select>` currently lists all ~400 IANA zones via
-     `Intl.supportedValuesOf`; fine functionally, may want a
-     searchable/grouped UI once real users are involved (M4 polish
-     candidate).
    - Touch drag-painting (both the brush paint and the Prefer toggle) is
-     implemented with the standard pointer-event technique but hasn't been
-     checked on a real touch device yet (see M2 verification notes above) —
-     worth a real-phone check before/at M4.
+     implemented with the standard pointer-event technique and touch-target
+     sizing was bumped defensively in M4, but it still hasn't been checked
+     on a real touch device (browser automation can't drive real touch
+     events, and this session's window-resize tool wasn't changing the
+     actual viewport either — the mobile check was done via an emulated
+     iframe instead). Worth a real-phone check whenever convenient.
    - The results heatmap's color scale only encodes `canCount`; `cannotCount`
      isn't visually distinguished from "nobody's said anything yet" (both
-     render as the same empty/pale cell). Not a spec gap — the acceptance
-     criteria only ask for availability ranking — but worth a design opinion
-     from the Owner if it turns out confusing in practice.
+     render as the same empty/pale cell — though the exact counts are in
+     each cell's hover tooltip). Not a spec gap — the acceptance criteria
+     only ask for availability ranking — but worth a design opinion from the
+     Owner if it turns out confusing in practice.

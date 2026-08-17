@@ -51,6 +51,12 @@ export function formatHour(hour: number): string {
   return `${String(h).padStart(2, "0")}:00`;
 }
 
+export function formatDateRange(startDate: Date, endDate: Date): string {
+  const start = dateOnly(startDate);
+  const end = dateOnly(endDate);
+  return start === end ? start : `${start} – ${end}`;
+}
+
 export function formatHoursWindow(dayStartHour: number, dayEndHour: number): string {
   if (dayStartHour === 0 && dayEndHour === 24) return "Whole day";
   return `${formatHour(dayStartHour)}–${String(dayEndHour).padStart(2, "0")}:00`;

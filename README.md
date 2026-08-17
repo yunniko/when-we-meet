@@ -11,12 +11,13 @@ Goal and milestone tracking: see `GOALS.md`.
 
 ## Current state
 
-M1, M2, and M3 done and verified: creating a room, joining it under a name
-(with cookie-based identity and a name-collision "is this you?" prompt),
+M1 through M4 done and verified: creating a room (including a single-day
+fixed-hours event mode), joining it under a name (with cookie-based
+identity and a name-collision "is this you?" prompt, race-condition-safe),
 marking availability on the 1-hour-slot grid (drag-to-paint, mouse and
-touch, with an optional "prefer this slot" layer on top of Can marks), and
-a results view (heatmap + ranked "best times" list) all work end to end.
-Edge cases, polish, and a mobile pass land in M4; automated tests in M5.
+touch, with an optional "prefer this slot" layer on top of Can marks), a
+results view (heatmap + ranked "best times" list), and a narrow-viewport
+pass all work end to end. Automated tests land in M5.
 
 ## Running it locally
 

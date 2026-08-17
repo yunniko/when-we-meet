@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { generateParticipantToken } from "@/lib/slug";
 import { setParticipantCookie, clearParticipantCookie } from "@/lib/cookies";
@@ -11,6 +12,19 @@ import type { SlotStatus } from "@/lib/slots";
 export type JoinState =
   | { step: "form"; error?: string; name?: string }
   | { step: "collision"; participantId: string; name: string; summary: MarkSummary };
+
+async function collisionState(participant: { id: string; name: string }): Promise<JoinState> {
+  const availability = await prisma.availability.findMany({
+    where: { participantId: participant.id },
+    orderBy: [{ slotDate: "asc" }, { slotHour: "asc" }],
+  });
+  return {
+    step: "collision",
+    participantId: participant.id,
+    name: participant.name,
+    summary: summarizeAvailability(availability),
+  };
+}
 
 export async function joinRoom(
   ctx: { roomId: string; slug: string },
@@ -39,29 +53,34 @@ export async function joinRoom(
   });
 
   if (!existing) {
-    const created = await prisma.participant.create({
-      data: {
-        roomId: ctx.roomId,
-        name,
-        nameKey,
-        cookieToken: generateParticipantToken(),
-      },
-    });
-    await setParticipantCookie(ctx.roomId, created.cookieToken);
-    redirect(`/r/${ctx.slug}`);
+    try {
+      const created = await prisma.participant.create({
+        data: {
+          roomId: ctx.roomId,
+          name,
+          nameKey,
+          cookieToken: generateParticipantToken(),
+        },
+      });
+      await setParticipantCookie(ctx.roomId, created.cookieToken);
+      redirect(`/r/${ctx.slug}`);
+    } catch (err) {
+      // Two people submitting the same new name at the same instant can
+      // both pass the findUnique check above before either commits — the
+      // second create() then hits the (roomId, nameKey) unique constraint.
+      // Recover by treating it as a same-instant collision instead of
+      // surfacing a raw 500.
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+        const racedWinner = await prisma.participant.findUnique({
+          where: { roomId_nameKey: { roomId: ctx.roomId, nameKey } },
+        });
+        if (racedWinner) return collisionState(racedWinner);
+      }
+      throw err;
+    }
   }
 
-  const availability = await prisma.availability.findMany({
-    where: { participantId: existing.id },
-    orderBy: [{ slotDate: "asc" }, { slotHour: "asc" }],
-  });
-
-  return {
-    step: "collision",
-    participantId: existing.id,
-    name: existing.name,
-    summary: summarizeAvailability(availability),
-  };
+  return collisionState(existing);
 }
 
 export async function leaveIdentity(

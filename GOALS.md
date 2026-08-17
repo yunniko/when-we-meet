@@ -91,16 +91,55 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       confirmed the heatmap intensity/full-group ring/preferred badge and the
       "Best times" ranking (canCount desc, then preferredCount desc) all
       matched.
-- [ ] M4 — Edge cases & polish: strict single-day/fixed-hours event mode,
+- [x] M4 — Edge cases & polish: strict single-day/fixed-hours event mode,
       always-editable own marks, empty/error states (room not found, name
       taken by a *different* confirmed identity mid-session), responsive/mobile
       pass, basic abuse-resistance (token unguessability, no enumeration).
+      ✔ 2026-08-17. Verified: single-day fixed-hours room created and joined
+      through the real UI (fixed a redundant "2026-09-05 – 2026-09-05" date
+      display in the process); the join-name-race condition reproduced
+      directly against Postgres (concurrent `create()` calls confirmed one
+      throws `P2002`) and the recovery path exercised via the ordinary
+      collision flow; 404s confirmed for unknown room and results URLs;
+      results-without-joining confirmed to redirect to the join form; a
+      narrow-viewport (390×844) pass via an emulated iframe viewport found no
+      horizontal overflow on any of the three pages, and touch-target sizing
+      was bumped (grid cells 32px → 40px, brush buttons more padding);
+      timezone picker regrouped into region `<optgroup>`s instead of one flat
+      ~400-entry list. Room-slug and cookie-token entropy reviewed — no
+      changes needed, already adequate (documented in HANDOVER D4).
 - [ ] M5 — Testing & sign-off: unit tests for the overlap/ranking algorithm,
       Playwright e2e for create → join → mark → view-results and the
       name-collision flow, manual verification of the running app, README/
       HANDOVER finalized.
 
 **Progress log** (newest first; The Company appends at every stopping point):
+- 2026-08-17 — **M4 done and verified.** Fixed a real (if rare) bug: two
+  people submitting the same brand-new name at nearly the same instant could
+  both pass the "does this name exist" check before either committed, so the
+  second `participant.create()` would hit the (roomId, nameKey) unique
+  constraint and surface as an unhandled 500 instead of the intended
+  collision prompt. `joinRoom` now catches `Prisma.PrismaClientKnownRequestError`
+  with code `P2002` and recovers by re-fetching the now-existing participant
+  and returning the same collision state as the ordinary case. Verified the
+  exact Prisma error shape directly against Postgres (two concurrent
+  `create()` calls — one fulfills, one rejects with `P2002`) since forcing
+  the precise race through two real HTTP requests via browser automation
+  wasn't reliably reproducible; the recovery code path itself (shared
+  `collisionState` helper) was exercised through the ordinary, non-raced
+  collision flow. Confirmed the single-day/fixed-hours event mode reads well
+  end to end and fixed a redundant date-range display it exposed
+  ("2026-09-05 – 2026-09-05" → "2026-09-05"). Confirmed 404s for unknown
+  room/results URLs and the results-without-joining redirect. Did a
+  narrow-viewport pass (390×844, via an emulated iframe since the browser
+  tool's window resize wasn't taking effect in this environment) across the
+  create-room, join, grid, and results pages — no horizontal overflow found;
+  bumped touch-target sizing (grid cells and brush buttons) as a precaution
+  since real touch-device testing is still an open item (see M2). Regrouped
+  the timezone `<select>` into region `<optgroup>`s. Reviewed slug/token
+  entropy — adequate, no changes. tsc/eslint clean. Test data cleaned up.
+  **Stopping here per OPERATIONS.md milestone checkpoint — awaiting Owner
+  review before starting M5** (automated tests & sign-off).
 - 2026-08-17 — **M3 done and verified.** Grid gained a fourth brush,
   "Prefer", which only applies to a participant's own CAN slots (server-side
   clamp in `saveAvailability` too — never trust the client for that

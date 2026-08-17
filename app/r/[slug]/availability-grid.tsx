@@ -155,7 +155,7 @@ export function AvailabilityGrid({
               type="button"
               onClick={() => setBrush(b.value)}
               aria-pressed={brush === b.value}
-              className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1.5 rounded-md border px-3 py-2 text-xs font-medium transition-colors ${
                 brush === b.value
                   ? "border-foreground"
                   : "border-black/10 dark:border-white/15"
@@ -214,7 +214,7 @@ export function AvailabilityGrid({
                     onPointerEnter={() => {
                       if (painting.current) paintCellAtIndex(dateIdx, hourIdx);
                     }}
-                    className={`relative h-8 border-l border-t border-black/10 dark:border-white/15 ${cellClass(mark)}`}
+                    className={`relative h-10 border-l border-t border-black/10 dark:border-white/15 ${cellClass(mark)}`}
                   >
                     {mark?.preferred && (
                       <span className="pointer-events-none absolute right-0.5 top-0.5 text-[10px] leading-none text-amber-900 dark:text-amber-200">

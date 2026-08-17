@@ -11,12 +11,29 @@ function guessTimezone(): string {
   }
 }
 
-function timezoneOptions(): string[] {
+// Grouped by region (the part before the first "/") so the <select> is
+// scannable instead of one flat alphabetical list of ~400 entries.
+function groupedTimezoneOptions(): { region: string; zones: string[] }[] {
+  let zones: string[];
   try {
-    return Intl.supportedValuesOf("timeZone");
+    zones = Intl.supportedValuesOf("timeZone");
   } catch {
-    return ["UTC"];
+    zones = ["UTC"];
   }
+  const groups = new Map<string, string[]>();
+  for (const zone of zones) {
+    const region = zone.includes("/") ? zone.split("/")[0] : "Other";
+    const list = groups.get(region) ?? [];
+    list.push(zone);
+    groups.set(region, list);
+  }
+  return [...groups.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([region, list]) => ({ region, zones: list.sort() }));
+}
+
+function timezoneLabel(zone: string): string {
+  return zone.slice(zone.indexOf("/") + 1).replaceAll("_", " ").replaceAll("/", " / ");
 }
 
 const initialState: CreateRoomState = {
@@ -38,7 +55,7 @@ export function CreateRoomForm() {
   );
   const [allDay, setAllDay] = useState(state.values.allDay);
   const [timezone] = useState(() => state.values.timezone || guessTimezone());
-  const zones = timezoneOptions();
+  const zoneGroups = groupedTimezoneOptions();
 
   return (
     <form action={formAction} className="flex flex-col gap-5">
@@ -112,10 +129,14 @@ export function CreateRoomForm() {
           defaultValue={timezone}
           className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/30"
         >
-          {zones.map((z) => (
-            <option key={z} value={z}>
-              {z}
-            </option>
+          {zoneGroups.map(({ region, zones }) => (
+            <optgroup key={region} label={region}>
+              {zones.map((z) => (
+                <option key={z} value={z}>
+                  {timezoneLabel(z)}
+                </option>
+              ))}
+            </optgroup>
           ))}
         </select>
         <p className="text-xs text-foreground/60">
