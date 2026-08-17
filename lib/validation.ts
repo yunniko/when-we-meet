@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+// Every error message below is an i18n KEY (looked up as
+// `CreateRoom.errors.<key>` client-side via useTranslations), not an English
+// sentence — this schema runs at module scope, outside any request/locale
+// context, so it can't translate messages itself. See create-room-form.tsx
+// and messages/en.json's CreateRoom.errors namespace.
+//
 // Hour-of-day bounds: 0-24, end exclusive (24 = through 23:00-24:00), and
 // end must be strictly after start so the window isn't empty.
 export const createRoomSchema = z
@@ -10,18 +16,26 @@ export const createRoomSchema = z
       .max(120)
       .optional()
       .transform((v) => (v ? v : undefined)),
-    timezone: z.string().min(1, "Pick a timezone"),
-    startDate: z.string().date(),
-    endDate: z.string().date(),
-    dayStartHour: z.coerce.number().int().min(0).max(23),
-    dayEndHour: z.coerce.number().int().min(1).max(24),
+    timezone: z.string().min(1, "timezoneRequired"),
+    startDate: z.string().date("startDateInvalid"),
+    endDate: z.string().date("endDateInvalid"),
+    dayStartHour: z.coerce
+      .number("dayHourInvalid")
+      .int("dayHourInvalid")
+      .min(0, "dayStartHourRange")
+      .max(23, "dayStartHourRange"),
+    dayEndHour: z.coerce
+      .number("dayHourInvalid")
+      .int("dayHourInvalid")
+      .min(1, "dayEndHourRange")
+      .max(24, "dayEndHourRange"),
   })
   .refine((v) => v.endDate >= v.startDate, {
-    message: "End date must be on or after the start date",
+    message: "endBeforeStart",
     path: ["endDate"],
   })
   .refine((v) => v.dayEndHour > v.dayStartHour, {
-    message: "Daily end time must be after the daily start time",
+    message: "dayEndBeforeStart",
     path: ["dayEndHour"],
   })
   .refine(
@@ -31,7 +45,7 @@ export const createRoomSchema = z
       return days <= 60;
     },
     {
-      message: "Planning range can't be longer than 60 days",
+      message: "rangeTooLong",
       path: ["endDate"],
     },
   );

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { LocaleSwitcher } from "@/app/locale-switcher";
 import "./globals.css";
 
@@ -18,10 +18,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin", "latin-ext", "cyrillic"],
 });
 
-export const metadata: Metadata = {
-  title: "When We Meet",
-  description: "Find a time that works for everyone — no account needed.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Metadata");
+  return { title: t("title"), description: t("description") };
+}
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const locale = await getLocale();

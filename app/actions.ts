@@ -8,6 +8,8 @@ import { setOwnerCookie } from "@/lib/cookies";
 import { DAILY_PRESETS, isPresetKey } from "@/lib/room-presets";
 
 export type CreateRoomState = {
+  // i18n KEYS under CreateRoom.errors, not English sentences — translated
+  // client-side in create-room-form.tsx (see lib/validation.ts's header).
   error?: string;
   fieldErrors?: Record<string, string>;
   values: {
@@ -48,7 +50,7 @@ export async function createRoom(
         fieldErrors[key] = issue.message;
       }
     }
-    return { error: "Please fix the highlighted fields.", fieldErrors, values };
+    return { error: "invalidInput", fieldErrors, values };
   }
 
   const data = parsed.data;

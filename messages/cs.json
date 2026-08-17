@@ -1,5 +1,46 @@
 {
   "LocaleSwitcher": {
     "label": "Jazyk"
+  },
+  "Metadata": {
+    "title": "When We Meet",
+    "description": "Najděte čas, který vyhovuje všem — bez registrace."
+  },
+  "Landing": {
+    "heroAlt": "Čtyři přátelé připíjejí u stolu, vedle ručně kreslený týdenní kalendář s hvězdičkami u časů, které všem vyhovují",
+    "tagline": "Vyberte rozsah dat, sdílejte odkaz a zjistěte, kdy mají všichni čas. Registrace není potřeba."
+  },
+  "CreateRoom": {
+    "roomNameLabel": "Název akce",
+    "optional": "(nepovinné)",
+    "roomNamePlaceholder": "např. Výlet na kole",
+    "fromLabel": "Od",
+    "toLabel": "Do",
+    "timezoneLabel": "Časové pásmo",
+    "timezoneHelp": "Všichni účastníci místnosti označují a vidí časy v tomto jednom časovém pásmu.",
+    "dailyWindowLegend": "Denní časové okno",
+    "dailyStartLabel": "Začátek dne",
+    "dailyEndLabel": "Konec dne",
+    "submit": "Vytvořit místnost a získat odkaz",
+    "submitting": "Vytváření…",
+    "presets": {
+      "evening": "Večer",
+      "wholeDay": "Celý den",
+      "morning": "Ráno",
+      "midday": "Odpoledne",
+      "custom": "Vlastní rozsah"
+    },
+    "errors": {
+      "invalidInput": "Opravte prosím zvýrazněná pole.",
+      "timezoneRequired": "Vyberte časové pásmo",
+      "startDateInvalid": "Zadejte platné datum začátku",
+      "endDateInvalid": "Zadejte platné datum konce",
+      "endBeforeStart": "Datum konce musí být stejné nebo pozdější než datum začátku",
+      "dayEndBeforeStart": "Konec denního okna musí být později než jeho začátek",
+      "rangeTooLong": "Plánovací rozsah nesmí být delší než 60 dní",
+      "dayHourInvalid": "Zadejte platnou hodinu",
+      "dayStartHourRange": "Hodina začátku dne musí být mezi 0 a 23",
+      "dayEndHourRange": "Hodina konce dne musí být mezi 1 a 24"
+    }
   }
 }

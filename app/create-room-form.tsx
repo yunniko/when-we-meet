@@ -1,11 +1,15 @@
 "use client";
 
 import { useActionState, useState, useTransition, type FormEvent } from "react";
+import { useTranslations } from "next-intl";
 import { createRoom, type CreateRoomState } from "@/app/actions";
 import { DAILY_PRESETS, type DailyPresetKey } from "@/lib/room-presets";
+import { formatHoursWindow } from "@/lib/slots";
 
 const inputClass =
   "rounded-md border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-accent";
+
+const PRESET_KEYS: DailyPresetKey[] = ["evening", "wholeDay", "morning", "midday", "custom"];
 
 function guessTimezone(): string {
   try {
@@ -40,14 +44,6 @@ function timezoneLabel(zone: string): string {
   return zone.slice(zone.indexOf("/") + 1).replaceAll("_", " ").replaceAll("/", " / ");
 }
 
-const PRESET_OPTIONS: { value: DailyPresetKey; label: string }[] = [
-  ...Object.entries(DAILY_PRESETS).map(([value, p]) => ({
-    value: value as DailyPresetKey,
-    label: p.label,
-  })),
-  { value: "custom", label: "Custom range" },
-];
-
 const initialState: CreateRoomState = {
   values: {
     title: "",
@@ -60,6 +56,7 @@ const initialState: CreateRoomState = {
 };
 
 export function CreateRoomForm() {
+  const t = useTranslations("CreateRoom");
   const [state, formAction] = useActionState(
     createRoom,
     initialState,
@@ -69,6 +66,19 @@ export function CreateRoomForm() {
   const zoneGroups = groupedTimezoneOptions();
   const [preset, setPreset] = useState<DailyPresetKey>("evening");
   const showCustom = preset === "custom";
+  const fieldError = (field: string) =>
+    state.fieldErrors?.[field] ? t(`errors.${state.fieldErrors[field]}`) : null;
+
+  // Only the preset's name is translated; the "(17:00–22:00)" part is
+  // locale-invariant digits built from the same formatter the room/results
+  // pages already use, not a separate translated literal per language.
+  const presetOptions = PRESET_KEYS.map((key) => ({
+    value: key,
+    label:
+      key === "custom"
+        ? t("presets.custom")
+        : `${t(`presets.${key}`)} (${formatHoursWindow(DAILY_PRESETS[key].start, DAILY_PRESETS[key].end)})`,
+  }));
 
   // Submitting via <form action={formAction}> (native form submission) is
   // what triggers React 19's automatic post-action form reset — and that
@@ -91,13 +101,13 @@ export function CreateRoomForm() {
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       {state.error && (
         <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
-          {state.error}
+          {t(`errors.${state.error}`)}
         </p>
       )}
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="title" className="text-sm font-medium">
-          Room name <span className="text-muted">(optional)</span>
+          {t("roomNameLabel")} <span className="text-muted">{t("optional")}</span>
         </label>
         <input
           id="title"
@@ -105,7 +115,7 @@ export function CreateRoomForm() {
           type="text"
           maxLength={120}
           defaultValue={state.values.title}
-          placeholder="e.g. Camping trip"
+          placeholder={t("roomNamePlaceholder")}
           className={inputClass}
         />
       </div>
@@ -113,7 +123,7 @@ export function CreateRoomForm() {
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="startDate" className="text-sm font-medium">
-            From
+            {t("fromLabel")}
           </label>
           <input
             id="startDate"
@@ -123,15 +133,13 @@ export function CreateRoomForm() {
             defaultValue={state.values.startDate}
             className={inputClass}
           />
-          {state.fieldErrors?.startDate && (
-            <p className="text-xs text-red-600">
-              {state.fieldErrors.startDate}
-            </p>
+          {fieldError("startDate") && (
+            <p className="text-xs text-red-600">{fieldError("startDate")}</p>
           )}
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="endDate" className="text-sm font-medium">
-            To
+            {t("toLabel")}
           </label>
           <input
             id="endDate"
@@ -141,17 +149,15 @@ export function CreateRoomForm() {
             defaultValue={state.values.endDate}
             className={inputClass}
           />
-          {state.fieldErrors?.endDate && (
-            <p className="text-xs text-red-600">
-              {state.fieldErrors.endDate}
-            </p>
+          {fieldError("endDate") && (
+            <p className="text-xs text-red-600">{fieldError("endDate")}</p>
           )}
         </div>
       </div>
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="timezone" className="text-sm font-medium">
-          Timezone
+          {t("timezoneLabel")}
         </label>
         <select
           id="timezone"
@@ -169,19 +175,15 @@ export function CreateRoomForm() {
             </optgroup>
           ))}
         </select>
-        <p className="text-xs text-muted">
-          Everyone in this room marks and sees times in this single timezone.
-        </p>
-        {state.fieldErrors?.timezone && (
-          <p className="text-xs text-red-600">
-            {state.fieldErrors.timezone}
-          </p>
+        <p className="text-xs text-muted">{t("timezoneHelp")}</p>
+        {fieldError("timezone") && (
+          <p className="text-xs text-red-600">{fieldError("timezone")}</p>
         )}
       </div>
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="mb-2 text-sm font-medium">Daily time window</legend>
-        {PRESET_OPTIONS.map((p) => (
+        <legend className="mb-2 text-sm font-medium">{t("dailyWindowLegend")}</legend>
+        {presetOptions.map((p) => (
           <label key={p.value} className="flex items-center gap-2 text-sm">
             <input
               type="radio"
@@ -198,7 +200,7 @@ export function CreateRoomForm() {
           <div className="grid grid-cols-2 gap-4 pl-6">
             <div className="flex flex-col gap-1.5">
               <label htmlFor="dayStartHour" className="text-xs">
-                Daily start
+                {t("dailyStartLabel")}
               </label>
               <input
                 id="dayStartHour"
@@ -212,7 +214,7 @@ export function CreateRoomForm() {
             </div>
             <div className="flex flex-col gap-1.5">
               <label htmlFor="dayEndHour" className="text-xs">
-                Daily end
+                {t("dailyEndLabel")}
               </label>
               <input
                 id="dayEndHour"
@@ -226,10 +228,8 @@ export function CreateRoomForm() {
             </div>
           </div>
         )}
-        {state.fieldErrors?.dayEndHour && (
-          <p className="text-xs text-red-600">
-            {state.fieldErrors.dayEndHour}
-          </p>
+        {fieldError("dayEndHour") && (
+          <p className="text-xs text-red-600">{fieldError("dayEndHour")}</p>
         )}
       </fieldset>
 
@@ -238,7 +238,7 @@ export function CreateRoomForm() {
         disabled={isPending}
         className="mt-2 rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
       >
-        {isPending ? "Creating…" : "Create room & get link"}
+        {isPending ? t("submitting") : t("submit")}
       </button>
     </form>
   );

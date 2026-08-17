@@ -1,5 +1,46 @@
 {
   "LocaleSwitcher": {
     "label": "Language"
+  },
+  "Metadata": {
+    "title": "When We Meet",
+    "description": "Find a time that works for everyone — no account needed."
+  },
+  "Landing": {
+    "heroAlt": "Four friends raising a toast around a table, with a hand-drawn weekly calendar marked with stars for the times that work",
+    "tagline": "Pick a date range, share the link, see when everyone's free. No account needed."
+  },
+  "CreateRoom": {
+    "roomNameLabel": "Room name",
+    "optional": "(optional)",
+    "roomNamePlaceholder": "e.g. Camping trip",
+    "fromLabel": "From",
+    "toLabel": "To",
+    "timezoneLabel": "Timezone",
+    "timezoneHelp": "Everyone in this room marks and sees times in this single timezone.",
+    "dailyWindowLegend": "Daily time window",
+    "dailyStartLabel": "Daily start",
+    "dailyEndLabel": "Daily end",
+    "submit": "Create room & get link",
+    "submitting": "Creating…",
+    "presets": {
+      "evening": "Evening",
+      "wholeDay": "Whole day",
+      "morning": "Morning",
+      "midday": "Midday",
+      "custom": "Custom range"
+    },
+    "errors": {
+      "invalidInput": "Please fix the highlighted fields.",
+      "timezoneRequired": "Pick a timezone",
+      "startDateInvalid": "Enter a valid start date",
+      "endDateInvalid": "Enter a valid end date",
+      "endBeforeStart": "End date must be on or after the start date",
+      "dayEndBeforeStart": "Daily end time must be after the daily start time",
+      "rangeTooLong": "Planning range can't be longer than 60 days",
+      "dayHourInvalid": "Enter a valid hour",
+      "dayStartHourRange": "Daily start hour must be between 0 and 23",
+      "dayEndHourRange": "Daily end hour must be between 1 and 24"
+    }
   }
 }

@@ -1,5 +1,46 @@
 {
   "LocaleSwitcher": {
     "label": "Sprache"
+  },
+  "Metadata": {
+    "title": "When We Meet",
+    "description": "Finde eine Zeit, die für alle passt — ganz ohne Konto."
+  },
+  "Landing": {
+    "heroAlt": "Vier Freunde stoßen an einem Tisch an, daneben ein handgezeichneter Wochenkalender mit Sternen bei den passenden Zeiten",
+    "tagline": "Zeitraum wählen, Link teilen, sehen, wann alle Zeit haben. Kein Konto nötig."
+  },
+  "CreateRoom": {
+    "roomNameLabel": "Name des Treffens",
+    "optional": "(optional)",
+    "roomNamePlaceholder": "z. B. Campingausflug",
+    "fromLabel": "Von",
+    "toLabel": "Bis",
+    "timezoneLabel": "Zeitzone",
+    "timezoneHelp": "Alle Teilnehmer dieses Raums tragen ihre Verfügbarkeit in dieser einen Zeitzone ein und sehen sie auch so.",
+    "dailyWindowLegend": "Tägliches Zeitfenster",
+    "dailyStartLabel": "Tagesbeginn",
+    "dailyEndLabel": "Tagesende",
+    "submit": "Raum erstellen & Link erhalten",
+    "submitting": "Wird erstellt…",
+    "presets": {
+      "evening": "Abend",
+      "wholeDay": "Ganzer Tag",
+      "morning": "Morgen",
+      "midday": "Mittag",
+      "custom": "Eigener Zeitraum"
+    },
+    "errors": {
+      "invalidInput": "Bitte korrigiere die markierten Felder.",
+      "timezoneRequired": "Wähle eine Zeitzone",
+      "startDateInvalid": "Gib ein gültiges Startdatum ein",
+      "endDateInvalid": "Gib ein gültiges Enddatum ein",
+      "endBeforeStart": "Das Enddatum muss am oder nach dem Startdatum liegen",
+      "dayEndBeforeStart": "Die Tages-Endzeit muss nach der Tages-Startzeit liegen",
+      "rangeTooLong": "Der Planungszeitraum darf nicht länger als 60 Tage sein",
+      "dayHourInvalid": "Gib eine gültige Stunde ein",
+      "dayStartHourRange": "Die Startstunde muss zwischen 0 und 23 liegen",
+      "dayEndHourRange": "Die Endstunde muss zwischen 1 und 24 liegen"
+    }
   }
 }
