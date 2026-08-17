@@ -114,6 +114,20 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       HANDOVER finalized.
 
 **Progress log** (newest first; The Company appends at every stopping point):
+- 2026-08-17 — **Visual redesign (Owner-directed, post-M4).** Owner asked
+  for a light theme and supplied a hand-drawn/crayon illustration
+  ("WHEN WE MEET,♥" — four friends toasting, with a starred weekly
+  calendar) for the room-creation page. Removed dark mode entirely (was
+  automatic via `prefers-color-scheme`) rather than maintaining a second
+  palette nobody asked for; replaced it with a single warm cream/orange
+  theme (tokens in `app/globals.css`, rationale in HANDOVER D5). Added the
+  image as `assets/hero-when-we-meet.jpg` and made it the landing page's
+  hero via `next/image`. Every page now sits in a rounded warm-bordered
+  card on the cream background. Verified end to end in a real browser
+  (create room → join → paint availability → view results) against the new
+  theme; tsc/eslint clean; test data cleaned up. Not a milestone in the
+  original plan — logged here as Owner-directed work within G-001, per
+  OPERATIONS.md "log significant decisions with rationale."
 - 2026-08-17 — **M4 done and verified.** Fixed a real (if rare) bug: two
   people submitting the same brand-new name at nearly the same instant could
   both pass the "does this name exist" check before either committed, so the

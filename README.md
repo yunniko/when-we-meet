@@ -17,7 +17,9 @@ identity and a name-collision "is this you?" prompt, race-condition-safe),
 marking availability on the 1-hour-slot grid (drag-to-paint, mouse and
 touch, with an optional "prefer this slot" layer on top of Can marks), a
 results view (heatmap + ranked "best times" list), and a narrow-viewport
-pass all work end to end. Automated tests land in M5.
+pass all work end to end. Light-only warm theme with a hand-drawn hero
+illustration on the landing page (see HANDOVER D5). Automated tests land
+in M5.
 
 ## Running it locally
 

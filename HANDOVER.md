@@ -148,10 +148,21 @@ M4:
   confirmed adequate.
 - `npx tsc --noEmit` and `npx eslint .` both clean throughout.
 
+**Visual redesign (post-M4, Owner-directed, 2026-08-17):** light-only warm
+theme replacing the previous auto-dark-mode default, plus a hero
+illustration on the landing page. See D5 for the full rationale and token
+list. Touched every page (`app/page.tsx`, `create-room-form.tsx`,
+`join-form.tsx`, `app/r/[slug]/page.tsx`, `availability-grid.tsx`,
+`results/page.tsx`) and `app/globals.css`. Verified by actually running it:
+created a room, joined, painted availability, and viewed results in a real
+browser against the new palette — no leftover dark-mode classes, hero image
+renders and is optimized by `next/image`, all interactive flows still work.
+tsc/eslint clean. Test data cleaned up.
+
 **Not started yet:** all automated tests (Vitest/Playwright — deliberately
-deferred to M5; verification through M1-M4 has been manual/browser-driven
-per milestone, per the checkpoint discipline in OPERATIONS.md). See
-`GOALS.md`.
+deferred to M5; verification through M1-M4 and the visual redesign has been
+manual/browser-driven per milestone, per the checkpoint discipline in
+OPERATIONS.md). See `GOALS.md`.
 
 ## How things fit together
 
@@ -248,6 +259,40 @@ which proved unreliable to trigger deterministically via browser automation
 land inside the race window in testing). The recovery code path itself
 (`collisionState` helper) is exercised by the ordinary, non-raced collision
 flow, which is the same code.
+
+### D5 — Light-only warm/hand-drawn theme, dark mode removed (2026-08-17)
+**Why:** Owner request — a light theme, and a hand-drawn/crayon-illustration
+hero image for the landing page. Rather than layer a warm palette under the
+existing automatic-dark-mode setup, dark mode was removed outright: the
+`@media (prefers-color-scheme: dark)` block and every `dark:` Tailwind
+variant (previously in `create-room-form.tsx`, `availability-grid.tsx`,
+`join-form.tsx`, `results/page.tsx`) are gone. **Considered:** keeping dark
+mode and just re-tuning its palette too — rejected because the Owner asked
+for "light themed" specifically, and maintaining a second (dark) palette
+nobody asked for is exactly the kind of unrequested complexity STANDARDS.md
+says to avoid. If dark mode is wanted later, it's a separate, explicit ask.
+Design tokens now live in `app/globals.css` as CSS custom properties
+(`--background` cream `#faf3e6`, `--surface` near-white card tone
+`#fffcf5`, `--foreground` warm brown-black ink `#33261a`, `--muted` for
+secondary text, `--border` warm tan, `--accent`/`--accent-hover` a crayon
+orange `#e0762a`/`#c4611c` used for every primary action) registered into
+Tailwind v4 via `@theme inline`, giving `bg-surface`, `text-muted`,
+`border-border`, `bg-accent`, `accent-accent` (native `accent-color` on
+checkboxes), etc. as ordinary utility classes. The existing CAN/CANNOT/
+PREFER semantic colors (emerald/rose/amber) were kept as-is — they already
+read as saturated "crayon" colors that suit the illustration, no change
+needed. Every page's content now sits in a rounded, bordered `bg-surface`
+card on the cream page background, echoing the "note" look interior pages
+didn't have before.
+
+**Hero image asset**: `assets/hero-when-we-meet.jpg` (2816×1536 JPEG,
+~3.3MB) is an Owner-supplied, AI-generated (Gemini) illustration, used as
+the landing page's hero via a static `next/image` import (Next.js optimizes
+it to appropriately-sized/formatted variants at request time, so the large
+source file doesn't ship as-is). It already contains the "When We Meet"
+title lettering, so the page's own `<h1>` is `sr-only` (kept for
+accessibility/SEO, not shown — no duplicate visible title). No third-party
+license concern: Owner-supplied for their own project.
 
 ## Future direction (not building yet — Owner flagged 2026-08-17)
 

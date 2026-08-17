@@ -58,7 +58,7 @@ export default async function RoomPage({
           <h1 className="text-2xl font-semibold tracking-tight">
             {room.title || "Untitled room"}
           </h1>
-          <p className="mt-1 text-sm text-foreground/60">
+          <p className="mt-1 text-sm text-muted">
             {formatDateRange(room.startDate, room.endDate)} ·{" "}
             {hoursLabel} · {room.timezone}
           </p>
@@ -70,7 +70,7 @@ export default async function RoomPage({
           <form action={leaveIdentity.bind(null, { roomId: room.id, slug: room.slug })}>
             <button
               type="submit"
-              className="text-xs text-foreground/50 underline hover:text-foreground/80"
+              className="text-xs text-muted underline hover:text-foreground"
             >
               Not you? Use a different name
             </button>
@@ -78,28 +78,30 @@ export default async function RoomPage({
         </div>
       </div>
 
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        {otherParticipants.length > 0 ? (
-          <p className="text-sm text-foreground/60">
-            Also in this room: {otherParticipants.map((p) => p.name).join(", ")}
-          </p>
-        ) : (
-          <span />
-        )}
-        <Link
-          href={`/r/${room.slug}/results`}
-          className="text-sm font-medium underline hover:text-foreground/80"
-        >
-          See results →
-        </Link>
-      </div>
+      <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          {otherParticipants.length > 0 ? (
+            <p className="text-sm text-muted">
+              Also in this room: {otherParticipants.map((p) => p.name).join(", ")}
+            </p>
+          ) : (
+            <span />
+          )}
+          <Link
+            href={`/r/${room.slug}/results`}
+            className="text-sm font-medium text-accent underline hover:text-accent-hover"
+          >
+            See results →
+          </Link>
+        </div>
 
-      <AvailabilityGrid
-        roomId={room.id}
-        dates={dates}
-        hours={hours}
-        initialAvailability={initialAvailability}
-      />
+        <AvailabilityGrid
+          roomId={room.id}
+          dates={dates}
+          hours={hours}
+          initialAvailability={initialAvailability}
+        />
+      </div>
     </div>
   );
 }

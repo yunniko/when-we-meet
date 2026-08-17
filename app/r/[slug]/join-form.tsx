@@ -28,92 +28,92 @@ export function JoinForm({
         {roomTitle || "Untitled room"}
       </h1>
       {participantNames.length > 0 && (
-        <p className="mt-2 text-sm text-foreground/60">
+        <p className="mt-2 text-sm text-muted">
           Already in this room: {participantNames.join(", ")}
         </p>
       )}
 
-      {effective.step === "collision" ? (
-        <div className="mt-6 flex flex-col gap-4">
-          <p className="text-sm">
-            <span className="font-medium">{effective.name}</span> already has
-            marks in this room:
-          </p>
-          {effective.summary.byDate.length > 0 ? (
-            <ul className="rounded-md border border-black/10 px-4 py-3 text-sm dark:border-white/15">
-              {effective.summary.byDate.map((d) => (
-                <li key={d.date} className="flex justify-between gap-4">
-                  <span>{formatDayLabel(d.date)}</span>
-                  <span className="text-foreground/60">
-                    {d.canCount} can · {d.cannotCount} can&apos;t
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-foreground/60">
-              No marks yet — just an empty name reservation.
+      <div className="mt-6 rounded-2xl border border-border bg-surface p-6 shadow-sm">
+        {effective.step === "collision" ? (
+          <div className="flex flex-col gap-4">
+            <p className="text-sm">
+              <span className="font-medium">{effective.name}</span> already has
+              marks in this room:
             </p>
-          )}
-          <p className="text-sm font-medium">Is this you?</p>
-          <div className="flex gap-3">
-            <form action={formAction}>
-              <input
-                type="hidden"
-                name="confirmParticipantId"
-                value={effective.participantId}
-              />
+            {effective.summary.byDate.length > 0 ? (
+              <ul className="rounded-md border border-border px-4 py-3 text-sm">
+                {effective.summary.byDate.map((d) => (
+                  <li key={d.date} className="flex justify-between gap-4">
+                    <span>{formatDayLabel(d.date)}</span>
+                    <span className="text-muted">
+                      {d.canCount} can · {d.cannotCount} can&apos;t
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted">
+                No marks yet — just an empty name reservation.
+              </p>
+            )}
+            <p className="text-sm font-medium">Is this you?</p>
+            <div className="flex gap-3">
+              <form action={formAction}>
+                <input
+                  type="hidden"
+                  name="confirmParticipantId"
+                  value={effective.participantId}
+                />
+                <button
+                  type="submit"
+                  disabled={pending}
+                  className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
+                >
+                  Yes, that&apos;s me
+                </button>
+              </form>
               <button
-                type="submit"
-                disabled={pending}
-                className="rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background hover:opacity-90 disabled:opacity-50"
+                type="button"
+                onClick={() => setDismissed(true)}
+                className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-foreground/5"
               >
-                Yes, that&apos;s me
+                No, use a different name
               </button>
-            </form>
-            <button
-              type="button"
-              onClick={() => setDismissed(true)}
-              className="rounded-md border border-black/15 px-4 py-2 text-sm font-medium hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/5"
-            >
-              No, use a different name
-            </button>
+            </div>
           </div>
-        </div>
-      ) : (
-        <form
-          action={formAction}
-          onSubmit={() => setDismissed(false)}
-          className="mt-6 flex flex-col gap-3"
-        >
-          <label htmlFor="name" className="text-sm font-medium">
-            Your name
-          </label>
-          <input
-            id="name"
-            name="name"
-            type="text"
-            required
-            maxLength={60}
-            autoFocus
-            defaultValue={effective.step === "form" ? effective.name : ""}
-            placeholder="e.g. Sam"
-            className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/30"
-          />
-          {effective.step === "form" && effective.error && (
-            <p className="text-xs text-red-600 dark:text-red-400">
-              {effective.error}
-            </p>
-          )}
-          <button
-            type="submit"
-            disabled={pending}
-            className="mt-1 rounded-md bg-foreground px-4 py-2.5 text-sm font-medium text-background hover:opacity-90 disabled:opacity-50"
+        ) : (
+          <form
+            action={formAction}
+            onSubmit={() => setDismissed(false)}
+            className="flex flex-col gap-3"
           >
-            {pending ? "Joining…" : "Join room"}
-          </button>
-        </form>
-      )}
+            <label htmlFor="name" className="text-sm font-medium">
+              Your name
+            </label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              required
+              maxLength={60}
+              autoFocus
+              defaultValue={effective.step === "form" ? effective.name : ""}
+              placeholder="e.g. Sam"
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent"
+            />
+            {effective.step === "form" && effective.error && (
+              <p className="text-xs text-red-600">{effective.error}</p>
+            )}
+            <button
+              type="submit"
+              disabled={pending}
+              className="mt-1 rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
+            >
+              {pending ? "Joining…" : "Join room"}
+            </button>
+          </form>
+        )}
+      </div>
     </div>
   );
 }

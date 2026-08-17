@@ -3,6 +3,9 @@
 import { useActionState, useState } from "react";
 import { createRoom, type CreateRoomState } from "@/app/actions";
 
+const inputClass =
+  "rounded-md border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-accent";
+
 function guessTimezone(): string {
   try {
     return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
@@ -60,14 +63,14 @@ export function CreateRoomForm() {
   return (
     <form action={formAction} className="flex flex-col gap-5">
       {state.error && (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
+        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
           {state.error}
         </p>
       )}
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="title" className="text-sm font-medium">
-          Room name <span className="text-foreground/50">(optional)</span>
+          Room name <span className="text-muted">(optional)</span>
         </label>
         <input
           id="title"
@@ -76,7 +79,7 @@ export function CreateRoomForm() {
           maxLength={120}
           defaultValue={state.values.title}
           placeholder="e.g. Camping trip"
-          className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/30"
+          className={inputClass}
         />
       </div>
 
@@ -91,10 +94,10 @@ export function CreateRoomForm() {
             type="date"
             required
             defaultValue={state.values.startDate}
-            className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/30"
+            className={inputClass}
           />
           {state.fieldErrors?.startDate && (
-            <p className="text-xs text-red-600 dark:text-red-400">
+            <p className="text-xs text-red-600">
               {state.fieldErrors.startDate}
             </p>
           )}
@@ -109,10 +112,10 @@ export function CreateRoomForm() {
             type="date"
             required
             defaultValue={state.values.endDate}
-            className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/30"
+            className={inputClass}
           />
           {state.fieldErrors?.endDate && (
-            <p className="text-xs text-red-600 dark:text-red-400">
+            <p className="text-xs text-red-600">
               {state.fieldErrors.endDate}
             </p>
           )}
@@ -127,7 +130,7 @@ export function CreateRoomForm() {
           id="timezone"
           name="timezone"
           defaultValue={timezone}
-          className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/30"
+          className={inputClass}
         >
           {zoneGroups.map(({ region, zones }) => (
             <optgroup key={region} label={region}>
@@ -139,11 +142,11 @@ export function CreateRoomForm() {
             </optgroup>
           ))}
         </select>
-        <p className="text-xs text-foreground/60">
+        <p className="text-xs text-muted">
           Everyone in this room marks and sees times in this single timezone.
         </p>
         {state.fieldErrors?.timezone && (
-          <p className="text-xs text-red-600 dark:text-red-400">
+          <p className="text-xs text-red-600">
             {state.fieldErrors.timezone}
           </p>
         )}
@@ -156,7 +159,7 @@ export function CreateRoomForm() {
             name="allDay"
             checked={allDay}
             onChange={(e) => setAllDay(e.target.checked)}
-            className="size-4"
+            className="size-4 accent-accent"
           />
           Whole day, every day in range
         </label>
@@ -173,7 +176,7 @@ export function CreateRoomForm() {
                 min={0}
                 max={23}
                 defaultValue={state.values.dayStartHour}
-                className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/30"
+                className={inputClass}
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -187,13 +190,13 @@ export function CreateRoomForm() {
                 min={1}
                 max={24}
                 defaultValue={state.values.dayEndHour}
-                className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/30"
+                className={inputClass}
               />
             </div>
           </div>
         )}
         {state.fieldErrors?.dayEndHour && (
-          <p className="text-xs text-red-600 dark:text-red-400">
+          <p className="text-xs text-red-600">
             {state.fieldErrors.dayEndHour}
           </p>
         )}
@@ -202,7 +205,7 @@ export function CreateRoomForm() {
       <button
         type="submit"
         disabled={pending}
-        className="mt-2 rounded-md bg-foreground px-4 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-50"
+        className="mt-2 rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
       >
         {pending ? "Creating…" : "Create room & get link"}
       </button>

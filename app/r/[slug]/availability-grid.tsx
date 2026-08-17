@@ -10,13 +10,13 @@ const BRUSHES: { value: Brush; label: string; swatchClass: string }[] = [
   { value: "CAN", label: "Can", swatchClass: "bg-emerald-500" },
   { value: "CANNOT", label: "Can't", swatchClass: "bg-rose-500" },
   { value: "PREFER", label: "Prefer", swatchClass: "bg-amber-400" },
-  { value: "CLEAR", label: "Clear", swatchClass: "bg-transparent border border-black/30 dark:border-white/30" },
+  { value: "CLEAR", label: "Clear", swatchClass: "bg-transparent border border-muted" },
 ];
 
 function cellClass(mark: CellMark | undefined): string {
   if (mark?.status === "CAN") return "bg-emerald-500/80 hover:bg-emerald-500";
   if (mark?.status === "CANNOT") return "bg-rose-500/70 hover:bg-rose-500/90";
-  return "bg-black/[.03] hover:bg-black/[.08] dark:bg-white/[.04] dark:hover:bg-white/[.1]";
+  return "bg-foreground/[.03] hover:bg-foreground/[.07]";
 }
 
 export function AvailabilityGrid({
@@ -157,8 +157,8 @@ export function AvailabilityGrid({
               aria-pressed={brush === b.value}
               className={`flex items-center gap-1.5 rounded-md border px-3 py-2 text-xs font-medium transition-colors ${
                 brush === b.value
-                  ? "border-foreground"
-                  : "border-black/10 dark:border-white/15"
+                  ? "border-accent bg-accent/10"
+                  : "border-border"
               }`}
             >
               <span className={`size-3 rounded-sm ${b.swatchClass}`} />
@@ -166,19 +166,19 @@ export function AvailabilityGrid({
             </button>
           ))}
         </div>
-        <span className="text-xs text-foreground/50">
+        <span className="text-xs text-muted">
           {saveState === "saving" && "Saving…"}
           {saveState === "saved" && "Saved"}
           {saveState === "error" && "Couldn't save — try again"}
         </span>
       </div>
 
-      <p className="text-xs text-foreground/50">
+      <p className="text-xs text-muted">
         Click, or click and drag, to paint slots (works with touch too).
         &quot;Prefer&quot; only applies to slots already marked Can.
       </p>
 
-      <div className="overflow-x-auto rounded-md border border-black/10 dark:border-white/15">
+      <div className="overflow-x-auto rounded-md border border-border">
         <div
           className="inline-grid select-none"
           style={{
@@ -186,11 +186,11 @@ export function AvailabilityGrid({
             touchAction: "none",
           }}
         >
-          <div className="sticky left-0 top-0 z-20 border-b border-r border-black/10 bg-background dark:border-white/15" />
+          <div className="sticky left-0 top-0 z-20 border-b border-r border-border bg-surface" />
           {dates.map((date) => (
             <div
               key={date}
-              className="sticky top-0 z-10 border-b border-l border-black/10 bg-background px-1 py-2 text-center text-xs font-medium dark:border-white/15"
+              className="sticky top-0 z-10 border-b border-l border-border bg-surface px-1 py-2 text-center text-xs font-medium"
             >
               {formatDayLabel(date)}
             </div>
@@ -198,7 +198,7 @@ export function AvailabilityGrid({
 
           {hours.map((hour, hourIdx) => (
             <Fragment key={`h-${hour}`}>
-              <div className="sticky left-0 z-10 border-r border-t border-black/10 bg-background px-2 py-1.5 text-right text-xs text-foreground/60 dark:border-white/15">
+              <div className="sticky left-0 z-10 border-r border-t border-border bg-surface px-2 py-1.5 text-right text-xs text-muted">
                 {formatHour(hour)}
               </div>
               {dates.map((date, dateIdx) => {
@@ -214,10 +214,10 @@ export function AvailabilityGrid({
                     onPointerEnter={() => {
                       if (painting.current) paintCellAtIndex(dateIdx, hourIdx);
                     }}
-                    className={`relative h-10 border-l border-t border-black/10 dark:border-white/15 ${cellClass(mark)}`}
+                    className={`relative h-10 border-l border-t border-border ${cellClass(mark)}`}
                   >
                     {mark?.preferred && (
-                      <span className="pointer-events-none absolute right-0.5 top-0.5 text-[10px] leading-none text-amber-900 dark:text-amber-200">
+                      <span className="pointer-events-none absolute right-0.5 top-0.5 text-[10px] leading-none text-amber-900">
                         ★
                       </span>
                     )}
