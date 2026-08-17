@@ -11,6 +11,7 @@ import { claimCreatorIfEligible, isRoomOwner } from "@/lib/owner";
 import { isSlotInFuture } from "@/lib/time";
 import { summarizeAvailability, type MarkSummary } from "@/lib/slots";
 import type { SlotStatus } from "@/lib/slots";
+import { MAX_PARTICIPANTS_PER_ROOM } from "@/lib/validation";
 
 export type JoinState =
   | { step: "form"; error?: string; name?: string }
@@ -57,6 +58,15 @@ export async function joinRoom(
   });
 
   if (!existing) {
+    const participantCount = await prisma.participant.count({ where: { roomId: ctx.roomId } });
+    if (participantCount >= MAX_PARTICIPANTS_PER_ROOM) {
+      return {
+        step: "form",
+        error: `This room has reached its limit of ${MAX_PARTICIPANTS_PER_ROOM} participants.`,
+        name,
+      };
+    }
+
     try {
       const created = await prisma.participant.create({
         data: {

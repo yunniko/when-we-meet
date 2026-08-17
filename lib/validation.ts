@@ -37,3 +37,9 @@ export const createRoomSchema = z
   );
 
 export type CreateRoomInput = z.infer<typeof createRoomSchema>;
+
+// A cheap defensive backstop against scripted join-spam — this app has no
+// accounts/CAPTCHA by design (see AGENTS.md), so nothing else stops a script
+// with a room link from creating unlimited throwaway participants. Not a
+// limit real group usage would ever approach.
+export const MAX_PARTICIPANTS_PER_ROOM = 100;
