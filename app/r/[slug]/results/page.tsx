@@ -34,10 +34,22 @@ export default async function ResultsPage({
   const totalParticipants = participants.length;
   const rows = await prisma.availability.findMany({
     where: { participant: { roomId: room.id } },
-    select: { slotDate: true, slotHour: true, status: true, preferred: true },
+    select: {
+      slotDate: true,
+      slotHour: true,
+      status: true,
+      preferred: true,
+      participant: { select: { name: true } },
+    },
   });
+  const namedRows = rows.map((r) => ({ ...r, participantName: r.participant.name }));
 
-  const results = computeResults(dates, hours, totalParticipants, rows);
+  const results = computeResults(
+    dates,
+    hours,
+    participants.map((p) => p.name),
+    namedRows,
+  );
   const topResults = results.filter((r) => r.canCount > 0).slice(0, 10);
 
   return (

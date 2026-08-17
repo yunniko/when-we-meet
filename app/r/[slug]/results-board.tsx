@@ -134,29 +134,36 @@ export function ResultsBoard({
           {topResults.map((r) => {
             const key = slotKey(r.date, r.hour);
             return (
-              <li key={key} className="flex items-center justify-between gap-4 rounded-md border border-border px-3 py-2">
-                <span>
-                  {formatDayLabel(r.date)}, {formatHour(r.hour)}–{formatHour((r.hour + 1) % 24)}
-                </span>
-                <span className="flex items-center gap-2 text-muted">
-                  {r.canCount}/{r.totalParticipants} can
-                  {r.isFullGroup && (
-                    <span className="rounded-full bg-amber-400/20 px-1.5 py-0.5 text-xs font-medium text-amber-700">
-                      everyone
-                    </span>
-                  )}
-                  {r.preferredCount > 0 && ` · ★${r.preferredCount} prefer`}
-                  {canPick && (
-                    <button
-                      type="button"
-                      disabled={pendingKey !== null}
-                      onClick={() => pick(r.date, r.hour)}
-                      className="ml-1 rounded-md border border-accent px-2 py-1 text-xs font-medium text-accent hover:bg-accent/10 disabled:opacity-50"
-                    >
-                      {pendingKey === key ? "Setting…" : "Pick this time"}
-                    </button>
-                  )}
-                </span>
+              <li key={key} className="flex flex-col gap-1 rounded-md border border-border px-3 py-2">
+                <div className="flex items-center justify-between gap-4">
+                  <span>
+                    {formatDayLabel(r.date)}, {formatHour(r.hour)}–{formatHour((r.hour + 1) % 24)}
+                  </span>
+                  <span className="flex items-center gap-2 text-muted">
+                    {r.canCount}/{r.totalParticipants} can
+                    {r.isFullGroup && (
+                      <span className="rounded-full bg-amber-400/20 px-1.5 py-0.5 text-xs font-medium text-amber-700">
+                        everyone
+                      </span>
+                    )}
+                    {r.preferredCount > 0 && ` · ★${r.preferredCount} prefer`}
+                    {canPick && (
+                      <button
+                        type="button"
+                        disabled={pendingKey !== null}
+                        onClick={() => pick(r.date, r.hour)}
+                        className="ml-1 rounded-md border border-accent px-2 py-1 text-xs font-medium text-accent hover:bg-accent/10 disabled:opacity-50"
+                      >
+                        {pendingKey === key ? "Setting…" : "Pick this time"}
+                      </button>
+                    )}
+                  </span>
+                </div>
+                {r.missingNames.length > 0 && (
+                  <p className="text-xs text-muted">
+                    Can&apos;t: {r.missingNames.join(", ")}
+                  </p>
+                )}
               </li>
             );
           })}
