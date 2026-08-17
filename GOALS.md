@@ -72,10 +72,14 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       log). Verified: created a room through the real UI in a browser,
       confirmed the DB row, confirmed the redirect and rendered room page,
       confirmed 404 on an unknown slug; `tsc --noEmit` and `eslint` clean.
-- [ ] M2 — Join & mark availability: name entry with cookie-based identity,
+- [x] M2 — Join & mark availability: name entry with cookie-based identity,
       name-collision "is this you?" prompt (shows existing marks), interactive
       1-hour-slot grid with drag-to-paint CAN/CANNOT, mobile touch support,
-      save/load a participant's own marks.
+      save/load a participant's own marks. ✔ 2026-08-17. Verified: full flow
+      driven in a real browser (join as new name, drag-paint CAN and CANNOT
+      strokes, confirm DB persistence, leave and rejoin with a
+      different-case name to trigger the collision prompt, confirm identity,
+      confirm a second distinct name joins cleanly alongside the first).
   - [ ] M3 — Preferred layer + results: optional "preferred" marking layer
       constrained to a participant's own CAN slots; overlap computation across
       all participants; results view ranking slots by availability count with
@@ -90,6 +94,30 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       HANDOVER finalized.
 
 **Progress log** (newest first; The Company appends at every stopping point):
+- 2026-08-17 — **M2 done and verified.** Cookie-based participant identity
+  (httpOnly cookie per room, keyed by roomId, holding an opaque token — not
+  the participant id). Join flow: new name creates a Participant immediately;
+  an existing name (case/whitespace-insensitive match) shows that name's
+  current marks grouped by date and asks "is this you?" before claiming the
+  identity — declining just clears the prompt so a different name can be
+  tried. Availability grid: brush-based painting (Can / Can't / Clear) using
+  pointer events (mouse+touch unified) with drag support; a stroke's changes
+  batch-save via one server-action call on pointer-up. Found and fixed a real
+  bug during verification: fast drags could skip intermediate cells between
+  pointerenter events (reproduced with the browser automation tool, plausible
+  on touch too) — fixed by interpolating along the grid between the last and
+  current painted cell. Verified end to end in a real browser: join as new
+  name, drag-paint CAN and CANNOT strokes (confirmed no gaps and correct
+  Postgres rows), leave and rejoin under a different-case version of the same
+  name to trigger the collision prompt, confirm identity via "yes that's me"
+  and confirm marks reload correctly, and a second genuinely-new name joins
+  cleanly and sees the first participant listed. tsc/eslint clean. Not
+  physically tested on a real touch device (browser automation simulates
+  mouse) — the pointer-event approach is the standard technique for
+  unifying mouse/touch and should generalize, flagged in HANDOVER as unverified
+  on real hardware. **Stopping here per OPERATIONS.md milestone checkpoint —
+  awaiting Owner review before starting M3** (preferred layer + results
+  ranking).
 - 2026-08-17 — **M1 done and verified.** Scaffolded Next.js/TS/Tailwind (matches
   listing-studio's create-next-app defaults) + Prisma 7/PostgreSQL (Docker,
   port 54321). Data model: Room, Participant, Availability — availability

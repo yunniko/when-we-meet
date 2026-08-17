@@ -1,9 +1,11 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-
-function formatDate(d: Date): string {
-  return d.toISOString().slice(0, 10);
-}
+import { getCurrentParticipant } from "@/lib/participant";
+import { dateOnly, enumerateDates, enumerateHours } from "@/lib/slots";
+import type { SlotStatus } from "@/lib/slots";
+import { JoinForm } from "@/app/r/[slug]/join-form";
+import { AvailabilityGrid } from "@/app/r/[slug]/availability-grid";
+import { leaveIdentity } from "@/app/r/[slug]/actions";
 
 export default async function RoomPage({
   params,
@@ -14,6 +16,35 @@ export default async function RoomPage({
   const room = await prisma.room.findUnique({ where: { slug } });
   if (!room) notFound();
 
+  const participant = await getCurrentParticipant(room.id);
+  const otherParticipants = await prisma.participant.findMany({
+    where: { roomId: room.id, ...(participant ? { NOT: { id: participant.id } } : {}) },
+    select: { name: true },
+    orderBy: { createdAt: "asc" },
+  });
+
+  if (!participant) {
+    return (
+      <JoinForm
+        roomId={room.id}
+        slug={room.slug}
+        roomTitle={room.title}
+        participantNames={otherParticipants.map((p) => p.name)}
+      />
+    );
+  }
+
+  const dates = enumerateDates(room.startDate, room.endDate);
+  const hours = enumerateHours(room.dayStartHour, room.dayEndHour);
+
+  const availability = await prisma.availability.findMany({
+    where: { participantId: participant.id },
+  });
+  const initialAvailability: Record<string, SlotStatus> = {};
+  for (const a of availability) {
+    initialAvailability[`${dateOnly(a.slotDate)}T${a.slotHour}`] = a.status;
+  }
+
   const hoursLabel =
     room.dayStartHour === 0 && room.dayEndHour === 24
       ? "Whole day"
@@ -22,24 +53,44 @@ export default async function RoomPage({
         ).padStart(2, "0")}:00`;
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-12">
-      <h1 className="text-2xl font-semibold tracking-tight">
-        {room.title || "Untitled room"}
-      </h1>
-      <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm text-foreground/80">
-        <dt className="text-foreground/50">Dates</dt>
-        <dd>
-          {formatDate(room.startDate)} – {formatDate(room.endDate)}
-        </dd>
-        <dt className="text-foreground/50">Hours</dt>
-        <dd>{hoursLabel}</dd>
-        <dt className="text-foreground/50">Timezone</dt>
-        <dd>{room.timezone}</dd>
-      </dl>
-      <p className="mt-8 rounded-md border border-dashed border-black/15 px-4 py-6 text-sm text-foreground/60 dark:border-white/15">
-        Joining and marking availability lands in the next milestone (M2).
-        For now, this confirms the room and its shareable link exist.
-      </p>
+    <div className="mx-auto w-full max-w-4xl px-4 py-8">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {room.title || "Untitled room"}
+          </h1>
+          <p className="mt-1 text-sm text-foreground/60">
+            {dateOnly(room.startDate)} – {dateOnly(room.endDate)} ·{" "}
+            {hoursLabel} · {room.timezone}
+          </p>
+        </div>
+        <div className="text-right text-sm">
+          <p>
+            Marking as <span className="font-medium">{participant.name}</span>
+          </p>
+          <form action={leaveIdentity.bind(null, { roomId: room.id, slug: room.slug })}>
+            <button
+              type="submit"
+              className="text-xs text-foreground/50 underline hover:text-foreground/80"
+            >
+              Not you? Use a different name
+            </button>
+          </form>
+        </div>
+      </div>
+
+      {otherParticipants.length > 0 && (
+        <p className="mb-4 text-sm text-foreground/60">
+          Also in this room: {otherParticipants.map((p) => p.name).join(", ")}
+        </p>
+      )}
+
+      <AvailabilityGrid
+        roomId={room.id}
+        dates={dates}
+        hours={hours}
+        initialAvailability={initialAvailability}
+      />
     </div>
   );
 }

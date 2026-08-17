@@ -6,7 +6,7 @@ and milestone plan live in `GOALS.md`; project conventions in `AGENTS.md`.
 
 ## Current state
 
-**M1 (Foundation) — in progress.** Done so far:
+**M1 (Foundation) and M2 (Join & mark availability) — done.** M1:
 
 - Next.js 16 (App Router, Turbopack) + TypeScript + Tailwind v4 scaffold,
   matching the portfolio's `create-next-app` defaults (see D1).
@@ -26,25 +26,85 @@ and milestone plan live in `GOALS.md`; project conventions in `AGENTS.md`.
   the redirect to `/r/<slug>`, confirmed the rendered page matches, confirmed
   the row in Postgres via `docker exec ... psql`, confirmed `/r/<bad-slug>`
   404s. Test room deleted afterward to leave the DB clean.
-- `npx tsc --noEmit` and `npx eslint .` both clean.
 
-**Not started yet:** joining a room, marking availability (the grid), the
-preferred layer, the overlap/results algorithm, the name-collision "is this
-you?" flow, and all automated tests. That's M2 onward — see `GOALS.md`.
+M2:
+
+- Cookie-based participant identity: an httpOnly cookie per room
+  (`wwm_p_<roomId>`) holds an opaque `Participant.cookieToken` — never the
+  participant id, never anything the client could forge into someone else's
+  identity by guessing (see `lib/cookies.ts`, `lib/participant.ts`).
+- Join flow (`app/r/[slug]/join-form.tsx` + `app/r/[slug]/actions.ts::joinRoom`):
+  a new (case/whitespace-insensitive-unique) name creates a `Participant`
+  immediately and redirects into the room. An existing name shows that
+  participant's current marks (grouped by date, via
+  `lib/slots.ts::summarizeAvailability`) and asks "is this you?" —
+  confirming claims the cookie (no password, per the documented trust
+  model), declining resets the form to try a different name.
+- Availability grid (`app/r/[slug]/availability-grid.tsx`): a brush
+  (Can / Can't / Clear) painted onto cells via unified pointer events
+  (mouse + touch), with drag support. A stroke's accumulated changes save
+  in one batched call to `saveAvailability` (in `app/r/[slug]/actions.ts`)
+  when the pointer is released, which re-derives the participant from the
+  cookie server-side (never trusts a client-supplied participant id) and
+  upserts/deletes the touched `Availability` rows in a transaction.
+- **Verified by actually running it**: joined as a new name, drag-painted
+  CAN and CANNOT strokes, confirmed exact Postgres rows after each stroke,
+  left and rejoined under a different-case version of the same name to
+  trigger the collision prompt, confirmed identity via "yes that's me" and
+  confirmed marks reloaded correctly, confirmed a second genuinely-new name
+  joins cleanly and sees the first participant listed. Test data cleaned up
+  afterward.
+- **Bug found and fixed during verification**: a fast drag stroke could skip
+  pointerenter events on intermediate cells, leaving gaps mid-stroke
+  (reproduced via the browser automation tool's synthetic drag; plausible on
+  real touch input too, where move events are often coarser than mouse).
+  Fixed by tracking the last-painted grid cell and interpolating every cell
+  on the straight line to the newly-entered one (`paintCellAtIndex` in
+  `availability-grid.tsx`).
+- **Known verification gap**: the pointer-event unification (mouse + touch
+  via one event model, `releasePointerCapture` on pointerdown so
+  `pointerenter` fires per-cell even for touch) is the standard technique
+  and was exercised via simulated pointer/drag events, but not on a real
+  touch device — flag this if a real-device check becomes easy to do
+  before M4's dedicated mobile pass.
+- `npx tsc --noEmit` and `npx eslint .` both clean throughout.
+
+**Not started yet:** the preferred-availability layer, the overlap/results
+ranking algorithm, and all automated tests (Vitest/Playwright — deferred to
+M5 by design, verification so far has been manual/browser-driven per
+milestone). That's M3 onward — see `GOALS.md`.
 
 ## How things fit together
 
 - `lib/prisma.ts` — Prisma Client singleton (adapter-based, `@prisma/adapter-pg`),
   survives dev hot-reloads. Copy of the listing-studio pattern (D1).
 - `lib/slug.ts` — 12-char unguessable room slug (`nanoid`, unambiguous
-  32-symbol alphabet — no `0/O/1/I/l`).
+  32-symbol alphabet — no `0/O/1/I/l`) and a separate, higher-entropy
+  `generateParticipantToken()` for cookie identity (never typed/shared, so
+  the unambiguous-alphabet constraint doesn't apply).
 - `lib/validation.ts` — Zod schema for room creation (`createRoomSchema`).
   This is where server-side validation rules for rooms live; keep it a pure
   module with no Next/Prisma imports so it stays unit-testable.
-- `app/actions.ts` — server actions (`"use server"`). `createRoom` follows
-  the listing-studio pattern (D4 there): typed `useActionState` result,
-  submitted values echoed back on validation failure so the form doesn't
-  lose what the user typed.
+- `lib/slots.ts` — pure date/hour helpers shared by the grid and (later) the
+  results algorithm: `enumerateDates`/`enumerateHours` (build the grid from
+  a room's range), `dateOnly` (UTC-safe `Date` → `"YYYY-MM-DD"`),
+  `summarizeAvailability` (used by the collision prompt, and reusable for
+  M3's per-participant breakdowns). No Next/Prisma imports — unit-testable
+  in isolation.
+- `lib/cookies.ts` / `lib/participant.ts` — server-only (`import
+  "server-only"` guards against accidental client-bundle inclusion). Cookie
+  get/set/clear and "resolve the current request's Participant from its
+  cookie" respectively.
+- `app/actions.ts` — server actions (`"use server"`) for the **landing
+  page** concern: `createRoom` follows the listing-studio pattern (D4
+  there): typed `useActionState` result, submitted values echoed back on
+  validation failure so the form doesn't lose what the user typed.
+- `app/r/[slug]/actions.ts` — server actions for the **room** concern:
+  `joinRoom` (new-name-vs-collision, see above), `leaveIdentity` (clears the
+  cookie and redirects, used by "Not you? Use a different name"), and
+  `saveAvailability` (called imperatively from the client grid component,
+  not bound to a `<form>` — Next.js server actions work as plain async RPC
+  calls too, not only as form actions).
 - `prisma/schema.prisma` — see D2 below for why slots are plain
   `(date, hour)` pairs, not `DateTime` instants.
 
@@ -97,14 +157,20 @@ currently doesn't).
 
 ## Next steps
 
-1. Finish M1: nothing blocking — the milestone is functionally complete and
-   verified. Next action is the Owner checkpoint (per OPERATIONS.md, stop at
-   milestone boundaries) before starting M2.
-2. M2: join flow (name entry, cookie-based `Participant` identity via
-   `cookieToken`), the name-collision "is this you?" prompt (query
-   `Participant` by `(roomId, nameKey)`), the 1-hour-slot grid with
-   drag-to-paint CAN/CANNOT and mobile touch support.
-3. Open question for the Owner at the M1 checkpoint: none blocking, but
-   worth flagging — the timezone `<select>` currently lists all ~400 IANA
-   zones via `Intl.supportedValuesOf`; fine functionally, may want a
-   searchable/grouped UI once real users are involved (M4 polish candidate).
+1. M1 and M2 are both done and verified — nothing blocking. Next action is
+   the Owner checkpoint (per OPERATIONS.md, stop at milestone boundaries)
+   before starting M3.
+2. M3: the "preferred" marking layer (constrained to a participant's own CAN
+   slots — enforce this in `saveAvailability`, not just the UI), and the
+   overlap/results algorithm (`lib/slots.ts` is the natural home for a pure
+   `computeResults(rooms' participants + availability)` function so it stays
+   unit-testable) ranking slots by availability count with full-group and
+   preferred-overlap slots surfaced at the top.
+3. Open questions/flags for the Owner, none blocking:
+   - The timezone `<select>` currently lists all ~400 IANA zones via
+     `Intl.supportedValuesOf`; fine functionally, may want a
+     searchable/grouped UI once real users are involved (M4 polish
+     candidate).
+   - Touch drag-painting is implemented with the standard pointer-event
+     technique but hasn't been checked on a real touch device yet (see M2
+     verification notes above) — worth a real-phone check before/at M4.

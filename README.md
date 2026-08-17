@@ -11,9 +11,11 @@ Goal and milestone tracking: see `GOALS.md`.
 
 ## Current state
 
-M1 (foundation) in progress: room creation is implemented and verified —
-creating a room writes it to Postgres and redirects to its unique
-`/r/<slug>` URL. Joining a room and marking availability lands in M2.
+M1 and M2 done and verified: creating a room, joining it under a name
+(with cookie-based identity and a name-collision "is this you?" prompt),
+and marking availability on the 1-hour-slot grid (drag-to-paint, mouse and
+touch) all work end to end. The "preferred" layer and the overlap/results
+view land in M3.
 
 ## Running it locally
 
