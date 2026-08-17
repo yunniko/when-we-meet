@@ -477,6 +477,18 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       baseline. README updated with the multi-language summary.
 
 **Progress log** (newest first; The Company appends at every stopping point):
+- 2026-08-17 — **Bug fix, post-M5**: Owner asked "why does the Russian page
+  look smaller?" — traced to `app/globals.css`'s `body` rule hardcoding
+  `font-family: Arial, Helvetica, sans-serif`, which had silently shadowed
+  the Geist font setup (in every language, not just Russian) since G-002
+  M1 added it — Geist's CSS variable was correctly defined on `<html>` the
+  whole time, just never actually consumed anywhere. Only became visually
+  obvious for Russian because the Arial-substitute font this server falls
+  back to renders Cyrillic at different metrics than Latin, while Geist's
+  matched cyrillic subset (added in M1, unused until now) doesn't have
+  that problem. One-line fix routing `body`'s font through
+  `var(--font-sans)` first. Verified via `getComputedStyle` before/after
+  locally and on production; full suite green; pushed and redeployed.
 - 2026-08-17 — **M5 done** (Owner said "go m5"). Final QA pass: one
   complete real end-to-end flow driven in German (create a room → join as
   two participants → mark CAN/CANNOT/preferred availability → view

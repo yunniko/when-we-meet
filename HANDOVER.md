@@ -684,6 +684,33 @@ definition of done, the goal's status stays `ACTIVE` (not moved to
 Completed) pending explicit Owner sign-off — the same pattern G-001
 followed after its own M5.
 
+**Bug found and fixed post-sign-off-pass: Geist font was never actually
+applied to `body`, in any language** (Owner noticed: "why does the Russian
+page look smaller?"). Root cause predates G-002 — `app/globals.css`'s
+`body` rule hardcoded `font-family: Arial, Helvetica, sans-serif;`, a
+literal value that completely shadowed the `--font-sans` variable
+`layout.tsx`'s Geist setup feeds (`@theme inline`'s `--font-sans: var(--font-geist-sans)`,
+correctly present on `<html>` the whole time — confirmed via
+`getComputedStyle`, which showed `<html>`'s class list had the Geist
+variable classes, but `body`'s *computed* `font-family` was still the
+literal Arial fallback chain, meaning nothing had ever actually consumed
+the variable). The app had therefore always been rendering in whatever
+generic sans-serif the browser/OS substitutes for "Arial" — including in
+English — but this only became visually *obvious* once Russian shipped:
+on this server's Linux rendering environment, that Arial substitute's
+Cyrillic glyphs render at noticeably different (smaller-looking) metrics
+than its Latin ones, while Geist's own cyrillic subset (added in G-002 M1,
+and until now silently never actually used) is metric-matched to its
+latin glyphs. Fix: `body { font-family: var(--font-sans), Arial, Helvetica, sans-serif; }`
+— one line, keeps the same fallback chain as the ultimate safety net,
+makes Geist actually render everywhere it always should have. Verified via
+`getComputedStyle(document.body).fontFamily` before/after in a real
+browser (both locally and on production) — confirmed `"Geist, \"Geist
+Fallback\", Arial, Helvetica, sans-serif"` now resolves for every locale,
+not just the Arial fallback. tsc/eslint/53 unit/5 e2e all green. Pushed
+and redeployed; confirmed live and confirmed the other sites on the shared
+host unaffected.
+
 ## Git remote & deployment (post-M5, Owner-directed, 2026-08-17)
 
 **GitHub**: `origin` is `git@github.com:yunniko/when-we-meet.git`, pushed
