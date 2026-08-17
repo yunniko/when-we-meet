@@ -148,8 +148,37 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       tsc/eslint clean throughout.
 
 **Progress log** (newest first; The Company appends at every stopping point):
-- 2026-08-17 — **Post-launch UX round**, Owner-directed (not yet
-  redeployed — see HANDOVER "Next steps"). Weekend columns shaded darker on
+- 2026-08-17 — **Daily time-window presets + Best Times missing-names**,
+  Owner-directed, pushed and redeployed live. Room creation's "whole day"
+  checkbox replaced with five radio presets (Evening/Whole day/Morning/
+  Midday/Custom, `lib/room-presets.ts`). Found and fixed a real React 19 bug
+  along the way, reported by the Owner ("values got reset on error"): the
+  preset radio silently reverted to "Evening" after a failed submission
+  because React's automatic post-action form reset (tied to a form's native
+  `action={fn}` prop) mutates radio `checked` via raw DOM, bypassing React's
+  controlled-value tracking entirely — converting to a controlled `checked`
+  prop alone did *not* fix it (confirmed by reproducing the bug again with
+  that fix applied, live in a browser). Real fix: dispatch the action
+  manually via `onSubmit` + `startTransition` instead of the form's native
+  `action` prop, which never takes the reset code path at all. Also: Best
+  Times entries now list every participant who didn't mark CAN for that
+  slot (all names, not truncated — confirmed with the Owner). Verified: bug
+  reproduced and fixed live in a browser (before/after), a full valid
+  submission confirmed the custom hour range actually applies to the grid,
+  46 unit + 5 e2e tests green, tsc/eslint clean. Pushed and redeployed to
+  https://meet.app.julienika.cz; confirmed live and confirmed the other
+  four sites on the shared host still respond.
+- 2026-08-17 — **Redeployed the "post-launch UX round" below** (weekend
+  shading, sticky-header fix, join-form clarity, results participant list,
+  leave-room + ownership transfer) to https://meet.app.julienika.cz,
+  Owner-directed ("push please ... then deploy it"). Also rewrote the one
+  new commit since the initial GitHub push with the same per-commit
+  `GIT_AUTHOR_EMAIL`/`GIT_COMMITTER_EMAIL` override (global git config still
+  carries the original email; the Owner hasn't run the one-line fix for
+  that yet, so this override will keep being needed for future commits
+  until they do). Confirmed live via browser and confirmed the other sites
+  on the shared host were unaffected.
+- 2026-08-17 — **Post-launch UX round**, Owner-directed. Weekend columns shaded darker on
   the grid and results heatmap (`lib/slots.ts::isWeekend`, new
   `--color-weekend` token). Found and fixed a real CSS bug along the way:
   the date header row's `sticky top-0` never actually pinned while

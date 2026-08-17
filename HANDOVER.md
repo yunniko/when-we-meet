@@ -330,6 +330,74 @@ Several small features/fixes requested after the live deployment above.
   `leave-room.spec.ts` does), or invest in Playwright ESM config if
   direct-DB assertions become worth it.
 
+## Daily time-window presets & Best Times missing-names (Owner-directed, 2026-08-17)
+
+Two more post-launch changes, made and deployed after the "Post-launch UX
+round" above (which by this point had already been redeployed).
+
+- **Daily time-window presets**: the room-creation form's old single "whole
+  day" checkbox is now a `<fieldset>` of five radio buttons — Evening
+  (17:00–22:00, default), Whole day (07:00–22:00), Morning (07:00–12:00),
+  Midday (12:00–17:00), Custom range (reveals the existing start/end hour
+  number inputs). Preset definitions live in `lib/room-presets.ts`
+  (`DAILY_PRESETS`, `isPresetKey`) — a pure module, unit-tested
+  (`tests/unit/room-presets.spec.ts`) — shared by the client form
+  (`create-room-form.tsx`, builds the radio list from it) and
+  `app/actions.ts::createRoom` (looks up `dayStartHour`/`dayEndHour` from the
+  chosen preset server-side when `preset !== "custom"`, otherwise reads the
+  submitted custom hours — the server never trusts client-computed hours for
+  a named preset). The old `allDay` boolean field is gone entirely, not kept
+  as a compatibility shim.
+- **Bug found and fixed: the preset radio group reset to "Evening" after a
+  failed submission**, while the (still-visible, since visibility is driven
+  by separate `showCustom` state) custom hour inputs kept the user's typed
+  values — a resubmit would then silently create the room with the wrong
+  hours. Root cause: React 19 automatically calls the native
+  `HTMLFormElement.reset()` after any action dispatched via a form's
+  `action={fn}` prop, success or failure — including for a form the app
+  already treats as fully controlled. That reset mutates each radio's
+  `checked` DOM property directly (each control reverts to whatever it was
+  at mount, via its `defaultChecked` attribute), bypassing React's
+  controlled-value bookkeeping entirely, and React does not reliably repair
+  the visible DOM state back to match component state afterward — so simply
+  converting the radios from `defaultChecked` to a controlled `checked` prop
+  (the first fix attempt) did **not** resolve it; this was confirmed by
+  reproducing the bug again with the controlled version in a live browser
+  before looking further. The actual fix: stop using the form's native
+  `action` prop. `create-room-form.tsx` now has `<form onSubmit={handleSubmit}>`,
+  where `handleSubmit` calls `event.preventDefault()` and dispatches the
+  `useActionState` action manually (`startTransition(() => formAction(new
+  FormData(event.currentTarget)))`). That automatic reset is specifically
+  part of React-DOM's handling of native form submission through the
+  `action` prop — invoking the action function directly, outside that path,
+  never triggers it, so there's nothing to desync from. `pending` is now
+  tracked via a separate `useTransition()` rather than `useActionState`'s own
+  third return value, since that value's semantics assume the native
+  form-action path. **Considered**: forcing a re-render/DOM fixup via
+  `useEffect` after the action resolves — rejected as a workaround for a
+  problem that has a clean root-cause fix (don't take the code path that
+  causes the reset) rather than a patch over the symptom.
+- **Best Times missing-names**: `lib/results.ts::computeResults` now takes
+  `participantNames: string[]` instead of a bare `totalParticipants: number`,
+  and each `SlotResult` carries `missingNames: string[]` — every participant
+  who did *not* mark that slot CAN (explicit CANNOT or simply never marked
+  it). `results-board.tsx`'s Best Times list shows all of them ("Can't:
+  Alice, Bob, ...", no truncation — confirmed with the Owner that a
+  1-2-name cap wasn't wanted, all names should show regardless of count).
+  `results/page.tsx` now fetches each availability row's participant name
+  alongside it to build this.
+- **Verified**: reproduced the exact original bug report in a live browser
+  (invalid date range to force a validation error, Custom range selected
+  with typed 11/15 hours) both before the fix (confirmed broken) and after
+  (confirmed the radio and hours both survive the error round-trip
+  correctly), then completed a real submission and confirmed the created
+  room's grid actually only shows hours 11:00–15:00. Full suite green: `npx
+  tsc --noEmit` and `npx eslint .` clean, 46 unit tests / 5 e2e tests pass
+  (`npx vitest run`, `npx playwright test`). Pushed and redeployed to
+  https://meet.app.julienika.cz (`git pull && docker compose --profile app
+  up -d --build`); confirmed live via browser on the production URL and
+  confirmed the other four sites on the shared host still respond.
+
 ## Git remote & deployment (post-M5, Owner-directed, 2026-08-17)
 
 **GitHub**: `origin` is `git@github.com:yunniko/when-we-meet.git`, pushed
@@ -630,18 +698,23 @@ currently doesn't).
 
 1. **All five milestones (M1-M5) are done, verified, pushed, and deployed
    live** at https://meet.app.julienika.cz (see "Git remote & deployment").
-   G-001's original acceptance criteria are all met.
-2. **Pending: redeploy the "post-launch UX round" changes** (weekend
-   shading, sticky-header fix, join-form clarity, results participant list,
-   leave-room + ownership transfer) — these are committed locally but the
-   live site still runs the version from the initial deploy. Redeploy with
-   `git pull && docker compose --profile app up -d --build` from
-   `/var/www/repositories/when-we-meet` on the server (same as any other
-   redeploy — see "Git remote & deployment").
-3. **Missing test coverage**: the creator-leaves-and-ownership-transfers
+   G-001's original acceptance criteria are all met. Every round of
+   post-launch changes since (weekend shading/sticky-header, leave-room +
+   ownership transfer, daily-time-window presets, Best Times missing-names)
+   is committed, pushed, and live on production as of this writing.
+2. **Missing test coverage**: the creator-leaves-and-ownership-transfers
    case (see "Post-launch UX round" above) was verified manually
    (real browser + SQL check) but has no automated e2e spec yet. Worth
    adding to `tests/e2e/leave-room.spec.ts` if this area sees more changes.
+3. **Open design question from the Owner, not yet decided**: whether/how to
+   infer CAN vs. CANNOT for slots a participant never marked at all — right
+   now an unmarked slot simply doesn't count toward `canCount` either way
+   (it's neither "can" nor "can't," just silent). The Owner asked about
+   three options: (a) if someone only ever marked CANNOT, treat their
+   unmarked slots as CAN; if they only ever marked CAN, treat unmarked as
+   CANNOT; if they used both, treat unmarked as a third "undecided" state;
+   (b) remove CANNOT marking entirely; (c) leave it as-is. Not implemented —
+   this needs an explicit Owner decision before any code changes here.
 4. Open questions/flags for the Owner, none blocking:
    - Touch drag-painting (both the brush paint and the Prefer toggle) is
      implemented with the standard pointer-event technique and touch-target
