@@ -487,11 +487,61 @@ falling back to English round-trips correctly. `npx tsc --noEmit` clean,
 green (`tests/unit/ui-locales.spec.ts` new, covering `mergeMessages`,
 `localeDisplayName`, `isUiLocale`), 5 e2e tests green unchanged (they run
 against the default English locale, no cookie set, so nothing needed to
-change there). **Not yet deployed as of this note** — see "Next steps".
+change there). Pushed and redeployed to https://meet.app.julienika.cz;
+confirmed live and confirmed the other sites on the shared host stayed up.
 
-**Stopping here per OPERATIONS.md milestone checkpoint** — M2 (translate the
-landing/create-room page, including the validation-error-as-i18n-key
-pattern copied from listing-studio) is next, pending Owner review of M1.
+**M2 — landing/create-room page translated — done** (Owner said "go ahead"
+after reviewing M1). Every string on `app/page.tsx` and
+`create-room-form.tsx` now goes through `useTranslations`/`getTranslations`:
+hero image alt text, tagline, all form labels/placeholders/help text, the
+daily-time-window preset names, and the submit button — in `Landing` and
+`CreateRoom` namespaces in `messages/*.json`. `app/layout.tsx`'s metadata
+(browser tab title, meta description) is now locale-aware too, converted
+from a static `export const metadata` to an async `generateMetadata()`
+calling `getTranslations("Metadata")`.
+
+Validation error messages needed the most design thought. `lib/validation.ts`'s
+Zod schema messages changed from English sentences to i18n KEY strings
+(`"Pick a timezone"` → `"timezoneRequired"`, etc.) — confirmed by re-reading
+listing-studio's actual `validation.ts`/`*-actions.ts`/form-component source
+(not just the earlier survey's summary) that this is the real established
+pattern, not the "translator-aware schema factory" guessed at when M2 was
+first planned: the schema can't translate anything itself (it's built at
+module scope, outside any request/locale context), so it stays in raw keys,
+the server action passes them through untouched
+(`app/actions.ts::createRoom`'s `error`/`fieldErrors` are now documented as
+keys, not sentences), and the client component resolves them via
+`t(`errors.${key}`)`. Also added explicit key-based messages to the
+`dayStartHour`/`dayEndHour` numeric bounds, which previously had none (a
+malformed submission would have leaked one of Zod's raw internal English
+strings straight to the UI, in any language). `lib/room-presets.ts`'s
+`DAILY_PRESETS` lost its baked-in English `label` field entirely — preset
+names are now translated words (`CreateRoom.presets.*`), and the
+"(17:00–22:00)"-style hour range is composed at render time from the
+existing `lib/slots.ts::formatHoursWindow` formatter, so the digits stay
+identical across every language (translation and formatting kept genuinely
+separate, as asked) instead of being duplicated as a separate literal
+string per locale.
+
+**Verified**: full manual pass in a real browser across all four languages
+— every label/placeholder/button text, a real triggered validation error
+(end date before start date) with both the generic banner and the
+field-level message confirmed translated in Russian, German, and Czech,
+and a complete room-creation round-trip carried out while the UI was set to
+German (confirmed the room was created with the correct dates/hours). Also
+investigated and ruled out a false alarm: after several rapid
+automation-driven locale switches within one long-lived dev-mode browser
+tab, the switcher's own option labels transiently corrupted to
+English-only names — a fresh `curl` request to the same dev server and a
+real (non-client-side) page reload both rendered the labels correctly,
+which localized it to stale Next.js client-router-cache state in that one
+test tab rather than a bug in `localeDisplayName` or the translation
+pipeline. 53 unit + 5 e2e tests green, tsc/eslint clean.
+
+**Stopping here per OPERATIONS.md milestone checkpoint** — M3 (room/grid
+page: join form, availability grid toolbar, finalize banner, leave-room,
+new-event button) is next, pending Owner review of M2. **Not yet deployed
+as of this note** — see "Next steps".
 
 ## Git remote & deployment (post-M5, Owner-directed, 2026-08-17)
 

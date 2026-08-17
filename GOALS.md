@@ -415,7 +415,7 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       across a real navigation) plus a new unit test
       (`tests/unit/ui-locales.spec.ts`); 53 unit + 5 e2e tests green;
       tsc/eslint clean.
-- [ ] M2 — Landing/create-room page fully translated in all four languages:
+- [x] M2 — Landing/create-room page fully translated in all four languages:
       `app/page.tsx`, `create-room-form.tsx` (including the daily-time-window
       preset labels). Also covers the Zod validation error messages here —
       per listing-studio's actual pattern (confirmed by re-reading its
@@ -424,7 +424,16 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       not a sentence), passed through untranslated by the server action, and
       translated client-side as `t(`errors.${key}`)` in a per-form
       namespace. No translator-aware schema factory needed — simpler than
-      first planned.
+      first planned. ✔ 2026-08-17. Verified live in a real browser in all
+      four languages: form labels/placeholders/help text, preset names
+      (hour ranges themselves left as locale-invariant digits via the
+      existing `formatHoursWindow`), the generic and per-field validation
+      errors (triggered a real end-date-before-start-date error and
+      confirmed the translated message in RU/DE/CS), and a full room
+      creation round-trip while the UI was in German. Browser tab
+      title/meta description are now locale-aware too
+      (`generateMetadata` in `app/layout.tsx`). 53 unit + 5 e2e tests green,
+      tsc/eslint clean.
 - [ ] M3 — Room pages translated: `join-form.tsx`, `app/r/[slug]/page.tsx`
       (grid header, "Not you?"/"Leave the room"), `availability-grid.tsx`
       toolbar, `finalized-banner.tsx`, `leave-room-button.tsx`,
@@ -442,6 +451,38 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       HANDOVER; push and redeploy to https://meet.app.julienika.cz.
 
 **Progress log** (newest first; The Company appends at every stopping point):
+- 2026-08-17 — **M2 done** (Owner said "go ahead" after M1 review). Fully
+  translated the landing/create-room page in EN/RU/CZ/DE:
+  `messages/{en,ru,cs,de}.json`'s new `Landing`/`CreateRoom`/`Metadata`
+  namespaces, `app/page.tsx` (hero alt text, tagline — as a Server
+  Component, via `getTranslations`, matching the async pattern
+  `locale-switcher.tsx` already used), `create-room-form.tsx` (Client
+  Component, `useTranslations`), and `app/layout.tsx`'s metadata (now
+  `generateMetadata()`, locale-aware browser tab title/description).
+  `lib/validation.ts`'s Zod messages became i18n keys instead of English
+  sentences (confirmed via re-reading listing-studio's actual source that
+  this — not a translator-aware schema factory as first planned in the
+  milestone note — is the real established pattern: schema messages are
+  keys, translated client-side via `t(`errors.${key}`)`); also added
+  explicit key-based messages to the `dayStartHour`/`dayEndHour` bounds,
+  which previously had none (would have leaked a raw Zod string). Removed
+  the baked-in English `label` field from `lib/room-presets.ts`'s
+  `DAILY_PRESETS` — preset names are now translated words, hour ranges
+  stay locale-invariant digits via the existing `formatHoursWindow`
+  formatter (no separate translated literal per language, keeping format
+  and translation genuinely separate as asked). Verified live in a real
+  browser across all four languages: every label/placeholder/button,
+  triggered a real validation error and confirmed the translated message
+  (generic banner + field-level), and completed a full room-creation
+  round-trip while the UI was in German. Also caught (and ruled out as
+  real) a scary-looking transient bug: after several rapid locale switches
+  in one long-lived dev-mode browser tab, the language switcher's own
+  option labels briefly corrupted to English-ish names — traced to stale
+  Next.js client-router-cache in that one tab (a fresh `curl` to the same
+  server, and a real page reload, both rendered correctly), not a bug in
+  the translation code. 53 unit + 5 e2e tests green, tsc/eslint clean.
+  **Stopping here per OPERATIONS.md milestone checkpoint — awaiting Owner
+  review before starting M3** (room/grid page).
 - 2026-08-17 — **M1 done.** Installed `next-intl@^4.13.1` (matching
   listing-studio's pin), wired `next.config.ts`/`i18n/request.ts`/
   `app/layout.tsx` for cookie-based locale resolution with English-fallback
