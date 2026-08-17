@@ -2,6 +2,10 @@
   "LocaleSwitcher": {
     "label": "Language"
   },
+  "Common": {
+    "untitledRoom": "Untitled room",
+    "newEvent": "New event"
+  },
   "Metadata": {
     "title": "When We Meet",
     "description": "Find a time that works for everyone — no account needed."
@@ -42,5 +46,60 @@
       "dayStartHourRange": "Daily start hour must be between 0 and 23",
       "dayEndHourRange": "Daily end hour must be between 1 and 24"
     }
+  },
+  "JoinForm": {
+    "intro": "You're about to join this room to mark which of the times above you're free. No account needed — just a name the rest of the group will see. Once you're in, you can see everyone's combined availability on the results page.",
+    "alreadyInRoom": "Already in this room:",
+    "clickYourName": "— click your name if it's you.",
+    "itsMeTitle": "It's me — continue as {name}",
+    "nameLabel": "Your name",
+    "nameHelp": "Must be unique in this room. If you come back later on a different browser or device to edit your marks, you'll need to enter this same name again.",
+    "namePlaceholder": "e.g. Sam",
+    "submit": "Join room",
+    "submitting": "Joining…",
+    "collision": {
+      "hasMarks": "<b>{name}</b> already has marks in this room:",
+      "noMarks": "No marks yet — just an empty name reservation.",
+      "summaryLine": "{can} can · {cannot} can't",
+      "isThisYou": "Is this you?",
+      "yesConfirm": "Yes, that's me",
+      "noDifferent": "No, use a different name"
+    },
+    "errors": {
+      "nameRequired": "Enter a name.",
+      "nameTooLong": "Name is too long.",
+      "confirmFailed": "That didn't work — try entering your name again.",
+      "roomFull": "This room has reached its limit of {max} participants."
+    }
+  },
+  "RoomPage": {
+    "markingAs": "Marking as <b>{name}</b>",
+    "notYou": "Not you? Use a different name",
+    "alsoInRoom": "Also in this room: {names}",
+    "seeResults": "See results →",
+    "closedMessage": "The meeting time has been set — availability marking is closed."
+  },
+  "AvailabilityGrid": {
+    "brushes": {
+      "can": "Can",
+      "cannot": "Can't",
+      "prefer": "Prefer",
+      "clear": "Clear"
+    },
+    "saving": "Saving…",
+    "saved": "Saved",
+    "saveError": "Couldn't save — try again",
+    "instructions": "Click, or click and drag, to paint slots (works with touch too). \"Prefer\" only applies to slots already marked Can."
+  },
+  "FinalizedBanner": {
+    "title": "📌 Meeting time set: {when}",
+    "clear": "Clear selection",
+    "clearing": "Clearing…"
+  },
+  "LeaveRoom": {
+    "link": "Leave the room",
+    "warning": "This deletes your name and all your marks from this room. It can't be undone.",
+    "confirm": "Yes, delete my data",
+    "cancel": "Cancel"
   }
 }

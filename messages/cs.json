@@ -2,6 +2,10 @@
   "LocaleSwitcher": {
     "label": "Jazyk"
   },
+  "Common": {
+    "untitledRoom": "Bez názvu",
+    "newEvent": "Nová akce"
+  },
   "Metadata": {
     "title": "When We Meet",
     "description": "Najděte čas, který vyhovuje všem — bez registrace."
@@ -42,5 +46,60 @@
       "dayStartHourRange": "Hodina začátku dne musí být mezi 0 a 23",
       "dayEndHourRange": "Hodina konce dne musí být mezi 1 a 24"
     }
+  },
+  "JoinForm": {
+    "intro": "Chystáte se připojit k této místnosti a označit, kdy z uvedených časů máte volno. Registrace není potřeba — stačí jméno, které uvidí ostatní účastníci. Po přihlášení uvidíte společnou dostupnost všech na stránce s výsledky.",
+    "alreadyInRoom": "Již v této místnosti:",
+    "clickYourName": "— klikněte na své jméno, pokud jste to vy.",
+    "itsMeTitle": "To jsem já — pokračovat jako {name}",
+    "nameLabel": "Vaše jméno",
+    "nameHelp": "Musí být v této místnosti jedinečné. Pokud se sem později vrátíte z jiného prohlížeče nebo zařízení a budete chtít upravit své záznamy, budete muset zadat stejné jméno znovu.",
+    "namePlaceholder": "např. Petr",
+    "submit": "Připojit se",
+    "submitting": "Připojování…",
+    "collision": {
+      "hasMarks": "<b>{name}</b> už má v této místnosti záznamy:",
+      "noMarks": "Zatím žádné záznamy — jen rezervované jméno.",
+      "summaryLine": "{can} může · {cannot} nemůže",
+      "isThisYou": "Jste to vy?",
+      "yesConfirm": "Ano, to jsem já",
+      "noDifferent": "Ne, zvolit jiné jméno"
+    },
+    "errors": {
+      "nameRequired": "Zadejte jméno.",
+      "nameTooLong": "Jméno je příliš dlouhé.",
+      "confirmFailed": "Nepovedlo se — zkuste zadat jméno znovu.",
+      "roomFull": "Tato místnost dosáhla limitu {max} účastníků."
+    }
+  },
+  "RoomPage": {
+    "markingAs": "Označujete jako <b>{name}</b>",
+    "notYou": "Nejste to vy? Použít jiné jméno",
+    "alsoInRoom": "Také v této místnosti: {names}",
+    "seeResults": "Zobrazit výsledky →",
+    "closedMessage": "Čas schůzky byl nastaven — označování dostupnosti je uzavřeno."
+  },
+  "AvailabilityGrid": {
+    "brushes": {
+      "can": "Můžu",
+      "cannot": "Nemůžu",
+      "prefer": "Preferuji",
+      "clear": "Vymazat"
+    },
+    "saving": "Ukládání…",
+    "saved": "Uloženo",
+    "saveError": "Uložení se nezdařilo — zkuste to znovu",
+    "instructions": "Klikněte, nebo klikněte a táhněte, pro označení časů (funguje i s dotykem). „Preferuji“ platí jen pro časy již označené jako Můžu."
+  },
+  "FinalizedBanner": {
+    "title": "📌 Čas schůzky nastaven: {when}",
+    "clear": "Zrušit výběr",
+    "clearing": "Rušení…"
+  },
+  "LeaveRoom": {
+    "link": "Opustit místnost",
+    "warning": "Tímto se smaže vaše jméno a všechny vaše záznamy z této místnosti. Nelze vrátit zpět.",
+    "confirm": "Ano, smazat moje data",
+    "cancel": "Zrušit"
   }
 }

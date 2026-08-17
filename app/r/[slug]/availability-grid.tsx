@@ -1,17 +1,25 @@
 "use client";
 
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { saveAvailability, type SlotUpdate } from "@/app/r/[slug]/actions";
 import { formatDayLabel, formatHour, isWeekend, slotKey, type CellMark, type SlotStatus } from "@/lib/slots";
 
 type Brush = SlotStatus | "CLEAR" | "PREFER";
 
-const BRUSHES: { value: Brush; label: string; swatchClass: string }[] = [
-  { value: "CAN", label: "Can", swatchClass: "bg-emerald-500" },
-  { value: "CANNOT", label: "Can't", swatchClass: "bg-rose-500" },
-  { value: "PREFER", label: "Prefer", swatchClass: "bg-amber-400" },
-  { value: "CLEAR", label: "Clear", swatchClass: "bg-transparent border border-muted" },
+const BRUSH_KEYS: { value: Brush; swatchClass: string }[] = [
+  { value: "CAN", swatchClass: "bg-emerald-500" },
+  { value: "CANNOT", swatchClass: "bg-rose-500" },
+  { value: "PREFER", swatchClass: "bg-amber-400" },
+  { value: "CLEAR", swatchClass: "bg-transparent border border-muted" },
 ];
+
+const BRUSH_LABEL_KEYS: Record<Brush, string> = {
+  CAN: "can",
+  CANNOT: "cannot",
+  PREFER: "prefer",
+  CLEAR: "clear",
+};
 
 function cellClass(mark: CellMark | undefined, weekend: boolean): string {
   if (mark?.status === "CAN") return "bg-emerald-500/80 hover:bg-emerald-500";
@@ -32,6 +40,7 @@ export function AvailabilityGrid({
   hours: number[];
   initialAvailability: Record<string, CellMark>;
 }) {
+  const t = useTranslations("AvailabilityGrid");
   const [marks, setMarks] = useState<Record<string, CellMark>>(initialAvailability);
   const [brush, setBrush] = useState<Brush>("CAN");
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -151,7 +160,7 @@ export function AvailabilityGrid({
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-4">
         <div className="flex gap-1.5">
-          {BRUSHES.map((b) => (
+          {BRUSH_KEYS.map((b) => (
             <button
               key={b.value}
               type="button"
@@ -164,21 +173,18 @@ export function AvailabilityGrid({
               }`}
             >
               <span className={`size-3 rounded-sm ${b.swatchClass}`} />
-              {b.label}
+              {t(`brushes.${BRUSH_LABEL_KEYS[b.value]}`)}
             </button>
           ))}
         </div>
         <span className="text-xs text-muted">
-          {saveState === "saving" && "Saving…"}
-          {saveState === "saved" && "Saved"}
-          {saveState === "error" && "Couldn't save — try again"}
+          {saveState === "saving" && t("saving")}
+          {saveState === "saved" && t("saved")}
+          {saveState === "error" && t("saveError")}
         </span>
       </div>
 
-      <p className="text-xs text-muted">
-        Click, or click and drag, to paint slots (works with touch too).
-        &quot;Prefer&quot; only applies to slots already marked Can.
-      </p>
+      <p className="text-xs text-muted">{t("instructions")}</p>
 
       <div className="max-h-[70vh] overflow-auto rounded-md border border-border">
         <div

@@ -2,6 +2,10 @@
   "LocaleSwitcher": {
     "label": "Sprache"
   },
+  "Common": {
+    "untitledRoom": "Ohne Titel",
+    "newEvent": "Neues Treffen"
+  },
   "Metadata": {
     "title": "When We Meet",
     "description": "Finde eine Zeit, die für alle passt — ganz ohne Konto."
@@ -42,5 +46,60 @@
       "dayStartHourRange": "Die Startstunde muss zwischen 0 und 23 liegen",
       "dayEndHourRange": "Die Endstunde muss zwischen 1 und 24 liegen"
     }
+  },
+  "JoinForm": {
+    "intro": "Du bist dabei, diesem Raum beizutreten, um einzutragen, zu welchen der oben genannten Zeiten du kannst. Kein Konto nötig — nur ein Name, den die restliche Gruppe sieht. Sobald du drin bist, siehst du die gemeinsame Verfügbarkeit aller auf der Ergebnisseite.",
+    "alreadyInRoom": "Bereits in diesem Raum:",
+    "clickYourName": "— klicke auf deinen Namen, falls du das bist.",
+    "itsMeTitle": "Das bin ich — weiter als {name}",
+    "nameLabel": "Dein Name",
+    "nameHelp": "Muss in diesem Raum eindeutig sein. Wenn du später über einen anderen Browser oder ein anderes Gerät zurückkommst, um deine Einträge zu bearbeiten, musst du denselben Namen erneut eingeben.",
+    "namePlaceholder": "z. B. Max",
+    "submit": "Raum beitreten",
+    "submitting": "Trete bei…",
+    "collision": {
+      "hasMarks": "<b>{name}</b> hat bereits Einträge in diesem Raum:",
+      "noMarks": "Noch keine Einträge — nur eine leere Namensreservierung.",
+      "summaryLine": "{can} kann · {cannot} kann nicht",
+      "isThisYou": "Bist du das?",
+      "yesConfirm": "Ja, das bin ich",
+      "noDifferent": "Nein, anderen Namen verwenden"
+    },
+    "errors": {
+      "nameRequired": "Gib einen Namen ein.",
+      "nameTooLong": "Der Name ist zu lang.",
+      "confirmFailed": "Das hat nicht funktioniert — versuche, den Namen erneut einzugeben.",
+      "roomFull": "Dieser Raum hat sein Limit von {max} Teilnehmern erreicht."
+    }
+  },
+  "RoomPage": {
+    "markingAs": "Du trägst ein als <b>{name}</b>",
+    "notYou": "Nicht du? Anderen Namen verwenden",
+    "alsoInRoom": "Ebenfalls in diesem Raum: {names}",
+    "seeResults": "Ergebnisse ansehen →",
+    "closedMessage": "Die Besprechungszeit wurde festgelegt — das Eintragen der Verfügbarkeit ist geschlossen."
+  },
+  "AvailabilityGrid": {
+    "brushes": {
+      "can": "Kann",
+      "cannot": "Kann nicht",
+      "prefer": "Bevorzugt",
+      "clear": "Leeren"
+    },
+    "saving": "Wird gespeichert…",
+    "saved": "Gespeichert",
+    "saveError": "Speichern fehlgeschlagen — versuche es erneut",
+    "instructions": "Klicke oder klicke und ziehe, um Zeiten einzutragen (funktioniert auch mit Touch). „Bevorzugt“ gilt nur für bereits mit „Kann“ markierte Zeiten."
+  },
+  "FinalizedBanner": {
+    "title": "📌 Besprechungszeit festgelegt: {when}",
+    "clear": "Auswahl aufheben",
+    "clearing": "Wird aufgehoben…"
+  },
+  "LeaveRoom": {
+    "link": "Raum verlassen",
+    "warning": "Dadurch werden dein Name und alle deine Einträge aus diesem Raum gelöscht. Das kann nicht rückgängig gemacht werden.",
+    "confirm": "Ja, meine Daten löschen",
+    "cancel": "Abbrechen"
   }
 }

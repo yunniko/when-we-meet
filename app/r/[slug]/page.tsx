@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
 import { findActiveRoom } from "@/lib/room-access";
 import { getCurrentParticipant } from "@/lib/participant";
@@ -21,6 +22,9 @@ export default async function RoomPage({
   const { slug } = await params;
   const room = await findActiveRoom(slug);
   if (!room) notFound();
+
+  const t = await getTranslations("RoomPage");
+  const tCommon = await getTranslations("Common");
 
   const isFinalized = room.selectedDate !== null && room.selectedHour !== null;
   const isOwner = await isRoomOwner(room);
@@ -82,7 +86,7 @@ export default async function RoomPage({
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">
-            {room.title || "Untitled room"}
+            {room.title || tCommon("untitledRoom")}
           </h1>
           <p className="mt-1 text-sm text-muted">
             {formatDateRange(room.startDate, room.endDate)} ·{" "}
@@ -94,14 +98,17 @@ export default async function RoomPage({
             <NewEventButton />
           </div>
           <p>
-            Marking as <span className="font-medium">{participant.name}</span>
+            {t.rich("markingAs", {
+              name: participant.name,
+              b: (chunks) => <span className="font-medium">{chunks}</span>,
+            })}
           </p>
           <form action={leaveIdentity.bind(null, { roomId: room.id, slug: room.slug })}>
             <button
               type="submit"
               className="text-xs text-muted underline hover:text-foreground"
             >
-              Not you? Use a different name
+              {t("notYou")}
             </button>
           </form>
           <div className="mt-1">
@@ -116,7 +123,7 @@ export default async function RoomPage({
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           {otherParticipants.length > 0 ? (
             <p className="text-sm text-muted">
-              Also in this room: {otherParticipants.map((p) => p.name).join(", ")}
+              {t("alsoInRoom", { names: otherParticipants.map((p) => p.name).join(", ") })}
             </p>
           ) : (
             <span />
@@ -125,13 +132,13 @@ export default async function RoomPage({
             href={`/r/${room.slug}/results`}
             className="text-sm font-medium text-accent underline hover:text-accent-hover"
           >
-            See results →
+            {t("seeResults")}
           </Link>
         </div>
 
         {isFinalized ? (
           <p className="rounded-md border border-dashed border-border px-4 py-6 text-center text-sm text-muted">
-            The meeting time has been set — availability marking is closed.
+            {t("closedMessage")}
           </p>
         ) : (
           <AvailabilityGrid

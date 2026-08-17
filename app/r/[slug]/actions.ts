@@ -14,6 +14,9 @@ import type { SlotStatus } from "@/lib/slots";
 import { MAX_PARTICIPANTS_PER_ROOM } from "@/lib/validation";
 
 export type JoinState =
+  // error is an i18n KEY under JoinForm.errors, not an English sentence —
+  // translated client-side in join-form.tsx (same pattern as CreateRoom's
+  // errors, see lib/validation.ts's header comment).
   | { step: "form"; error?: string; name?: string }
   | { step: "collision"; participantId: string; name: string; summary: MarkSummary };
 
@@ -41,7 +44,7 @@ export async function joinRoom(
       where: { id: confirmId, roomId: ctx.roomId },
     });
     if (!participant) {
-      return { step: "form", error: "That didn't work — try entering your name again." };
+      return { step: "form", error: "confirmFailed" };
     }
     await setParticipantCookie(ctx.roomId, participant.cookieToken);
     await claimCreatorIfEligible(ctx.roomId, participant.id);
@@ -49,8 +52,8 @@ export async function joinRoom(
   }
 
   const name = String(formData.get("name") ?? "").trim();
-  if (!name) return { step: "form", error: "Enter a name." };
-  if (name.length > 60) return { step: "form", error: "Name is too long.", name };
+  if (!name) return { step: "form", error: "nameRequired" };
+  if (name.length > 60) return { step: "form", error: "nameTooLong", name };
 
   const nameKey = name.toLowerCase();
   const existing = await prisma.participant.findUnique({
@@ -60,11 +63,7 @@ export async function joinRoom(
   if (!existing) {
     const participantCount = await prisma.participant.count({ where: { roomId: ctx.roomId } });
     if (participantCount >= MAX_PARTICIPANTS_PER_ROOM) {
-      return {
-        step: "form",
-        error: `This room has reached its limit of ${MAX_PARTICIPANTS_PER_ROOM} participants.`,
-        name,
-      };
+      return { step: "form", error: "roomFull", name };
     }
 
     try {
