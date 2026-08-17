@@ -477,6 +477,18 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       baseline. README updated with the multi-language summary.
 
 **Progress log** (newest first; The Company appends at every stopping point):
+- 2026-08-17 — **Bug fix, post-M5 (follow-up)**: Owner reported 1rem
+  measuring 16px on English but 15px on Russian. First guess (Chrome's
+  translate feature, given how much it had interfered with this session's
+  own QA) turned out wrong — reproduced on Firefox too, ruling that out.
+  Real cause: browsers can apply a different default root font-size per
+  writing script (Firefox exposes this explicitly under Settings → Fonts →
+  Advanced), and `html`'s `font-size` was never set explicitly, so every
+  rem-based measurement in the app was at the mercy of whichever
+  per-script default the browser happened to be using for the page's
+  language. Fixed by pinning `html { font-size: 16px; }` — removes the
+  dependency on any browser/script default entirely. Full suite green;
+  pushed and redeployed.
 - 2026-08-17 — **Bug fix, post-M5**: Owner asked "why does the Russian page
   look smaller?" — traced to `app/globals.css`'s `body` rule hardcoding
   `font-family: Arial, Helvetica, sans-serif`, which had silently shadowed

@@ -711,6 +711,25 @@ not just the Arial fallback. tsc/eslint/53 unit/5 e2e all green. Pushed
 and redeployed; confirmed live and confirmed the other sites on the shared
 host unaffected.
 
+**Second, related bug found immediately after**: the Geist-font fix above
+didn't fully explain what the Owner was seeing — they reported `1rem`
+measuring 16px on the English page but 15px on the Russian one. First
+guess (Chrome's translate feature adjusting font-size on translated pages,
+plausible given how much translate had interfered with this session's own
+QA — see M3/M4) turned out wrong: the Owner reproduced it on **Firefox**,
+which rules out a Chrome-specific cause. Real cause: browsers can carry a
+different *default* root font-size per writing script — Firefox
+specifically exposes this under Settings → Fonts → Advanced, with
+independent size settings for Latin vs. Cyrillic vs. other scripts — and
+since `app/globals.css` never set `html`'s `font-size` explicitly, the
+root size (and therefore every `rem`-based measurement in the whole app)
+was silently at the mercy of whichever per-script default happened to be
+active for the page's language. Fixed by pinning `html { font-size: 16px;
+}` explicitly, removing that dependency regardless of which browser or
+per-script setting would otherwise have caused it. tsc/eslint/53 unit/5
+e2e all green; pushed and redeployed; confirmed live and confirmed the
+other sites on the shared host unaffected.
+
 ## Git remote & deployment (post-M5, Owner-directed, 2026-08-17)
 
 **GitHub**: `origin` is `git@github.com:yunniko/when-we-meet.git`, pushed
