@@ -454,15 +454,48 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       Czech's "few" category (3 → "3 участника"/"3 osoby") via raw SSR with
       a 3-participant fixture. 53 unit + 5 e2e tests green, tsc/eslint
       clean.
-- [ ] M5 — QA & deploy: full manual pass in each of the four languages
+- [x] M5 — QA & deploy: full manual pass in each of the four languages
       (switch language, create a room, join, mark availability, view
       results, finalize a meeting time, leave a room) confirming no
       untranslated/fallback-to-English text appears anywhere it shouldn't
       and that date/hour formatting is genuinely unaffected by UI language;
       confirm the full automated suite is still green; update README/
-      HANDOVER; push and redeploy to https://meet.app.julienika.cz.
+      HANDOVER; push and redeploy to https://meet.app.julienika.cz. ✔
+      2026-08-17. Ran one complete real end-to-end flow in German (create →
+      join as two participants → mark CAN/CANNOT/preferred → view results →
+      finalize a meeting time → banner check → clear → leave with
+      ownership auto-transfer), each step confirmed against actual
+      Postgres state, not just what rendered — necessary because Chrome's
+      own translate feature kept auto-corrupting screenshots mid-session
+      (see M3/M4 notes); DB-level verification sidesteps that entirely. Also
+      ran an automated key-parity sweep across all four `messages/*.json`
+      files: all 97 keys present in every locale with no missing/extra
+      keys, and no unexpected untranslated leftovers (the only
+      identical-across-locales values are the deliberate ones — the
+      product name and German's "(optional)," which is genuinely the same
+      word in German). tsc/eslint/53 unit/5 e2e all clean as the final
+      baseline. README updated with the multi-language summary.
 
 **Progress log** (newest first; The Company appends at every stopping point):
+- 2026-08-17 — **M5 done** (Owner said "go m5"). Final QA pass: one
+  complete real end-to-end flow driven in German (create a room → join as
+  two participants → mark CAN/CANNOT/preferred availability → view
+  results → finalize a meeting time as the creator → confirm the banner on
+  the room page → clear the selection → leave the room, confirming
+  ownership auto-transferred to the remaining participant), each step
+  cross-checked against actual Postgres rows rather than trusting
+  screenshots — necessary because Chrome's own translate feature kept
+  auto-corrupting the visible page mid-session, a known issue from M3/M4.
+  Also ran an automated parity sweep across all four translation files:
+  all 97 message keys present in every locale, no missing/extra keys, no
+  accidental untranslated leftovers. Full suite green (tsc, eslint, 53
+  unit, 5 e2e). Updated `README.md` with a multi-language summary.
+  **G-002's page-by-page translation work (M1-M5) is now complete** —
+  every page, in all four languages, verified working end to end. Pushed
+  and redeployed to https://meet.app.julienika.cz; confirmed live and
+  confirmed the other sites on the shared host unaffected. Leaving the
+  goal status as ACTIVE (not DONE) pending explicit Owner sign-off, per
+  OPERATIONS.md's definition of done — same pattern G-001 followed.
 - 2026-08-17 — **M4 done** (Owner said "go ahead" after M3 review).
   Translated the results page in EN/RU/CZ/DE: `results/page.tsx`'s header
   (title, participant count, participant list, edit link) and

@@ -642,9 +642,47 @@ sites on the shared host stayed unaffected.
 
 This closes out G-002's page-by-page translation work (M1-M4 all done).
 
-**Stopping here per OPERATIONS.md milestone checkpoint** — M5 (a full
-manual QA pass in each of the four languages, end to end, before Owner
-sign-off) is next, pending Owner review of M4.
+**M5 — final QA & deploy — done** (Owner said "go m5"). Ran one complete
+real end-to-end flow in German — the most structurally complex of the four
+languages (compound words, `t.rich` usage, ICU plurals) — rather than
+re-testing every string in isolation again (already done exhaustively
+across M1-M4): created a room, joined as two participants, painted
+CAN/CANNOT/preferred availability, viewed results (confirming the
+CANNOT-ranking feature and the translation work compose correctly
+together — the 0-cannot slot correctly outranked the 1-cannot slot despite
+the latter having a preferred star), finalized a meeting time as the
+creator, confirmed the very-visible banner, cleared the selection, and
+left the room, confirming ownership auto-transferred to the remaining
+participant. Every step was verified against actual Postgres rows, not
+screenshots — necessary because Chrome's own translate feature (see M3/M4)
+kept auto-corrupting the visible page mid-session in ways a screenshot
+alone couldn't distinguish from a real bug; a raw DB check has no such
+ambiguity.
+
+Also ran an automated sweep (a one-off Node script, not a permanent test —
+this kind of file-level parity check didn't warrant a new dependency or
+CI step for a one-time verification) comparing all four `messages/*.json`
+files: flattened every namespace, confirmed all 97 keys exist in every
+locale with none missing or extra, and flagged any value identical across
+locales as a possible untranslated leftover. Only two flagged, both
+correct as-is: `Metadata.title` ("When We Meet" — a proper noun, not
+translated anywhere, by design) and German's `CreateRoom.optional`
+("(optional)" — genuinely the same word in German, not an oversight).
+
+Updated `README.md`'s "Current state" section to describe both G-001 and
+G-002 (previously only described the original scheduling-tool build; a
+reader would have had no idea multi-language support existed).
+
+Full suite green as the final sign-off baseline: `npx tsc --noEmit` clean,
+`npx eslint .` clean (same two pre-existing, unrelated warnings as every
+other round), 53 Vitest unit tests, 5 Playwright e2e specs. Pushed and
+redeployed to https://meet.app.julienika.cz; confirmed live and confirmed
+the other sites on the shared host stayed unaffected.
+
+**G-002's full milestone plan (M1-M5) is now complete.** Per OPERATIONS.md's
+definition of done, the goal's status stays `ACTIVE` (not moved to
+Completed) pending explicit Owner sign-off — the same pattern G-001
+followed after its own M5.
 
 ## Git remote & deployment (post-M5, Owner-directed, 2026-08-17)
 
@@ -988,11 +1026,12 @@ currently doesn't).
    ownership transfer, daily-time-window presets, Best Times missing-names,
    CANNOT-count ranking, join-page clarity, 100-participant cap) is
    committed, pushed, and live on production as of this writing.
-1a. **G-002 (multi-language UI) is now the active goal.** M1-M4 are done
-    (infrastructure, landing/create-room page, room/grid page, results
-    page) — every page's UI text is now translated in all four languages.
-    Only M5 (a full manual QA pass across all four languages, end to end,
-    before sign-off) remains, pending Owner review of M4.
+1a. **G-002 (multi-language UI) — all five milestones done.** The entire
+    app is translated into English, Russian, Czech, and German, verified
+    end to end (including one complete real multi-participant flow driven
+    entirely in German, DB-checked at every step) and deployed live.
+    Status stays `ACTIVE` pending explicit Owner sign-off — see the M5
+    HANDOVER entry above.
 1b. **Flag for the Owner**: day/month labels and hour digits are
     deliberately left unlocalized everywhere (still always "Tue 5 Oct",
     "14:00" regardless of UI language) — read as in-scope for "without

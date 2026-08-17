@@ -7,24 +7,41 @@ timezone) and gets a shareable link. Everyone with the link marks which
 prefer — and the app shows when the whole group overlaps. The room's
 creator can then lock in a final meeting time, which is shown prominently
 to everyone and closes further marking until they clear it. Rooms clean
-themselves up a few days after their date has passed.
+themselves up a few days after their date has passed. The UI is available
+in English, Russian, Czech, and German (switchable per visitor, no login
+needed — see "Language").
 
 Full context, architecture, and decision history: see `HANDOVER.md`.
 Goal and milestone tracking: see `GOALS.md`.
 
 ## Current state
 
-All five planned milestones are done and verified — creating a room
-(including a single-day fixed-hours event mode), joining under a name
-(cookie-based identity, race-condition-safe name-collision handling),
-marking availability on the 1-hour-slot grid (drag-to-paint, mouse and
-touch, with an optional "prefer this slot" layer), a results view (heatmap
-+ ranked "best times"), the creator picking/locking/clearing a final
-meeting time (very visible to everyone, future-dated only), automatic room
-expiry 3 days after the relevant date, and a light warm theme with a
-hand-drawn hero illustration. 40 Vitest unit tests + 4 Playwright e2e specs,
-all green. See `HANDOVER.md` for the full picture, including a couple of
-still-open flags for the Owner (none blocking).
+**G-001** (the core scheduling tool): all five planned milestones are done
+and verified — creating a room (including a single-day fixed-hours event
+mode), joining under a name (cookie-based identity, race-condition-safe
+name-collision handling), marking availability on the 1-hour-slot grid
+(drag-to-paint, mouse and touch, with an optional "prefer this slot"
+layer), a results view (heatmap + ranked "best times", factoring in both
+who can and who's explicitly said they can't), the creator picking/
+locking/clearing a final meeting time (very visible to everyone,
+future-dated only), automatic room expiry 3 days after the relevant date,
+and a light warm theme with a hand-drawn hero illustration. Several
+post-launch rounds since then added: daily time-window presets, a
+100-participant cap (abuse-resistance backstop), and clearer copy on the
+join screen.
+
+**G-002** (multi-language UI): the entire app — every page, button, and
+error message — is translated into English, Russian, Czech, and German,
+switchable via the language picker in the top-right corner of every page
+(a cookie-based preference, not a login setting or URL segment, so shared
+room links look identical to everyone regardless of language). Dates,
+hours, and timezone names are deliberately **not** localized — they stay
+in a single consistent format for everyone in a room, by design (see
+`HANDOVER.md` D2/D8).
+
+53 Vitest unit tests + 5 Playwright e2e specs, all green. See `HANDOVER.md`
+for the full picture, including a couple of still-open flags for the Owner
+(none blocking).
 
 ## Running it locally
 
