@@ -24,7 +24,20 @@ at G-001); Company-wide standards in `E:\CLAUDE\COMPANY\`.
 - Every time slot is stored and reasoned about as plain wall-clock (date,
   hour) — never convert through `Date`/timezone math. `Room.timezone` is a
   display label only. This is a deliberate DST-bug-avoidance decision; see
-  HANDOVER D2.
+  HANDOVER D2. The one intentional exception is `lib/time.ts::nowInTimezone`,
+  which reads *current* wall-clock time in a zone (a one-way read, not slot
+  conversion) — it's what backs the "you can only pick a future meeting
+  time" rule.
+- Creator/owner permissions (picking or clearing the finalized meeting time)
+  are tied to a *participant identity* (`Room.creatorParticipantId`), not a
+  standalone cookie — see HANDOVER D7. Whoever is logged in as that
+  participant (including via the ordinary name-collision "is this you?"
+  claim flow) has creator permissions, on any device.
+- Rooms expire and are deleted 3 days after either the finalized meeting
+  date or the planning range's end date (see `lib/expiry.ts`, HANDOVER D6).
+  Enforced lazily on access (`lib/room-access.ts::findActiveRoom` — use this,
+  not a raw `prisma.room.findUnique`, in any page/action that loads a room by
+  slug) plus a standalone sweep script (`npm run cleanup`).
 - Mutations are server actions in `app/actions.ts` (or colocated per route as
   the app grows); validation schemas live in `lib/validation.ts`; keep
   business logic in pure `lib/*` modules so it's unit-testable without

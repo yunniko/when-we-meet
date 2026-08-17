@@ -207,6 +207,7 @@ export function AvailabilityGrid({
                 return (
                   <div
                     key={key}
+                    data-testid={`slot-${date}-${hour}`}
                     onPointerDown={(e) => {
                       e.currentTarget.releasePointerCapture(e.pointerId);
                       startStroke(dateIdx, hourIdx);

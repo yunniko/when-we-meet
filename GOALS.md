@@ -51,6 +51,14 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
      name+cookie convention above — this is an explicit, documented trust
      model, not an oversight.
   8. Usable on a phone screen, not just desktop.
+  9. The room's creator can mark a specific day+time as the finalized
+     meeting slot; this is shown very visibly on the room page to everyone
+     (joined or not); once set, marking availability is closed to everyone
+     until the creator clears the selection (which they can do at any
+     time). A slot can only be selected if it's in the future.
+  10. A room (and everyone's marks in it) is automatically removed 3 days
+      after its finalized meeting date, or 3 days after the planning
+      range's end date if nothing was ever finalized.
 - **Constraints:** no deadline; budget = none (no paid services); stack is
   JulAI's choice, reviewed by Owner at first check-in. No accounts, no
   external services, no payments — this project needs none of those.
@@ -62,6 +70,17 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
     timezone conversion is explicitly out of scope (documented trust/simplicity
     trade-off, matches "friends coordinating one meetup" framing).
   - Project name: when-we-meet.
+  - Creator/"finalize the meeting time" permission (added mid-M5, Owner
+    request): tied to a *participant identity*
+    (`Room.creatorParticipantId`), not a separate cookie, specifically so
+    it's recoverable across devices via the same name-collision "is this
+    you?" flow participant identity already uses — see HANDOVER D7. This
+    also confirms the creator marks their own availability exactly like any
+    other participant (they must join normally to be recognized).
+  - Room expiry (added mid-M5, Owner request): 3 days after the finalized
+    date, or 3 days after the range end if never finalized; a coarse
+    UTC-calendar-day policy, not timezone-precise (see HANDOVER D6) —
+    enforced lazily on access plus a standalone cleanup script/service.
 
 **Milestones** (filled in by The Company during planning):
 - [x] M1 — Foundation: Next.js/TS/Prisma/Postgres scaffold running locally
@@ -108,12 +127,44 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       timezone picker regrouped into region `<optgroup>`s instead of one flat
       ~400-entry list. Room-slug and cookie-token entropy reviewed — no
       changes needed, already adequate (documented in HANDOVER D4).
-- [ ] M5 — Testing & sign-off: unit tests for the overlap/ranking algorithm,
+- [x] M5 — Testing & sign-off: unit tests for the overlap/ranking algorithm,
       Playwright e2e for create → join → mark → view-results and the
       name-collision flow, manual verification of the running app, README/
-      HANDOVER finalized.
+      HANDOVER finalized. ✔ 2026-08-17. Scope grew mid-milestone at the
+      Owner's request to include acceptance criteria 9-10 (finalize the
+      meeting time; room expiry) — both built and covered by the same test
+      suite. 40 Vitest unit tests (`lib/slots`, `lib/results`,
+      `lib/validation`, `lib/time`, `lib/expiry`) + 4 Playwright e2e specs
+      (create/join/mark/results, name-collision confirm+decline,
+      finalize/lock/clear), all green. Found and fixed a real bug via this
+      suite: `formatDayLabel` used the runtime-default locale, which
+      differed between the Next.js server and the browser and caused a
+      genuine React hydration mismatch — pinned to `"en-GB"`. Manually
+      verified: full finalize flow in a real browser (creator-only pick
+      controls, very-visible banner shown to a cookie-less `curl` visitor
+      too, grid locked for everyone, clear reopens it); room expiry's
+      lazy-deletion mechanics (inserted a 2020-dated room directly in
+      Postgres, confirmed it 404s and the row is actually gone).
+      tsc/eslint clean throughout.
 
 **Progress log** (newest first; The Company appends at every stopping point):
+- 2026-08-17 — **M5 done — all five milestones complete, G-001 functionally
+  done.** Built the test infrastructure (Vitest + Playwright, see M5 entry
+  above) and, at the Owner's request mid-milestone, two new features now
+  covered by it: (1) the room creator can pick/clear a finalized meeting
+  slot (creator permission tied to a participant identity so it's
+  recoverable across devices — see HANDOVER D7 for why that design was
+  chosen over the initial standalone-cookie approach); (2) rooms expire and
+  are deleted 3 days after the finalized date or the range end (HANDOVER
+  D6), enforced lazily on access plus a standalone `npm run cleanup`
+  script/docker-compose service. Found and fixed a genuine bug via the new
+  e2e suite: a locale-dependent date-formatting hydration mismatch between
+  server and client. Added `git remote origin` pointing at the Owner's
+  supplied GitHub URL (`git@github.com:yunniko/when-we-meet.git`) —
+  **not pushed**, awaiting explicit Owner go-ahead per VALUES.md before
+  anything leaves the workspace. 40 unit + 4 e2e tests, all green;
+  tsc/eslint clean throughout. **Stopping here for Owner review** — this is
+  the last planned milestone; further work is Owner-directed from here.
 - 2026-08-17 — **Visual redesign (Owner-directed, post-M4).** Owner asked
   for a light theme and supplied a hand-drawn/crayon illustration
   ("WHEN WE MEET,♥" — four friends toasting, with a starred weekly

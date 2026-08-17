@@ -66,7 +66,14 @@ export function formatDayLabel(date: string): string {
   // date is "YYYY-MM-DD"; parse as UTC noon to dodge any DST edge shifting
   // the displayed weekday in the server's local timezone.
   const d = new Date(`${date}T12:00:00Z`);
-  return d.toLocaleDateString(undefined, {
+  // Locale is pinned (not `undefined`, i.e. not "whatever the runtime's
+  // default locale is") on purpose: this renders on the server during SSR
+  // and again on the client during hydration, and those two runtimes can
+  // have different default locales (e.g. a Node server defaulting to one
+  // locale's word order, a browser defaulting to another) — `undefined`
+  // here caused a real React hydration mismatch, not just a cosmetic
+  // difference.
+  return d.toLocaleDateString("en-GB", {
     timeZone: "UTC",
     weekday: "short",
     month: "short",

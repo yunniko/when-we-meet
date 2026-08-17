@@ -159,10 +159,108 @@ browser against the new palette — no leftover dark-mode classes, hero image
 renders and is optimized by `next/image`, all interactive flows still work.
 tsc/eslint clean. Test data cleaned up.
 
-**Not started yet:** all automated tests (Vitest/Playwright — deliberately
-deferred to M5; verification through M1-M4 and the visual redesign has been
-manual/browser-driven per milestone, per the checkpoint discipline in
-OPERATIONS.md). See `GOALS.md`.
+**M5 (Testing & sign-off) — done, scope expanded mid-milestone by the Owner.**
+Two features were added during M5 that weren't in the original milestone
+plan (per OPERATIONS.md, routine decisions are made and logged, not stopped
+on): the creator picking/locking a final meeting time, and room expiry. Both
+are now covered by the same test suite M5 exists to build.
+
+**Test infrastructure**: Vitest (`vitest.config.ts`, specs in
+`tests/unit/`) for the pure `lib/*` modules — `slots.spec.ts`,
+`results.spec.ts` (the overlap/ranking algorithm, explicitly called out in
+the milestone), `validation.spec.ts`, `time.spec.ts`, `expiry.spec.ts` — 40
+tests total. Playwright (`playwright.config.ts`, specs in `tests/e2e/`,
+dedicated port 30099, `webServer` auto-boots `next dev`) for full flows:
+`create-join-mark-results.spec.ts`, `name-collision.spec.ts` (both
+confirm/decline branches), `finalize-meeting-time.spec.ts` — 4 tests, run
+against the same dev Postgres database as local development (no separate
+test DB — matches the listing-studio portfolio precedent; each test creates
+its own uniquely-slugged room so this doesn't collide). `npm test` runs
+both layers. Grid cells and results-heatmap cells carry `data-testid`
+attributes (`slot-<date>-<hour>`, `result-slot-<date>-<hour>`) purely for
+Playwright, since they have no other natural accessible role to select by.
+
+**Bug found and fixed via this test suite**: `lib/slots.ts::formatDayLabel`
+called `toLocaleDateString(undefined, {...})` — `undefined` locale means
+"whatever the runtime's default locale is," and the Next.js **server**
+(Node's default locale) and the **browser** (Chromium's default locale) can
+disagree on that default, which they did in this dev environment ("Sat 10
+Apr" server-rendered vs. "Sat, Apr 10" on client hydration) — a genuine
+React hydration mismatch, not a cosmetic difference. Fixed by pinning the
+locale to `"en-GB"` explicitly, so server and client always agree regardless
+of the host machine's locale. This is exactly the class of bug e2e tests
+against a real browser are for — it wouldn't have shown up in a
+component-level test.
+
+**New feature — creator picks/locks the final meeting time** (Owner request,
+mid-M5): see D6/D7 for the full design. Summary: `Room.selectedDate` /
+`selectedHour` hold the finalized slot (same wall-clock convention as
+`Availability`). Once set: `saveAvailability` refuses all further marking
+(checked server-side, not just hidden in the UI) and the room page shows a
+static "closed" message instead of the grid; a banner
+(`app/r/[slug]/finalized-banner.tsx`) reading "📌 Meeting time set: ..." is
+shown to **everyone** (joined or not — it renders above the join form too)
+on both the room and results pages, satisfying "very visible." Only the
+room's creator sees pick/clear controls (`app/r/[slug]/results-board.tsx`:
+click any heatmap cell, or a "Pick this time" button per "Best times" row;
+the banner's "Clear selection" button). `selectFinalSlot` rejects slots
+outside the room's date/hour range and slots that aren't strictly in the
+future (`lib/time.ts::isSlotInFuture`, timezone-aware via the room's own
+declared IANA zone). Creator permission is *not* a standalone cookie — see
+D7 for why it's tied to a participant identity instead, which also
+confirms the creator can mark their own availability exactly like anyone
+else (they must join as a normal participant to be recognized).
+
+**New feature — room expiry** (Owner request, mid-M5): a room is deleted 3
+days after its finalized meeting date, or 3 days after the planning range's
+end date if nothing was ever finalized (`lib/expiry.ts`). Enforced two ways:
+lazily on access (`lib/room-access.ts::findActiveRoom` — an expired room
+404s and is deleted the moment anyone opens it; every page that loads a room
+by slug goes through this, not a raw `prisma.room.findUnique`), and via a
+standalone sweep (`scripts/cleanup-expired-rooms.ts`, `npm run cleanup`) for
+rooms nobody ever revisits, which would otherwise sit in the database
+forever. The script is also wired into `docker-compose.yml` as an optional
+`cleanup` profile service (a simple `while true; sleep 86400` loop around
+the same script — no queue/scheduler infra added, consistent with D1).
+
+**Verified**: full flow manually in a real browser (create room as
+"Creator" → join → mark availability → results page shows creator-only pick
+controls, confirmed a second participant does *not* see them → pick a slot
+→ banner appears on both room and results pages, confirmed via `curl` with
+no cookies that a brand-new visitor sees the banner but not the clear
+button → grid replaced with the closed message → "Clear selection" reopens
+marking) — plus the full automated suite (40 unit + 4 e2e, all green) which
+now also covers this flow (`finalize-meeting-time.spec.ts`). Expiry itself
+was also verified directly: inserted a room with a 2020 date range straight
+into Postgres, confirmed `GET /r/<slug>` 404s (lazy deletion on access
+firing correctly), then confirmed via `psql` the row was actually gone, not
+just hidden. `npm run cleanup` run manually too (reports 0/0 against an
+empty dev DB). tsc/eslint clean throughout. Test data cleaned up.
+
+**Known gap, not exercised**: `selectFinalSlot`'s future-only rejection
+(`isSlotInFuture`) is unit-tested thoroughly at the pure-function level but
+wasn't separately exercised end-to-end against a past-dated room in a
+browser (would have needed a room with a past date range, which the create
+form doesn't currently block — see the still-open note in D3's neighborhood
+about no past-date validation at creation). Low risk: the wiring is a single
+`if` around a well-tested pure function.
+
+## Loose end from this session (not yet actioned)
+
+The Owner supplied a GitHub remote (`git@github.com:yunniko/when-we-meet.git`)
+partway through M5. It's been added as `origin` (`git remote add origin ...`)
+— a safe, local, reversible action — but nothing has been pushed. Per
+VALUES.md ("nothing leaves the workspace without Owner approval") and
+OPERATIONS.md (publishing/uploading always requires stopping to ask,
+regardless of milestone position), pushing needs an explicit go-ahead even
+though the Owner provided the URL themselves — supplying a remote isn't the
+same as asking to push to it. Ask before the first push.
+
+**Not started yet:** nothing from the original G-001 acceptance criteria —
+all five milestones are done. Open items are the "known gap" above, the
+still-outstanding real-touch-device check (M2/M4), and whatever the Owner
+wants next (the participant-profile idea flagged earlier remains a
+documented future direction, not started).
 
 ## How things fit together
 
@@ -170,8 +268,9 @@ OPERATIONS.md). See `GOALS.md`.
   survives dev hot-reloads. Copy of the listing-studio pattern (D1).
 - `lib/slug.ts` — 12-char unguessable room slug (`nanoid`, unambiguous
   32-symbol alphabet — no `0/O/1/I/l`) and a separate, higher-entropy
-  `generateParticipantToken()` for cookie identity (never typed/shared, so
-  the unambiguous-alphabet constraint doesn't apply).
+  `generateCookieToken()` for cookie identity (participants *and* the
+  one-shot room-owner token — never typed/shared, so the unambiguous-alphabet
+  constraint doesn't apply).
 - `lib/validation.ts` — Zod schema for room creation (`createRoomSchema`).
   This is where server-side validation rules for rooms live; keep it a pure
   module with no Next/Prisma imports so it stays unit-testable.
@@ -188,20 +287,54 @@ OPERATIONS.md). See `GOALS.md`.
   on top of it.
 - `lib/cookies.ts` / `lib/participant.ts` — server-only (`import
   "server-only"` guards against accidental client-bundle inclusion). Cookie
-  get/set/clear and "resolve the current request's Participant from its
-  cookie" respectively.
+  get/set/clear (participant *and* owner cookies) and "resolve the current
+  request's Participant from its cookie" respectively.
+- `lib/owner.ts` — server-only. `isRoomOwner(room)` (is the currently
+  logged-in participant the room's creator?) and `claimCreatorIfEligible`
+  (the one-shot auto-tagging called from `joinRoom` — see D7).
+- `lib/time.ts` — `nowInTimezone`/`isSlotInFuture`. The one place real IANA
+  timezone conversion happens in the app (see AGENTS.md note); backs the
+  "only pick a future meeting time" rule.
+- `lib/expiry.ts` — pure `isRoomExpired`/`roomExpiryDate` (see D6). No
+  Next/Prisma imports — unit-testable, and this is the single source of
+  truth both `lib/room-access.ts` and `scripts/cleanup-expired-rooms.ts`
+  call into.
+- `lib/room-access.ts` — server-only `findActiveRoom(slug)`: the one place
+  that turns "load a Room by slug" and "is it expired" into one call. Every
+  page that loads a room by slug uses this instead of a raw
+  `prisma.room.findUnique`.
 - `app/actions.ts` — server actions (`"use server"`) for the **landing
   page** concern: `createRoom` follows the listing-studio pattern (D4
   there): typed `useActionState` result, submitted values echoed back on
-  validation failure so the form doesn't lose what the user typed.
+  validation failure so the form doesn't lose what the user typed. Also
+  generates the room's `ownerToken` and sets the owner cookie.
 - `app/r/[slug]/actions.ts` — server actions for the **room** concern:
-  `joinRoom` (new-name-vs-collision, see above), `leaveIdentity` (clears the
-  cookie and redirects, used by "Not you? Use a different name"), and
-  `saveAvailability` (called imperatively from the client grid component,
-  not bound to a `<form>` — Next.js server actions work as plain async RPC
-  calls too, not only as form actions).
+  `joinRoom` (new-name-vs-collision, see above; also calls
+  `claimCreatorIfEligible` on every successful join), `leaveIdentity`
+  (clears the participant cookie and redirects, used by "Not you? Use a
+  different name"), `saveAvailability` (called imperatively from the client
+  grid component, not bound to a `<form>` — Next.js server actions work as
+  plain async RPC calls too, not only as form actions; refuses to save once
+  the room is finalized), and `selectFinalSlot`/`deselectFinalSlot`
+  (creator-only, re-verified server-side every time — see D7).
+- `app/r/[slug]/finalized-banner.tsx` / `results-board.tsx` — client
+  components for the "very visible" banner (shown to everyone) and the
+  interactive results heatmap/best-times list (pick controls shown only to
+  the creator).
+- `lib/results.ts` — `computeResults`, the pure overlap/ranking aggregation
+  behind the results page. Kept separate from `lib/slots.ts` since it's a
+  distinct concern (aggregation vs. date/slot primitives) built on top of it.
+- `scripts/cleanup-expired-rooms.ts` — standalone expiry sweep (`npm run
+  cleanup`; also wired into `docker-compose.yml`'s `cleanup` service). Uses
+  relative imports (`../lib/expiry`, `../generated/prisma/client`), not the
+  `@/` alias — `tsx` doesn't resolve tsconfig path aliases without extra
+  config, and this was simpler than adding it for one script.
+- `tests/unit/*.spec.ts` — Vitest, one file per pure `lib/` module.
+  `tests/e2e/*.spec.ts` — Playwright; `tests/e2e/helpers.ts` has the shared
+  `createRoom`/`joinRoom`/`paintAndWaitForSave` flows every spec builds on.
 - `prisma/schema.prisma` — see D2 below for why slots are plain
-  `(date, hour)` pairs, not `DateTime` instants.
+  `(date, hour)` pairs, not `DateTime` instants; D7 for the
+  `creatorParticipantId` relation design.
 
 ## Decision record (append-only; newest last)
 
@@ -294,6 +427,51 @@ title lettering, so the page's own `<h1>` is `sr-only` (kept for
 accessibility/SEO, not shown — no duplicate visible title). No third-party
 license concern: Owner-supplied for their own project.
 
+### D6 — Room expiry is a coarse UTC-calendar-day policy, not timezone-aware (2026-08-17)
+**Why:** Owner request: "removed three days after selected date or three
+days after selected day range end." `lib/expiry.ts::roomExpiryDate` adds 3
+calendar days (UTC) to whichever is relevant and compares against real
+"now" — it does **not** convert through the room's declared timezone the
+way `lib/time.ts::isSlotInFuture` does for the future-only check.
+**Considered:** timezone-aware expiry (expire at local midnight in the
+room's zone) — rejected as unwarranted precision for a cleanup grace
+period; being off by a few hours around a boundary doesn't matter for "stop
+holding onto this data," unlike the future-only check where getting the
+comparison wrong could reject (or wrongly allow) a real pick. Enforcement
+is two-layered because there's no queue/scheduler infra (D1): lazy
+deletion on access (`lib/room-access.ts`) guarantees anyone who *does*
+revisit an expired room can't see stale data, and the standalone script
+(`scripts/cleanup-expired-rooms.ts`, also runnable from `docker-compose.yml`)
+handles rooms nobody revisits, which lazy deletion alone would never touch.
+
+### D7 — Creator permission is tied to a participant identity, not a standalone cookie (2026-08-17)
+**Why:** the first design (still visible as the "one-shot" framing in
+`lib/owner.ts`) used a single `ownerToken` cookie set at room-creation time
+as the sole proof of creator-ness. The Owner's follow-up requirement —
+"the log in under creator's name gives creator's permissions" — pointed at
+a real gap in that design: a device-bound cookie has no recovery path, so
+losing it (clearing cookies, switching devices) would permanently lock the
+creator out of ever finalizing or clearing a meeting time, unlike
+participant identity, which already has a recovery path (the name-collision
+"is this you?" claim flow). The fix: `Room.creatorParticipantId` points at
+a specific `Participant`, and `isRoomOwner` checks whether the *currently
+logged-in participant* (via the ordinary participant cookie) is that one.
+The `ownerToken` cookie still exists, but its only job now is a one-shot
+signal consumed by `claimCreatorIfEligible` — called from every successful
+`joinRoom` path — which tags the room-creating browser's *first* joined
+participant as creator and never reassigns it after that. Net effect: (1)
+the creator can rejoin as that same participant from any device via the
+existing collision-claim flow and regain creator permissions — exactly what
+was asked for; (2) the creator is confirmed to be able to mark availability
+like anyone else, since becoming creator *requires* joining as a normal
+participant first; (3) if the room-creator never joins at all, nobody ever
+gets creator permissions for that room (no fallback) — a deliberate
+trust-model consequence, not a bug, matching "whoever creates it and then
+identifies themselves is the creator." **Considered:** keeping the
+standalone owner cookie as the only mechanism — rejected once the
+no-recovery-path gap was identified; a Google-account-style "transfer
+ownership" flow — out of scope, no accounts exist in this app by design.
+
 ## Future direction (not building yet — Owner flagged 2026-08-17)
 
 The Owner wants to keep the door open for **participant profiles**: a
@@ -310,18 +488,14 @@ currently doesn't).
 
 ## Next steps
 
-1. M1 through M4 are all done and verified — nothing blocking. Next action
-   is the Owner checkpoint (per OPERATIONS.md, stop at milestone boundaries)
-   before starting M5.
-2. M5 (testing & sign-off, per GOALS.md): Vitest unit tests for the pure
-   modules (`lib/slots.ts`, `lib/results.ts`, `lib/validation.ts` are all
-   Next/Prisma-free and ready for this — the overlap/ranking algorithm in
-   particular deserves direct coverage of its sort order and edge cases like
-   zero participants or a slot nobody marked), Playwright e2e for
-   create → join → mark → view-results and the name-collision flow. All
-   verification through M1-M4 has been manual/browser-driven per milestone;
-   M5 is where that gets automated so future changes don't need a full
-   manual pass every time.
+1. **All five milestones (M1-M5) are done and verified.** G-001's original
+   acceptance criteria are all met; the finalize-meeting-time and
+   room-expiry features the Owner added mid-M5 are done too. Next action is
+   the Owner checkpoint before deciding what's next — there's no
+   pre-planned M6.
+2. **Pending: push to GitHub.** `origin` is set to
+   `git@github.com:yunniko/when-we-meet.git` but nothing has been pushed —
+   ask the Owner before the first push (see "Loose end" above).
 3. Open questions/flags for the Owner, none blocking:
    - Touch drag-painting (both the brush paint and the Prefer toggle) is
      implemented with the standard pointer-event technique and touch-target
@@ -336,3 +510,18 @@ currently doesn't).
      each cell's hover tooltip). Not a spec gap — the acceptance criteria
      only ask for availability ranking — but worth a design opinion from the
      Owner if it turns out confusing in practice.
+   - Room creation still doesn't block past dates (noted since M1/D3) — now
+     more relevant since a room whose whole range is already in the past
+     would be immediately expiry-eligible. Not a bug (nothing breaks), but
+     worth a product opinion: should the create form require the range to
+     start today or later?
+   - The future-only check on picking a meeting time is unit-tested but
+     wasn't separately exercised end-to-end against a real past-dated room
+     in a browser (see M5 "Known gap" above) — low risk, but flagging for
+     completeness.
+   - Room-expiry's deletion mechanics are verified (inserted an already-past
+     room directly in Postgres, confirmed it 404s and the row is actually
+     gone) and the "3 days" arithmetic is unit-tested, but nobody has
+     watched a *real* room cross the boundary in real time (impractical to
+     test that way) — low risk, since both pieces are independently
+     confirmed correct.
