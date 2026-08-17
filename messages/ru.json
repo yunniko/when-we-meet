@@ -101,5 +101,37 @@
     "warning": "Это удалит ваше имя и все ваши отметки из этой комнаты. Действие необратимо.",
     "confirm": "Да, удалить мои данные",
     "cancel": "Отмена"
+  },
+  "ResultsPage": {
+    "pageTitle": "{title} — результаты",
+    "peopleCount": "{count, plural, one {# участник} few {# участника} many {# участников} other {# участников}}",
+    "participantsLabel": "Участники: {names}",
+    "editLink": "← Изменить мою доступность"
+  },
+  "ResultsBoard": {
+    "legend": {
+      "fewerCan": "меньше могут",
+      "moreCan": "больше могут",
+      "everyoneCan": "могут все",
+      "preferHint": "★N = N человек предпочитают этот слот",
+      "clickToPick": "Нажмите на слот, чтобы назначить его временем встречи"
+    },
+    "cellTitleBase": "{can}/{total} могут",
+    "cellTitlePrefer": ", {count} предпочитают",
+    "cellTitleCannot": ", {count} не могут",
+    "bestTimesHeading": "Лучшее время",
+    "noSlotsYet": "Пока никто не отметил доступное время.",
+    "everyoneBadge": "все",
+    "preferSuffix": " · ★{count} предпочитают",
+    "pickButton": "Выбрать это время",
+    "settingButton": "Установка…",
+    "cantLabel": "Не могут: {names}",
+    "errors": {
+      "roomNotFound": "Комната не найдена.",
+      "notOwner": "Только создатель комнаты может назначить время встречи.",
+      "invalidSlot": "Некорректный слот.",
+      "outOfRange": "Этот слот вне диапазона комнаты.",
+      "notFuture": "Можно выбрать только время в будущем."
+    }
   }
 }

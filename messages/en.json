@@ -101,5 +101,37 @@
     "warning": "This deletes your name and all your marks from this room. It can't be undone.",
     "confirm": "Yes, delete my data",
     "cancel": "Cancel"
+  },
+  "ResultsPage": {
+    "pageTitle": "{title} — results",
+    "peopleCount": "{count, plural, one {# person} other {# people}}",
+    "participantsLabel": "Participants: {names}",
+    "editLink": "← Edit my availability"
+  },
+  "ResultsBoard": {
+    "legend": {
+      "fewerCan": "fewer can",
+      "moreCan": "more can",
+      "everyoneCan": "everyone can",
+      "preferHint": "★N = N prefer this slot",
+      "clickToPick": "Click a slot to set it as the meeting time"
+    },
+    "cellTitleBase": "{can}/{total} can",
+    "cellTitlePrefer": ", {count} prefer",
+    "cellTitleCannot": ", {count} can't",
+    "bestTimesHeading": "Best times",
+    "noSlotsYet": "Nobody has marked any slots as available yet.",
+    "everyoneBadge": "everyone",
+    "preferSuffix": " · ★{count} prefer",
+    "pickButton": "Pick this time",
+    "settingButton": "Setting…",
+    "cantLabel": "Can't: {names}",
+    "errors": {
+      "roomNotFound": "Room not found.",
+      "notOwner": "Only the room's creator can set the meeting time.",
+      "invalidSlot": "Invalid slot.",
+      "outOfRange": "That slot isn't in this room's range.",
+      "notFuture": "You can only pick a time in the future."
+    }
   }
 }

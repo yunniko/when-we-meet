@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type CSSProperties } from "react";
+import { useTranslations } from "next-intl";
 import { selectFinalSlot } from "@/app/r/[slug]/actions";
 import { formatDayLabel, formatHour, isWeekend, slotKey } from "@/lib/slots";
 import type { SlotResult } from "@/lib/results";
@@ -32,6 +33,7 @@ export function ResultsBoard({
   topResults: SlotResult[];
   canPick: boolean;
 }) {
+  const t = useTranslations("ResultsBoard");
   const router = useRouter();
   const [pendingKey, setPendingKey] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -50,24 +52,26 @@ export function ResultsBoard({
   return (
     <>
       {error && (
-        <p className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+        <p className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+          {t(`errors.${error}`)}
+        </p>
       )}
 
       <div className="mb-6 flex flex-wrap items-center gap-4 text-xs text-muted">
         <span className="flex items-center gap-1.5">
           <span className="size-3 rounded-sm border border-border" style={{ backgroundColor: "rgba(16,185,129,0.15)" }} />
-          fewer can
+          {t("legend.fewerCan")}
         </span>
         <span className="flex items-center gap-1.5">
           <span className="size-3 rounded-sm" style={{ backgroundColor: "rgba(16,185,129,1)" }} />
-          more can
+          {t("legend.moreCan")}
         </span>
         <span className="flex items-center gap-1.5">
           <span className="size-3 rounded-sm ring-2 ring-amber-400" />
-          everyone can
+          {t("legend.everyoneCan")}
         </span>
-        <span className="flex items-center gap-1.5">★N = N prefer this slot</span>
-        {canPick && <span className="font-medium text-accent">Click a slot to set it as the meeting time</span>}
+        <span className="flex items-center gap-1.5">{t("legend.preferHint")}</span>
+        {canPick && <span className="font-medium text-accent">{t("legend.clickToPick")}</span>}
       </div>
 
       <div className="max-h-[70vh] overflow-auto rounded-md border border-border">
@@ -103,9 +107,9 @@ export function ResultsBoard({
                     data-testid={`result-slot-${date}-${hour}`}
                     disabled={!canPick || pendingKey !== null}
                     onClick={() => pick(date, hour)}
-                    title={`${result.canCount}/${result.totalParticipants} can${
-                      result.preferredCount > 0 ? `, ${result.preferredCount} prefer` : ""
-                    }${result.cannotCount > 0 ? `, ${result.cannotCount} can't` : ""}`}
+                    title={`${t("cellTitleBase", { can: result.canCount, total: result.totalParticipants })}${
+                      result.preferredCount > 0 ? t("cellTitlePrefer", { count: result.preferredCount }) : ""
+                    }${result.cannotCount > 0 ? t("cellTitleCannot", { count: result.cannotCount }) : ""}`}
                     style={cellStyle(result)}
                     className={`relative h-10 border-l border-t border-border ${
                       isWeekend(date) ? "bg-weekend" : ""
@@ -126,9 +130,9 @@ export function ResultsBoard({
         </div>
       </div>
 
-      <h2 className="mt-8 mb-3 text-sm font-semibold">Best times</h2>
+      <h2 className="mt-8 mb-3 text-sm font-semibold">{t("bestTimesHeading")}</h2>
       {topResults.length === 0 ? (
-        <p className="text-sm text-muted">Nobody has marked any slots as available yet.</p>
+        <p className="text-sm text-muted">{t("noSlotsYet")}</p>
       ) : (
         <ol className="flex flex-col gap-1.5 text-sm">
           {topResults.map((r) => {
@@ -140,13 +144,13 @@ export function ResultsBoard({
                     {formatDayLabel(r.date)}, {formatHour(r.hour)}–{formatHour((r.hour + 1) % 24)}
                   </span>
                   <span className="flex items-center gap-2 text-muted">
-                    {r.canCount}/{r.totalParticipants} can
+                    {t("cellTitleBase", { can: r.canCount, total: r.totalParticipants })}
                     {r.isFullGroup && (
                       <span className="rounded-full bg-amber-400/20 px-1.5 py-0.5 text-xs font-medium text-amber-700">
-                        everyone
+                        {t("everyoneBadge")}
                       </span>
                     )}
-                    {r.preferredCount > 0 && ` · ★${r.preferredCount} prefer`}
+                    {r.preferredCount > 0 && t("preferSuffix", { count: r.preferredCount })}
                     {canPick && (
                       <button
                         type="button"
@@ -154,14 +158,14 @@ export function ResultsBoard({
                         onClick={() => pick(r.date, r.hour)}
                         className="ml-1 rounded-md border border-accent px-2 py-1 text-xs font-medium text-accent hover:bg-accent/10 disabled:opacity-50"
                       >
-                        {pendingKey === key ? "Setting…" : "Pick this time"}
+                        {pendingKey === key ? t("settingButton") : t("pickButton")}
                       </button>
                     )}
                   </span>
                 </div>
                 {r.missingNames.length > 0 && (
                   <p className="text-xs text-muted">
-                    Can&apos;t: {r.missingNames.join(", ")}
+                    {t("cantLabel", { names: r.missingNames.join(", ") })}
                   </p>
                 )}
               </li>

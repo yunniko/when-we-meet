@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
 import { findActiveRoom } from "@/lib/room-access";
 import { getCurrentParticipant } from "@/lib/participant";
@@ -21,6 +22,9 @@ export default async function ResultsPage({
 
   const participant = await getCurrentParticipant(room.id);
   if (!participant) redirect(`/r/${slug}`);
+
+  const t = await getTranslations("ResultsPage");
+  const tCommon = await getTranslations("Common");
 
   const isFinalized = room.selectedDate !== null && room.selectedHour !== null;
   const isOwner = await isRoomOwner(room);
@@ -58,21 +62,21 @@ export default async function ResultsPage({
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">
-            {room.title || "Untitled room"} — results
+            {t("pageTitle", { title: room.title || tCommon("untitledRoom") })}
           </h1>
           <p className="mt-1 text-sm text-muted">
             {formatDateRange(room.startDate, room.endDate)} ·{" "}
             {formatHoursWindow(room.dayStartHour, room.dayEndHour)} · {room.timezone} ·{" "}
-            {totalParticipants} {totalParticipants === 1 ? "person" : "people"}
+            {t("peopleCount", { count: totalParticipants })}
           </p>
           <p className="mt-1 text-sm text-muted">
-            Participants: {participants.map((p) => p.name).join(", ")}
+            {t("participantsLabel", { names: participants.map((p) => p.name).join(", ") })}
           </p>
         </div>
         <div className="flex flex-col items-end gap-2">
           <NewEventButton />
           <Link href={`/r/${room.slug}`} className="text-sm font-medium text-accent underline hover:text-accent-hover">
-            ← Edit my availability
+            {t("editLink")}
           </Link>
         </div>
       </div>

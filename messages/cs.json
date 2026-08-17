@@ -101,5 +101,37 @@
     "warning": "Tímto se smaže vaše jméno a všechny vaše záznamy z této místnosti. Nelze vrátit zpět.",
     "confirm": "Ano, smazat moje data",
     "cancel": "Zrušit"
+  },
+  "ResultsPage": {
+    "pageTitle": "{title} — výsledky",
+    "peopleCount": "{count, plural, one {# osoba} few {# osoby} other {# osob}}",
+    "participantsLabel": "Účastníci: {names}",
+    "editLink": "← Upravit moji dostupnost"
+  },
+  "ResultsBoard": {
+    "legend": {
+      "fewerCan": "méně může",
+      "moreCan": "více může",
+      "everyoneCan": "můžou všichni",
+      "preferHint": "★N = N lidí preferuje tento čas",
+      "clickToPick": "Klikněte na čas, abyste ho nastavili jako čas schůzky"
+    },
+    "cellTitleBase": "{can}/{total} může",
+    "cellTitlePrefer": ", {count} preferuje",
+    "cellTitleCannot": ", {count} nemůže",
+    "bestTimesHeading": "Nejlepší časy",
+    "noSlotsYet": "Zatím nikdo neoznačil žádný dostupný čas.",
+    "everyoneBadge": "všichni",
+    "preferSuffix": " · ★{count} preferuje",
+    "pickButton": "Vybrat tento čas",
+    "settingButton": "Nastavování…",
+    "cantLabel": "Nemůže: {names}",
+    "errors": {
+      "roomNotFound": "Místnost nebyla nalezena.",
+      "notOwner": "Čas schůzky může nastavit jen tvůrce místnosti.",
+      "invalidSlot": "Neplatný čas.",
+      "outOfRange": "Tento čas není v rozsahu místnosti.",
+      "notFuture": "Můžete vybrat jen čas v budoucnosti."
+    }
   }
 }

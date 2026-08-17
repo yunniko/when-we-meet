@@ -101,5 +101,37 @@
     "warning": "Dadurch werden dein Name und alle deine Einträge aus diesem Raum gelöscht. Das kann nicht rückgängig gemacht werden.",
     "confirm": "Ja, meine Daten löschen",
     "cancel": "Abbrechen"
+  },
+  "ResultsPage": {
+    "pageTitle": "{title} — Ergebnisse",
+    "peopleCount": "{count, plural, one {# Person} other {# Personen}}",
+    "participantsLabel": "Teilnehmer: {names}",
+    "editLink": "← Meine Verfügbarkeit bearbeiten"
+  },
+  "ResultsBoard": {
+    "legend": {
+      "fewerCan": "weniger können",
+      "moreCan": "mehr können",
+      "everyoneCan": "alle können",
+      "preferHint": "★N = N bevorzugen diese Zeit",
+      "clickToPick": "Klicke auf eine Zeit, um sie als Besprechungszeit festzulegen"
+    },
+    "cellTitleBase": "{can}/{total} können",
+    "cellTitlePrefer": ", {count} bevorzugen",
+    "cellTitleCannot": ", {count} können nicht",
+    "bestTimesHeading": "Beste Zeiten",
+    "noSlotsYet": "Noch niemand hat eine verfügbare Zeit markiert.",
+    "everyoneBadge": "alle",
+    "preferSuffix": " · ★{count} bevorzugen",
+    "pickButton": "Diese Zeit wählen",
+    "settingButton": "Wird festgelegt…",
+    "cantLabel": "Kann nicht: {names}",
+    "errors": {
+      "roomNotFound": "Raum nicht gefunden.",
+      "notOwner": "Nur der Ersteller des Raums kann die Besprechungszeit festlegen.",
+      "invalidSlot": "Ungültige Zeit.",
+      "outOfRange": "Diese Zeit liegt außerhalb des Zeitraums dieses Raums.",
+      "notFuture": "Du kannst nur eine Zeit in der Zukunft wählen."
+    }
   }
 }

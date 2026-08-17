@@ -210,25 +210,30 @@ export async function saveAvailability(
 // Both the creator-only checks below are re-verified here even though the
 // UI only shows these controls to the creator — the same "never trust the
 // client" rule as everywhere else in this file.
+//
+// Errors returned here are i18n KEYS under ResultsBoard.errors, not English
+// sentences — translated client-side in results-board.tsx, the only place
+// that currently surfaces them (deselectFinalSlot's errors below are never
+// displayed, so they stay plain English — nothing to translate for now).
 export async function selectFinalSlot(
   ctx: { roomId: string; slug: string },
   date: string,
   hour: number,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const room = await prisma.room.findUnique({ where: { id: ctx.roomId } });
-  if (!room) return { ok: false, error: "Room not found." };
+  if (!room) return { ok: false, error: "roomNotFound" };
   if (!(await isRoomOwner(room))) {
-    return { ok: false, error: "Only the room's creator can set the meeting time." };
+    return { ok: false, error: "notOwner" };
   }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isInteger(hour) || hour < 0 || hour > 23) {
-    return { ok: false, error: "Invalid slot." };
+    return { ok: false, error: "invalidSlot" };
   }
   const slotDate = new Date(`${date}T00:00:00Z`);
   if (slotDate < room.startDate || slotDate > room.endDate || hour < room.dayStartHour || hour >= room.dayEndHour) {
-    return { ok: false, error: "That slot isn't in this room's range." };
+    return { ok: false, error: "outOfRange" };
   }
   if (!isSlotInFuture(date, hour, room.timezone)) {
-    return { ok: false, error: "You can only pick a time in the future." };
+    return { ok: false, error: "notFuture" };
   }
 
   await prisma.room.update({
