@@ -80,10 +80,17 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       strokes, confirm DB persistence, leave and rejoin with a
       different-case name to trigger the collision prompt, confirm identity,
       confirm a second distinct name joins cleanly alongside the first).
-  - [ ] M3 — Preferred layer + results: optional "preferred" marking layer
+  - [x] M3 — Preferred layer + results: optional "preferred" marking layer
       constrained to a participant's own CAN slots; overlap computation across
       all participants; results view ranking slots by availability count with
-      full-group and preferred-overlap slots surfaced at the top.
+      full-group and preferred-overlap slots surfaced at the top. ✔ 2026-08-17.
+      Verified: seeded a second participant's marks directly in Postgres,
+      joined as a new participant in a real browser, painted overlapping CAN
+      slots plus one Prefer mark, confirmed the Prefer brush is a no-op on
+      non-CAN cells, confirmed exact DB rows, opened the results page and
+      confirmed the heatmap intensity/full-group ring/preferred badge and the
+      "Best times" ranking (canCount desc, then preferredCount desc) all
+      matched.
 - [ ] M4 — Edge cases & polish: strict single-day/fixed-hours event mode,
       always-editable own marks, empty/error states (room not found, name
       taken by a *different* confirmed identity mid-session), responsive/mobile
@@ -94,6 +101,26 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       HANDOVER finalized.
 
 **Progress log** (newest first; The Company appends at every stopping point):
+- 2026-08-17 — **M3 done and verified.** Grid gained a fourth brush,
+  "Prefer", which only applies to a participant's own CAN slots (server-side
+  clamp in `saveAvailability` too — never trust the client for that
+  invariant); a whole drag stroke sets-or-clears "preferred" uniformly,
+  decided from the first cell touched, so a mixed-state drag doesn't flip
+  cells independently of each other. New pure `lib/results.ts::computeResults`
+  aggregates every participant's `Availability` rows into per-slot
+  can/cannot/preferred counts and ranks slots (canCount desc, preferredCount
+  desc, then chronological). New `/r/[slug]/results` page (gated behind
+  having joined, like the grid): a read-only heatmap (green intensity =
+  fraction of the group who can, amber ring = everyone can, star badge =
+  preferred count) plus a "Best times" ranked list. Verified end to end:
+  seeded a second participant directly in Postgres, joined as a new
+  participant in a real browser, drag-painted overlapping CAN slots and one
+  Prefer mark, confirmed clicking Prefer on an unmarked cell is a true no-op
+  (no DB row created), confirmed exact Postgres rows, then opened the
+  results page and confirmed the heatmap and the "Best times" ranking both
+  matched by hand-checking the numbers. tsc/eslint clean throughout. Test
+  data cleaned up. **Stopping here per OPERATIONS.md milestone checkpoint —
+  awaiting Owner review before starting M4** (edge cases & polish).
 - 2026-08-17 — **M2 done and verified.** Cookie-based participant identity
   (httpOnly cookie per room, keyed by roomId, holding an opaque token — not
   the participant id). Join flow: new name creates a Participant immediately;

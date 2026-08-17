@@ -72,7 +72,12 @@ export async function leaveIdentity(
   redirect(`/r/${ctx.slug}`);
 }
 
-export type SlotUpdate = { date: string; hour: number; status: SlotStatus | null };
+export type SlotUpdate = {
+  date: string;
+  hour: number;
+  status: SlotStatus | null;
+  preferred: boolean;
+};
 
 export async function saveAvailability(
   roomId: string,
@@ -99,6 +104,10 @@ export async function saveAvailability(
           where: { participantId: participant.id, slotDate, slotHour: s.hour },
         });
       }
+      // "Preferred" is only meaningful on CAN slots — enforce that
+      // server-side too, not just in the client brush logic (defense in
+      // depth: never trust the client for a data-integrity rule).
+      const preferred = s.status === "CAN" ? s.preferred : false;
       return prisma.availability.upsert({
         where: {
           participantId_slotDate_slotHour: {
@@ -112,8 +121,9 @@ export async function saveAvailability(
           slotDate,
           slotHour: s.hour,
           status: s.status,
+          preferred,
         },
-        update: { status: s.status },
+        update: { status: s.status, preferred },
       });
     }),
   );

@@ -1,8 +1,9 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentParticipant } from "@/lib/participant";
-import { dateOnly, enumerateDates, enumerateHours } from "@/lib/slots";
-import type { SlotStatus } from "@/lib/slots";
+import { dateOnly, enumerateDates, enumerateHours, formatHoursWindow } from "@/lib/slots";
+import type { CellMark } from "@/lib/slots";
 import { JoinForm } from "@/app/r/[slug]/join-form";
 import { AvailabilityGrid } from "@/app/r/[slug]/availability-grid";
 import { leaveIdentity } from "@/app/r/[slug]/actions";
@@ -40,17 +41,15 @@ export default async function RoomPage({
   const availability = await prisma.availability.findMany({
     where: { participantId: participant.id },
   });
-  const initialAvailability: Record<string, SlotStatus> = {};
+  const initialAvailability: Record<string, CellMark> = {};
   for (const a of availability) {
-    initialAvailability[`${dateOnly(a.slotDate)}T${a.slotHour}`] = a.status;
+    initialAvailability[`${dateOnly(a.slotDate)}T${a.slotHour}`] = {
+      status: a.status,
+      preferred: a.preferred,
+    };
   }
 
-  const hoursLabel =
-    room.dayStartHour === 0 && room.dayEndHour === 24
-      ? "Whole day"
-      : `${String(room.dayStartHour).padStart(2, "0")}:00–${String(
-          room.dayEndHour,
-        ).padStart(2, "0")}:00`;
+  const hoursLabel = formatHoursWindow(room.dayStartHour, room.dayEndHour);
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-8">
@@ -79,11 +78,21 @@ export default async function RoomPage({
         </div>
       </div>
 
-      {otherParticipants.length > 0 && (
-        <p className="mb-4 text-sm text-foreground/60">
-          Also in this room: {otherParticipants.map((p) => p.name).join(", ")}
-        </p>
-      )}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        {otherParticipants.length > 0 ? (
+          <p className="text-sm text-foreground/60">
+            Also in this room: {otherParticipants.map((p) => p.name).join(", ")}
+          </p>
+        ) : (
+          <span />
+        )}
+        <Link
+          href={`/r/${room.slug}/results`}
+          className="text-sm font-medium underline hover:text-foreground/80"
+        >
+          See results →
+        </Link>
+      </div>
 
       <AvailabilityGrid
         roomId={room.id}

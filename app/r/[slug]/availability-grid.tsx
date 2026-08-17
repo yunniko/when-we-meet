@@ -2,19 +2,20 @@
 
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { saveAvailability, type SlotUpdate } from "@/app/r/[slug]/actions";
-import { formatDayLabel, formatHour, slotKey, type SlotStatus } from "@/lib/slots";
+import { formatDayLabel, formatHour, slotKey, type CellMark, type SlotStatus } from "@/lib/slots";
 
-type Brush = SlotStatus | "CLEAR";
+type Brush = SlotStatus | "CLEAR" | "PREFER";
 
 const BRUSHES: { value: Brush; label: string; swatchClass: string }[] = [
   { value: "CAN", label: "Can", swatchClass: "bg-emerald-500" },
   { value: "CANNOT", label: "Can't", swatchClass: "bg-rose-500" },
+  { value: "PREFER", label: "Prefer", swatchClass: "bg-amber-400" },
   { value: "CLEAR", label: "Clear", swatchClass: "bg-transparent border border-black/30 dark:border-white/30" },
 ];
 
-function cellClass(status: SlotStatus | undefined): string {
-  if (status === "CAN") return "bg-emerald-500/80 hover:bg-emerald-500";
-  if (status === "CANNOT") return "bg-rose-500/70 hover:bg-rose-500/90";
+function cellClass(mark: CellMark | undefined): string {
+  if (mark?.status === "CAN") return "bg-emerald-500/80 hover:bg-emerald-500";
+  if (mark?.status === "CANNOT") return "bg-rose-500/70 hover:bg-rose-500/90";
   return "bg-black/[.03] hover:bg-black/[.08] dark:bg-white/[.04] dark:hover:bg-white/[.1]";
 }
 
@@ -27,9 +28,9 @@ export function AvailabilityGrid({
   roomId: string;
   dates: string[];
   hours: number[];
-  initialAvailability: Record<string, SlotStatus>;
+  initialAvailability: Record<string, CellMark>;
 }) {
-  const [marks, setMarks] = useState<Record<string, SlotStatus>>(initialAvailability);
+  const [marks, setMarks] = useState<Record<string, CellMark>>(initialAvailability);
   const [brush, setBrush] = useState<Brush>("CAN");
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const painting = useRef(false);
@@ -38,20 +39,40 @@ export function AvailabilityGrid({
   // drag/swipe that skips pointerenter events on intermediate cells (common
   // on touch, and even with a fast mouse) still fills the gap in between.
   const lastPaintedIndex = useRef<{ dateIdx: number; hourIdx: number } | null>(null);
+  // For the PREFER brush: whether this whole stroke sets or clears
+  // "preferred", decided once from the first cell touched, so dragging over
+  // a mix of already-preferred and not-yet-preferred CAN cells doesn't flip
+  // each one independently.
+  const strokeSetsPreferred = useRef(true);
 
   const paintCell = useCallback(
     (date: string, hour: number) => {
       const key = slotKey(date, hour);
       setMarks((prev) => {
-        const next = { ...prev };
-        if (brush === "CLEAR") delete next[key];
-        else next[key] = brush;
-        return next;
-      });
-      strokeChanges.current.set(key, {
-        date,
-        hour,
-        status: brush === "CLEAR" ? null : brush,
+        const current = prev[key];
+
+        if (brush === "CLEAR") {
+          if (!current) return prev;
+          const next = { ...prev };
+          delete next[key];
+          strokeChanges.current.set(key, { date, hour, status: null, preferred: false });
+          return next;
+        }
+
+        if (brush === "PREFER") {
+          if (!current || current.status !== "CAN") return prev; // only applies to CAN slots
+          const preferred = strokeSetsPreferred.current;
+          if (current.preferred === preferred) return prev;
+          strokeChanges.current.set(key, { date, hour, status: "CAN", preferred });
+          return { ...prev, [key]: { status: "CAN", preferred } };
+        }
+
+        // CAN / CANNOT: keep an existing "preferred" mark only when
+        // repainting CAN over CAN; anything else forces it off (preferred
+        // only makes sense on a CAN slot).
+        const preferred = brush === "CAN" && current?.status === "CAN" ? current.preferred : false;
+        strokeChanges.current.set(key, { date, hour, status: brush, preferred });
+        return { ...prev, [key]: { status: brush, preferred } };
       });
     },
     [brush],
@@ -77,6 +98,20 @@ export function AvailabilityGrid({
       lastPaintedIndex.current = { dateIdx, hourIdx };
     },
     [dates, hours, paintCell],
+  );
+
+  const startStroke = useCallback(
+    (dateIdx: number, hourIdx: number) => {
+      painting.current = true;
+      lastPaintedIndex.current = null;
+      if (brush === "PREFER") {
+        const key = slotKey(dates[dateIdx], hours[hourIdx]);
+        const current = marks[key];
+        strokeSetsPreferred.current = !(current?.status === "CAN" && current.preferred);
+      }
+      paintCellAtIndex(dateIdx, hourIdx);
+    },
+    [brush, dates, hours, marks, paintCellAtIndex],
   );
 
   const endStroke = useCallback(() => {
@@ -139,7 +174,8 @@ export function AvailabilityGrid({
       </div>
 
       <p className="text-xs text-foreground/50">
-        Click, or click and drag, to paint slots. Works with touch too.
+        Click, or click and drag, to paint slots (works with touch too).
+        &quot;Prefer&quot; only applies to slots already marked Can.
       </p>
 
       <div className="overflow-x-auto rounded-md border border-black/10 dark:border-white/15">
@@ -167,21 +203,25 @@ export function AvailabilityGrid({
               </div>
               {dates.map((date, dateIdx) => {
                 const key = slotKey(date, hour);
-                const status = marks[key];
+                const mark = marks[key];
                 return (
                   <div
                     key={key}
                     onPointerDown={(e) => {
                       e.currentTarget.releasePointerCapture(e.pointerId);
-                      painting.current = true;
-                      lastPaintedIndex.current = null;
-                      paintCellAtIndex(dateIdx, hourIdx);
+                      startStroke(dateIdx, hourIdx);
                     }}
                     onPointerEnter={() => {
                       if (painting.current) paintCellAtIndex(dateIdx, hourIdx);
                     }}
-                    className={`h-8 border-l border-t border-black/10 dark:border-white/15 ${cellClass(status)}`}
-                  />
+                    className={`relative h-8 border-l border-t border-black/10 dark:border-white/15 ${cellClass(mark)}`}
+                  >
+                    {mark?.preferred && (
+                      <span className="pointer-events-none absolute right-0.5 top-0.5 text-[10px] leading-none text-amber-900 dark:text-amber-200">
+                        ★
+                      </span>
+                    )}
+                  </div>
                 );
               })}
             </Fragment>

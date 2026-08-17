@@ -6,7 +6,8 @@ and milestone plan live in `GOALS.md`; project conventions in `AGENTS.md`.
 
 ## Current state
 
-**M1 (Foundation) and M2 (Join & mark availability) — done.** M1:
+**M1 (Foundation), M2 (Join & mark availability), and M3 (Preferred layer +
+results) — done.** M1:
 
 - Next.js 16 (App Router, Turbopack) + TypeScript + Tailwind v4 scaffold,
   matching the portfolio's `create-next-app` defaults (see D1).
@@ -69,10 +70,50 @@ M2:
   before M4's dedicated mobile pass.
 - `npx tsc --noEmit` and `npx eslint .` both clean throughout.
 
-**Not started yet:** the preferred-availability layer, the overlap/results
-ranking algorithm, and all automated tests (Vitest/Playwright — deferred to
-M5 by design, verification so far has been manual/browser-driven per
-milestone). That's M3 onward — see `GOALS.md`.
+M3:
+
+- Grid gained a fourth brush, **Prefer**, which only applies to a
+  participant's own CAN slots. A drag stroke sets-or-clears "preferred"
+  uniformly across every cell it touches — decided once, from the first
+  cell's current state, at pointerdown (`strokeSetsPreferred` in
+  `availability-grid.tsx`) — rather than toggling each cell independently,
+  which would make a drag over a mix of preferred/not-preferred CAN cells
+  behave unpredictably. Painting Prefer over a non-CAN cell is a deliberate
+  no-op (no row created/changed). `saveAvailability` clamps `preferred` to
+  `false` server-side whenever `status !== "CAN"` — the client brush logic
+  already prevents this, but a data-integrity rule like this shouldn't rely
+  solely on the client being well-behaved.
+- `lib/results.ts::computeResults(dates, hours, totalParticipants, rows)` —
+  pure aggregation (no Next/Prisma imports) over every `Availability` row in
+  a room: counts CAN/CANNOT/preferred per slot, marks `isFullGroup` when
+  `canCount === totalParticipants`, and sorts by `canCount` desc, then
+  `preferredCount` desc, then chronologically. This is the natural seam for
+  M5 unit tests.
+- `app/r/[slug]/results/page.tsx` — new route, gated the same way as the
+  grid (redirects to the join form if there's no participant cookie for this
+  room). Pure server component (no interactivity, so no "use client"
+  needed): a read-only heatmap reusing the grid's day/hour layout (green
+  background opacity = `canCount / totalParticipants`, an amber ring for
+  full-group slots, a star badge with the preferred count) plus a "Best
+  times" list of the top 10 slots with `canCount > 0`. Linked from the room
+  page header ("See results →") and back again ("← Edit my availability").
+- **Verified by actually running it**: seeded a second participant
+  (`Bob`) directly in Postgres with a CAN/CAN/CANNOT pattern, joined as a
+  new participant (`Alice`) in a real browser, drag-painted two overlapping
+  CAN slots, switched to the Prefer brush and confirmed clicking an unmarked
+  cell was a true no-op (checked Postgres — no row), marked one overlapping
+  slot preferred, confirmed the exact Postgres rows for both participants,
+  then opened `/r/[slug]/results` and confirmed by hand: the two slots both
+  participants share are shown at full intensity with the full-group ring,
+  the preferred slot shows `★1`, and "Best times" ranks the preferred slot
+  above the otherwise-identical non-preferred one. Test data cleaned up
+  afterward.
+- `npx tsc --noEmit` and `npx eslint .` both clean throughout.
+
+**Not started yet:** all automated tests (Vitest/Playwright — deliberately
+deferred to M5; verification through M1-M3 has been manual/browser-driven
+per milestone, per the checkpoint discipline in OPERATIONS.md) and the M4
+edge cases/polish pass. See `GOALS.md`.
 
 ## How things fit together
 
@@ -85,12 +126,17 @@ milestone). That's M3 onward — see `GOALS.md`.
 - `lib/validation.ts` — Zod schema for room creation (`createRoomSchema`).
   This is where server-side validation rules for rooms live; keep it a pure
   module with no Next/Prisma imports so it stays unit-testable.
-- `lib/slots.ts` — pure date/hour helpers shared by the grid and (later) the
-  results algorithm: `enumerateDates`/`enumerateHours` (build the grid from
-  a room's range), `dateOnly` (UTC-safe `Date` → `"YYYY-MM-DD"`),
-  `summarizeAvailability` (used by the collision prompt, and reusable for
-  M3's per-participant breakdowns). No Next/Prisma imports — unit-testable
-  in isolation.
+- `lib/slots.ts` — pure date/hour helpers shared by the grid and the results
+  page: `enumerateDates`/`enumerateHours` (build the grid from a room's
+  range), `dateOnly` (UTC-safe `Date` → `"YYYY-MM-DD"`), `formatHoursWindow`/
+  `formatDayLabel`/`formatHour` (display strings), `summarizeAvailability`
+  (used by the join-collision prompt), and the `CellMark`/`AvailabilityRow`
+  types shared across the grid, actions, and results. No Next/Prisma
+  imports — unit-testable in isolation.
+- `lib/results.ts` — `computeResults`, the pure overlap/ranking aggregation
+  behind the results page (see M3 below). Kept separate from `lib/slots.ts`
+  since it's a distinct concern (aggregation vs. date/slot primitives) built
+  on top of it.
 - `lib/cookies.ts` / `lib/participant.ts` — server-only (`import
   "server-only"` guards against accidental client-bundle inclusion). Cookie
   get/set/clear and "resolve the current request's Participant from its
@@ -157,20 +203,29 @@ currently doesn't).
 
 ## Next steps
 
-1. M1 and M2 are both done and verified — nothing blocking. Next action is
-   the Owner checkpoint (per OPERATIONS.md, stop at milestone boundaries)
-   before starting M3.
-2. M3: the "preferred" marking layer (constrained to a participant's own CAN
-   slots — enforce this in `saveAvailability`, not just the UI), and the
-   overlap/results algorithm (`lib/slots.ts` is the natural home for a pure
-   `computeResults(rooms' participants + availability)` function so it stays
-   unit-testable) ranking slots by availability count with full-group and
-   preferred-overlap slots surfaced at the top.
+1. M1, M2, and M3 are all done and verified — nothing blocking. Next action
+   is the Owner checkpoint (per OPERATIONS.md, stop at milestone boundaries)
+   before starting M4.
+2. M4 (edge cases & polish, per GOALS.md): strict single-day/fixed-hours
+   event mode (largely already possible — a room with `startDate ===
+   endDate` and a narrow `dayStartHour`/`dayEndHour` window — worth
+   confirming the UI reads well for that case specifically), empty/error
+   states (room not found is handled; a name colliding with a *different*
+   confirmed identity mid-session isn't specifically tested), a responsive/
+   mobile pass, and basic abuse-resistance review (slug unguessability is
+   already reasonable per `lib/slug.ts`, worth a second look at whether
+   anything else needs rate-limiting).
 3. Open questions/flags for the Owner, none blocking:
    - The timezone `<select>` currently lists all ~400 IANA zones via
      `Intl.supportedValuesOf`; fine functionally, may want a
      searchable/grouped UI once real users are involved (M4 polish
      candidate).
-   - Touch drag-painting is implemented with the standard pointer-event
-     technique but hasn't been checked on a real touch device yet (see M2
-     verification notes above) — worth a real-phone check before/at M4.
+   - Touch drag-painting (both the brush paint and the Prefer toggle) is
+     implemented with the standard pointer-event technique but hasn't been
+     checked on a real touch device yet (see M2 verification notes above) —
+     worth a real-phone check before/at M4.
+   - The results heatmap's color scale only encodes `canCount`; `cannotCount`
+     isn't visually distinguished from "nobody's said anything yet" (both
+     render as the same empty/pale cell). Not a spec gap — the acceptance
+     criteria only ask for availability ranking — but worth a design opinion
+     from the Owner if it turns out confusing in practice.

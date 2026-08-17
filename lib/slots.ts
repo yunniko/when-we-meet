@@ -51,6 +51,11 @@ export function formatHour(hour: number): string {
   return `${String(h).padStart(2, "0")}:00`;
 }
 
+export function formatHoursWindow(dayStartHour: number, dayEndHour: number): string {
+  if (dayStartHour === 0 && dayEndHour === 24) return "Whole day";
+  return `${formatHour(dayStartHour)}–${String(dayEndHour).padStart(2, "0")}:00`;
+}
+
 export function formatDayLabel(date: string): string {
   // date is "YYYY-MM-DD"; parse as UTC noon to dodge any DST edge shifting
   // the displayed weekday in the server's local timezone.
@@ -67,7 +72,10 @@ export type AvailabilityRow = {
   slotDate: Date;
   slotHour: number;
   status: SlotStatus;
+  preferred: boolean;
 };
+
+export type CellMark = { status: SlotStatus; preferred: boolean };
 
 export type MarkSummary = {
   canCount: number;
