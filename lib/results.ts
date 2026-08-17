@@ -18,8 +18,11 @@ type NamedAvailabilityRow = AvailabilityRow & { participantName: string };
 
 // Pure aggregation: given every participant's name, every Availability row
 // in a room, and the full slot grid, count CAN/CANNOT/preferred per slot
-// and rank slots by availability first, preferred overlap second. A slot
-// nobody has marked still appears (zero counts) so the grid stays complete.
+// and rank slots by availability first, fewest explicit CANNOTs second
+// (two equally-CAN slots aren't equal if one has people who said they
+// definitely can't make it and the other just has unmarked silence),
+// preferred overlap third. A slot nobody has marked still appears (zero
+// counts) so the grid stays complete.
 export function computeResults(
   dates: string[],
   hours: number[],
@@ -67,6 +70,7 @@ export function computeResults(
   return results.sort(
     (a, b) =>
       b.canCount - a.canCount ||
+      a.cannotCount - b.cannotCount ||
       b.preferredCount - a.preferredCount ||
       a.date.localeCompare(b.date) ||
       a.hour - b.hour,

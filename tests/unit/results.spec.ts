@@ -69,7 +69,25 @@ describe("computeResults", () => {
     expect(slot.missingNames).toEqual(["Bob", "Carol"]);
   });
 
-  it("ranks by canCount desc, then preferredCount desc, then chronologically", () => {
+  it("ranks a slot with fewer explicit CANNOTs above an equally-CAN slot with more", () => {
+    const rows = [
+      // 2026-08-21 09:00 -> 2 can, 1 explicit cannot (Carol)
+      row("2026-08-21", 9, "Alice", "CAN"),
+      row("2026-08-21", 9, "Bob", "CAN"),
+      row("2026-08-21", 9, "Carol", "CANNOT"),
+      // 2026-08-21 10:00 -> 2 can, 0 cannot (Carol simply never marked it)
+      row("2026-08-21", 10, "Alice", "CAN"),
+      row("2026-08-21", 10, "Bob", "CAN"),
+    ];
+    const results = computeResults(dates, hours, ["Alice", "Bob", "Carol"], rows);
+    const order = results.filter((r) => r.canCount === 2).map((r) => `${r.date}T${r.hour}`);
+    expect(order).toEqual([
+      "2026-08-21T10", // 2 can, 0 cannot — ranks above despite being chronologically later
+      "2026-08-21T9", // 2 can, 1 cannot
+    ]);
+  });
+
+  it("ranks by canCount desc, then cannotCount asc, then preferredCount desc, then chronologically", () => {
     const rows = [
       // 2026-08-21 09:00 -> 1 can, 0 preferred
       row("2026-08-21", 9, "Alice", "CAN"),
