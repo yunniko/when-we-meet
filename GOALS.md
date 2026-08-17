@@ -148,6 +148,24 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       tsc/eslint clean throughout.
 
 **Progress log** (newest first; The Company appends at every stopping point):
+- 2026-08-17 — **Pushed to GitHub and deployed live**, Owner-directed.
+  Rewrote all 8 local commits' author email (`git filter-branch`, not a
+  `git config` change — that stays off-limits) to satisfy GitHub's
+  email-privacy push protection, then pushed to
+  `git@github.com:yunniko/when-we-meet.git`. Deployed to the Owner's shared
+  VPS (`62.171.183.241`) as **https://meet.app.julienika.cz**, mirroring
+  exactly how `listing-studio` is deployed there (same Docker Compose
+  `--profile app` workflow, nginx reverse proxy + Certbot). This is a
+  shared host running several unrelated sites — every root-requiring step
+  (docker group membership, nginx vhost, SSL cert) was done by the Owner
+  directly from an exact command list, never guessed or worked around.
+  Verified with a full browser smoke test against the live HTTPS URL
+  (create → join → paint → results, including the creator-only finalize
+  hint) and confirmed the other four sites on the host still respond
+  afterward. See HANDOVER "Git remote & deployment" for the full record.
+  **G-001 is now live, not just built** — nothing left from the original
+  acceptance criteria; awaiting Owner sign-off to move this goal to
+  Completed.
 - 2026-08-17 — **M5 done — all five milestones complete, G-001 functionally
   done.** Built the test infrastructure (Vitest + Playwright, see M5 entry
   above) and, at the Owner's request mid-milestone, two new features now

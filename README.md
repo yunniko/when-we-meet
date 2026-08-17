@@ -48,8 +48,10 @@ immediately.
 
 ## Deploying
 
-`docker compose --profile app up -d --build` builds and runs the app
-container, plus a `cleanup` service that sweeps expired rooms once a day,
-against the `db` service (see `Dockerfile`, `docker-compose.yml`). Actual
-deployment (a real host, a real domain) is a separate, Owner-approved
-step — nothing here does that on its own.
+**Live at https://meet.app.julienika.cz.** Deployed on a shared VPS
+alongside several other sites, following the same pattern as this
+portfolio's `listing-studio`: `docker compose --profile app up -d --build`
+builds and runs the app container plus a `cleanup` service (sweeps expired
+rooms daily) against the `db` service, with nginx reverse-proxying and
+Certbot-issued SSL in front. Full setup, server details, and how to
+redeploy: see `HANDOVER.md` → "Git remote & deployment".

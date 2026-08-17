@@ -245,22 +245,77 @@ form doesn't currently block — see the still-open note in D3's neighborhood
 about no past-date validation at creation). Low risk: the wiring is a single
 `if` around a well-tested pure function.
 
-## Loose end from this session (not yet actioned)
+## Git remote & deployment (post-M5, Owner-directed, 2026-08-17)
 
-The Owner supplied a GitHub remote (`git@github.com:yunniko/when-we-meet.git`)
-partway through M5. It's been added as `origin` (`git remote add origin ...`)
-— a safe, local, reversible action — but nothing has been pushed. Per
-VALUES.md ("nothing leaves the workspace without Owner approval") and
-OPERATIONS.md (publishing/uploading always requires stopping to ask,
-regardless of milestone position), pushing needs an explicit go-ahead even
-though the Owner provided the URL themselves — supplying a remote isn't the
-same as asking to push to it. Ask before the first push.
+**GitHub**: `origin` is `git@github.com:yunniko/when-we-meet.git`, pushed
+(Owner confirmed). Commit authors were rewritten (`git filter-branch
+--env-filter`, all 8 commits at the time) from the local git config's email
+to `29886186+yunniko@users.noreply.github.com` — GitHub was rejecting the
+push over its "block command-line pushes that expose my email" privacy
+setting. This was a one-time history rewrite before anything had been
+pushed (safe — no shared history existed yet to disrupt); it was **not** a
+`git config` change, which stayed off-limits per the standing "never update
+git config, even on request" rule — the Owner was pointed at the one-line
+`git config --global user.email ...` to run themselves if they want new
+commits to carry that address by default too (not done as of this writing;
+new commits will still show the old config's email unless they run it).
+
+**Live deployment**: **https://meet.app.julienika.cz** — a real production
+deployment on a shared VPS (`62.171.183.241`, hostname `vmi2520899`) that
+also hosts several unrelated sites (`craftale.eu` / listing-studio,
+`julienika.cz`, `canis-lunaris.julienika.cz`, `pid.app.julienika.cz`, etc.).
+Set up by directly mirroring how `listing-studio` (the closest analog — same
+stack, same portfolio) is deployed there:
+
+- Code lives at `/var/www/repositories/when-we-meet` on the server (cloned
+  over HTTPS — the `claude_remote` account's SSH agent isn't set up for
+  GitHub's SSH host, HTTPS clone worked fine since the repo is public).
+  `.env` there sets `APP_URL="https://meet.app.julienika.cz"` and the same
+  `DATABASE_URL` as local dev (each project's Postgres is only exposed on
+  `127.0.0.1`, so multiple projects' `wwm`/`listing` databases coexist fine
+  on the same host).
+- `docker compose --profile app up -d --build` (identical to the local
+  Docker workflow, see README) builds and runs `db` + `migrate` (one-shot)
+  + `app` (`127.0.0.1:30010`, host port kept as-is from the repo's own
+  `docker-compose.yml` — confirmed free on this host before deploying,
+  no collision with listing-studio's `30000`/`54320`/`63790` or anything
+  else listening) + `cleanup` (the expiry sweep, `restart: unless-stopped`,
+  loops daily — see D6/AGENTS.md).
+- nginx: `/etc/nginx/sites-available/meet.app.julienika.cz`, a plain
+  `proxy_pass http://127.0.0.1:30010` vhost (same shape as
+  `craftale.eu`'s), symlinked into `sites-enabled`, SSL issued via
+  `certbot --nginx` (same as every other `*.julienika.cz` site on this box).
+  DNS for `meet.app.julienika.cz` already resolved to this server before
+  any of this — presumably a wildcard `*.app.julienika.cz`/`*.julienika.cz`
+  record from earlier sites; nothing was changed there.
+- Every step needing root (adding `claude_remote` to the `docker` group so
+  container builds don't need sudo each time; writing the nginx vhost;
+  `certbot`) was done by the Owner directly, following an exact command
+  list handed to them — per the "for sudo operations ask my assistance"
+  instruction and the charter's escalation rule for anything leaving the
+  workspace/touching shared infrastructure. `claude_remote` still has no
+  passwordless `sudo`; any future privileged step (new domain, cert
+  renewal issues, etc.) needs the same ask-first pattern.
+- **Verified**: full smoke test in a real browser against the live HTTPS
+  URL (create room → join → drag-paint availability with no gaps → results
+  heatmap correct, including the creator-only "click a slot to finalize"
+  hint) — not just a health-check ping. Confirmed the other four sites on
+  the shared host (`craftale.eu`, `julienika.cz`,
+  `canis-lunaris.julienika.cz`, `pid.app.julienika.cz`) still respond 200
+  after the change. Confirmed all three containers use
+  `restart: unless-stopped` (survive a host reboot). Test room cleaned up
+  from the production database afterward.
+- **Redeploying**: from `/var/www/repositories/when-we-meet` on the server,
+  `git pull && docker compose --profile app up -d --build` (same pattern as
+  listing-studio's `make deploy`; no `Makefile` was added here since it's a
+  single copy-pasteable line, but consider adding one if this becomes a
+  recurring manual step).
 
 **Not started yet:** nothing from the original G-001 acceptance criteria —
-all five milestones are done. Open items are the "known gap" above, the
-still-outstanding real-touch-device check (M2/M4), and whatever the Owner
-wants next (the participant-profile idea flagged earlier remains a
-documented future direction, not started).
+all five milestones are done, and the app is now live. Open items are the
+"known gap" above, the still-outstanding real-touch-device check (M2/M4),
+and whatever the Owner wants next (the participant-profile idea flagged
+earlier remains a documented future direction, not started).
 
 ## How things fit together
 
