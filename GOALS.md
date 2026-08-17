@@ -64,11 +64,14 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
   - Project name: when-we-meet.
 
 **Milestones** (filled in by The Company during planning):
-- [ ] M1 — Foundation: Next.js/TS/Prisma/Postgres scaffold running locally
+- [x] M1 — Foundation: Next.js/TS/Prisma/Postgres scaffold running locally
       (Docker for Postgres, `npm run dev` for the app), data model (Room,
       Participant, Availability), room creation flow (date range + optional
       daily time window + timezone), unique unguessable room URL. README and
-      HANDOVER stubs in place.
+      HANDOVER stubs in place. ✔ 2026-08-17, commit (initial commit, see git
+      log). Verified: created a room through the real UI in a browser,
+      confirmed the DB row, confirmed the redirect and rendered room page,
+      confirmed 404 on an unknown slug; `tsc --noEmit` and `eslint` clean.
 - [ ] M2 — Join & mark availability: name entry with cookie-based identity,
       name-collision "is this you?" prompt (shows existing marks), interactive
       1-hour-slot grid with drag-to-paint CAN/CANNOT, mobile touch support,
@@ -87,9 +90,24 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       HANDOVER finalized.
 
 **Progress log** (newest first; The Company appends at every stopping point):
+- 2026-08-17 — **M1 done and verified.** Scaffolded Next.js/TS/Tailwind (matches
+  listing-studio's create-next-app defaults) + Prisma 7/PostgreSQL (Docker,
+  port 54321). Data model: Room, Participant, Availability — availability
+  slots are plain (date, hour) pairs, deliberately never converted through
+  Date/timezone math (HANDOVER D2). Room creation flow built end to end
+  (landing form -> server action -> unguessable 12-char slug -> DB row ->
+  redirect to /r/[slug]) and verified by actually driving it in a browser
+  (claude-in-chrome): submitted a room with a custom daily window, confirmed
+  the redirect, the rendered page, the Postgres row, and a 404 on an unknown
+  slug; test data cleaned up afterward. tsc/eslint clean. Git repo
+  initialized, first commit made. Also noted for future scope (not building
+  now): the Owner wants to eventually support participant profiles with a
+  reusable default-availability template — current schema doesn't block this,
+  see HANDOVER "Future direction". **Stopping here per OPERATIONS.md milestone
+  checkpoint — awaiting Owner review before starting M2** (join flow +
+  availability grid).
 - 2026-08-17 — Goal created and planned with the Owner (granularity, timezone,
-  and project-name decisions made via clarifying questions). Stack decision
-  pending — will follow portfolio precedent (TypeScript/Next.js/PostgreSQL/
-  Prisma, per listing-studio D1) minus the pieces this project doesn't need
-  (no Auth.js, no Redis/BullMQ, no Stripe — no accounts/payments/queues here).
-  Starting M1.
+  and project-name decisions made via clarifying questions). Stack decision:
+  followed portfolio precedent (TypeScript/Next.js/PostgreSQL/Prisma, per
+  listing-studio D1) minus the pieces this project doesn't need (no Auth.js,
+  no Redis/BullMQ, no Stripe — no accounts/payments/queues here).
