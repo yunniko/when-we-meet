@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { defineConfig } from "@playwright/test";
 
 const PORT = 30099;

@@ -245,6 +245,91 @@ form doesn't currently block — see the still-open note in D3's neighborhood
 about no past-date validation at creation). Low risk: the wiring is a single
 `if` around a well-tested pure function.
 
+## Post-launch UX round (Owner-directed, 2026-08-17)
+
+Several small features/fixes requested after the live deployment above.
+
+- **Weekend shading**: `lib/slots.ts::isWeekend(date)` (pure, UTC-noon-parse
+  trick like `formatDayLabel`). Applied to the day-header cells and
+  unmarked-cell background in both `availability-grid.tsx` and
+  `results-board.tsx`, via a new `--color-weekend` token
+  (`app/globals.css`) — a shade darker than `--background`/`--surface`.
+  On the results heatmap, the intensity overlay had to move from
+  `backgroundColor` to `backgroundImage: linear-gradient(c, c)` — an inline
+  `style.backgroundColor` unconditionally overrides a class's
+  `background-color`, which would have hidden the weekend tint entirely at
+  low availability; a solid-color gradient painted as a `background-image`
+  layers on top of the class's `background-color` instead, so the tint
+  shows through where availability is low.
+- **Bug found and fixed: sticky date headers weren't pinning.** The date
+  header row already had `sticky top-0`, but scrolling never kept it
+  visible. Root cause: the grid's wrapper had `overflow-x-auto` with no
+  explicit `overflow-y`, and per the CSS Overflow spec, setting one axis to
+  a non-`visible` value silently forces the other to `auto` too if it isn't
+  already non-visible — so the wrapper became an (invisible, never-scrolled)
+  vertical scroll container, and `position: sticky` had nothing to stick
+  against within it while the actual page scrolled around it instead. Confirmed
+  and fixed by making the bounding behavior explicit rather than accidental:
+  the wrapper is now `max-h-[70vh] overflow-auto` in both
+  `availability-grid.tsx` and `results-board.tsx` — the grid is a real,
+  intentionally bounded scroll pane (both axes), so sticky headers/row-labels
+  correctly pin while scrolling within it. (An earlier attempted fix,
+  explicitly setting `overflow-y-visible`, does not work — the browser
+  coerces it back to `auto` per that same spec rule; recorded here so it
+  isn't retried.)
+- **Join-form clarity**: added copy under "Your name" explaining the name
+  must be unique in the room and will be needed again to edit marks later
+  from elsewhere. The "Already in this room: ..." list is no longer plain
+  text — each name is its own `<form action={formAction}>` submitting a
+  hidden `name` field, styled as an underlined link ("it's me"), so
+  returning participants can click their name instead of retyping it
+  (still lands on the ordinary collision-confirm step, not an instant
+  claim — no change to the trust-model ceremony, just less typing/typo
+  risk). `join-form.tsx`.
+- **Results-page participant list**: `results/page.tsx` now fetches
+  participant names (not just a count) and renders "Participants: ..." as
+  plain text — deliberately not clickable, unlike the join screen's list;
+  this is informational context for the results, not an identity-switching
+  affordance.
+- **"Leave the room"**: distinct from the existing "Not you? Use a
+  different name" (which only switches the active cookie — the participant
+  and their marks stay in the room). This is destructive: a new
+  `leaveRoom` action (`app/r/[slug]/actions.ts`) deletes the participant
+  row outright (cascades to their `Availability` rows). Gated behind an
+  inline two-step confirmation (`leave-room-button.tsx`, a client
+  component) rather than a native `confirm()` dialog, matching the rest of
+  the app's custom-styled UI. **If the leaving participant was the room's
+  creator**, ownership auto-transfers to whichever remaining participant
+  has been in the room longest (`orderBy: createdAt asc`), so the room
+  doesn't become permanently unable to finalize/clear a meeting time; if
+  nobody remains, the room simply has no creator (same as if the original
+  creator had never joined — see D7). This was an explicit Owner design
+  choice among three options (forbid leaving / auto-transfer / leave
+  ownerless) — auto-transfer was picked to avoid stranding a creator who
+  wants to delete their data while keeping the room functional for whoever
+  stays.
+- **Verified**: full manual pass in a real browser for weekend shading
+  (visually confirmed on a Mon-Sun room) and the sticky-header fix
+  (scrolled a 24-hour grid, header stayed pinned, confirmed on both the
+  grid and results heatmap). Leave-room confirmed end to end including a
+  DB check (participant + availability rows actually gone, not just the
+  cookie cleared) and the ownership-transfer case (seeded a second
+  participant, had the creator leave via the real UI, confirmed via SQL
+  the second participant became creator). New Playwright spec
+  `tests/e2e/leave-room.spec.ts` (cancel doesn't delete; confirm deletes;
+  rejoining under the same name afterward gets no collision prompt, proving
+  the row is really gone) — the ownership-transfer case itself is only
+  manually verified, not covered by an automated test yet (flagged below).
+  tsc/eslint clean; full suite (43 unit + 5 e2e) green. Not yet redeployed
+  to production as of this note — see "Next steps".
+- **Note for future e2e specs needing direct DB access**: `lib/prisma.ts`
+  imports the generated Prisma client, which is ESM (`import.meta`) —
+  Playwright's own test transform can't load it directly (fails with
+  `Cannot use 'import.meta' outside a module`), unlike Vitest and Next.js
+  itself, both of which handle it fine. Assert through the UI instead (as
+  `leave-room.spec.ts` does), or invest in Playwright ESM config if
+  direct-DB assertions become worth it.
+
 ## Git remote & deployment (post-M5, Owner-directed, 2026-08-17)
 
 **GitHub**: `origin` is `git@github.com:yunniko/when-we-meet.git`, pushed
@@ -543,15 +628,21 @@ currently doesn't).
 
 ## Next steps
 
-1. **All five milestones (M1-M5) are done and verified.** G-001's original
-   acceptance criteria are all met; the finalize-meeting-time and
-   room-expiry features the Owner added mid-M5 are done too. Next action is
-   the Owner checkpoint before deciding what's next — there's no
-   pre-planned M6.
-2. **Pending: push to GitHub.** `origin` is set to
-   `git@github.com:yunniko/when-we-meet.git` but nothing has been pushed —
-   ask the Owner before the first push (see "Loose end" above).
-3. Open questions/flags for the Owner, none blocking:
+1. **All five milestones (M1-M5) are done, verified, pushed, and deployed
+   live** at https://meet.app.julienika.cz (see "Git remote & deployment").
+   G-001's original acceptance criteria are all met.
+2. **Pending: redeploy the "post-launch UX round" changes** (weekend
+   shading, sticky-header fix, join-form clarity, results participant list,
+   leave-room + ownership transfer) — these are committed locally but the
+   live site still runs the version from the initial deploy. Redeploy with
+   `git pull && docker compose --profile app up -d --build` from
+   `/var/www/repositories/when-we-meet` on the server (same as any other
+   redeploy — see "Git remote & deployment").
+3. **Missing test coverage**: the creator-leaves-and-ownership-transfers
+   case (see "Post-launch UX round" above) was verified manually
+   (real browser + SQL check) but has no automated e2e spec yet. Worth
+   adding to `tests/e2e/leave-room.spec.ts` if this area sees more changes.
+4. Open questions/flags for the Owner, none blocking:
    - Touch drag-painting (both the brush paint and the Prefer toggle) is
      implemented with the standard pointer-event technique and touch-target
      sizing was bumped defensively in M4, but it still hasn't been checked

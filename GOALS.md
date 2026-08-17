@@ -148,6 +148,34 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       tsc/eslint clean throughout.
 
 **Progress log** (newest first; The Company appends at every stopping point):
+- 2026-08-17 — **Post-launch UX round**, Owner-directed (not yet
+  redeployed — see HANDOVER "Next steps"). Weekend columns shaded darker on
+  the grid and results heatmap (`lib/slots.ts::isWeekend`, new
+  `--color-weekend` token). Found and fixed a real CSS bug along the way:
+  the date header row's `sticky top-0` never actually pinned while
+  scrolling, because of a CSS Overflow-spec quirk (`overflow-x: auto` with
+  no explicit `overflow-y` silently forces `overflow-y: auto` too) that
+  turned the grid wrapper into an invisible, non-scrolling scroll
+  container with nothing for `position: sticky` to stick against — fixed
+  by making the grid a real bounded scroll pane (`max-h-[70vh]
+  overflow-auto`) instead. Join screen now explains the name must be
+  unique in the room and is needed again to edit marks later, and the
+  "already in this room" name list is clickable ("it's me" shortcut into
+  the existing collision-confirm flow, not a bypass of it). Results page
+  now lists participant names (plain text, intentionally not clickable).
+  Added "Leave the room": a destructive, confirmation-gated action
+  distinct from "Not you?" — deletes the participant and all their marks.
+  Per an Owner decision among three options (forbid / auto-transfer /
+  leave ownerless), when the room's creator leaves, creator permissions
+  auto-transfer to the next-longest-tenured remaining participant, so the
+  room doesn't get stuck unable to finalize a meeting time. Verified: full
+  manual browser passes for all of the above, including a DB-level check
+  that leaving truly deletes data (not just the cookie) and a real
+  ownership-transfer scenario (seeded a second participant, had the
+  creator leave, confirmed via SQL the second participant became creator).
+  New Playwright spec `leave-room.spec.ts` (cancel/confirm/rejoin-is-fresh);
+  the ownership-transfer case itself is manual-only so far, flagged in
+  HANDOVER. 43 unit + 5 e2e tests green, tsc/eslint clean.
 - 2026-08-17 — **Pushed to GitHub and deployed live**, Owner-directed.
   Rewrote all 8 local commits' author email (`git filter-branch`, not a
   `git config` change — that stays off-limits) to satisfy GitHub's

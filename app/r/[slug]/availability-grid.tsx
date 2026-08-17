@@ -2,7 +2,7 @@
 
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { saveAvailability, type SlotUpdate } from "@/app/r/[slug]/actions";
-import { formatDayLabel, formatHour, slotKey, type CellMark, type SlotStatus } from "@/lib/slots";
+import { formatDayLabel, formatHour, isWeekend, slotKey, type CellMark, type SlotStatus } from "@/lib/slots";
 
 type Brush = SlotStatus | "CLEAR" | "PREFER";
 
@@ -13,10 +13,12 @@ const BRUSHES: { value: Brush; label: string; swatchClass: string }[] = [
   { value: "CLEAR", label: "Clear", swatchClass: "bg-transparent border border-muted" },
 ];
 
-function cellClass(mark: CellMark | undefined): string {
+function cellClass(mark: CellMark | undefined, weekend: boolean): string {
   if (mark?.status === "CAN") return "bg-emerald-500/80 hover:bg-emerald-500";
   if (mark?.status === "CANNOT") return "bg-rose-500/70 hover:bg-rose-500/90";
-  return "bg-foreground/[.03] hover:bg-foreground/[.07]";
+  return weekend
+    ? "bg-weekend hover:bg-foreground/[.07]"
+    : "bg-foreground/[.03] hover:bg-foreground/[.07]";
 }
 
 export function AvailabilityGrid({
@@ -178,7 +180,7 @@ export function AvailabilityGrid({
         &quot;Prefer&quot; only applies to slots already marked Can.
       </p>
 
-      <div className="overflow-x-auto rounded-md border border-border">
+      <div className="max-h-[70vh] overflow-auto rounded-md border border-border">
         <div
           className="inline-grid select-none"
           style={{
@@ -190,7 +192,9 @@ export function AvailabilityGrid({
           {dates.map((date) => (
             <div
               key={date}
-              className="sticky top-0 z-10 border-b border-l border-border bg-surface px-1 py-2 text-center text-xs font-medium"
+              className={`sticky top-0 z-10 border-b border-l border-border px-1 py-2 text-center text-xs font-medium ${
+                isWeekend(date) ? "bg-weekend" : "bg-surface"
+              }`}
             >
               {formatDayLabel(date)}
             </div>
@@ -215,7 +219,7 @@ export function AvailabilityGrid({
                     onPointerEnter={() => {
                       if (painting.current) paintCellAtIndex(dateIdx, hourIdx);
                     }}
-                    className={`relative h-10 border-l border-t border-border ${cellClass(mark)}`}
+                    className={`relative h-10 border-l border-t border-border ${cellClass(mark, isWeekend(date))}`}
                   >
                     {mark?.preferred && (
                       <span className="pointer-events-none absolute right-0.5 top-0.5 text-[10px] leading-none text-amber-900">

@@ -3,12 +3,16 @@
 import { useRouter } from "next/navigation";
 import { useState, type CSSProperties } from "react";
 import { selectFinalSlot } from "@/app/r/[slug]/actions";
-import { formatDayLabel, formatHour, slotKey } from "@/lib/slots";
+import { formatDayLabel, formatHour, isWeekend, slotKey } from "@/lib/slots";
 import type { SlotResult } from "@/lib/results";
 
 function cellStyle(result: SlotResult): CSSProperties {
+  // A solid-color "image" layer (not backgroundColor) so the weekend shade
+  // set via className (see cell below) can show through underneath at low
+  // intensity instead of being clobbered by an inline background-color.
   const intensity = result.totalParticipants > 0 ? result.canCount / result.totalParticipants : 0;
-  return { backgroundColor: `rgba(16, 185, 129, ${intensity.toFixed(3)})` };
+  const c = `rgba(16, 185, 129, ${intensity.toFixed(3)})`;
+  return { backgroundImage: `linear-gradient(${c}, ${c})` };
 }
 
 export function ResultsBoard({
@@ -66,7 +70,7 @@ export function ResultsBoard({
         {canPick && <span className="font-medium text-accent">Click a slot to set it as the meeting time</span>}
       </div>
 
-      <div className="overflow-x-auto rounded-md border border-border">
+      <div className="max-h-[70vh] overflow-auto rounded-md border border-border">
         <div
           className="inline-grid select-none"
           style={{ gridTemplateColumns: `72px repeat(${dates.length}, minmax(56px, 1fr))` }}
@@ -75,7 +79,9 @@ export function ResultsBoard({
           {dates.map((date) => (
             <div
               key={date}
-              className="sticky top-0 z-10 border-b border-l border-border bg-surface px-1 py-2 text-center text-xs font-medium"
+              className={`sticky top-0 z-10 border-b border-l border-border px-1 py-2 text-center text-xs font-medium ${
+                isWeekend(date) ? "bg-weekend" : "bg-surface"
+              }`}
             >
               {formatDayLabel(date)}
             </div>
@@ -102,10 +108,10 @@ export function ResultsBoard({
                     }${result.cannotCount > 0 ? `, ${result.cannotCount} can't` : ""}`}
                     style={cellStyle(result)}
                     className={`relative h-10 border-l border-t border-border ${
-                      result.isFullGroup ? "ring-2 ring-inset ring-amber-400" : ""
-                    } ${canPick ? "cursor-pointer hover:ring-2 hover:ring-accent" : ""} ${
-                      pendingKey === key ? "opacity-50" : ""
-                    }`}
+                      isWeekend(date) ? "bg-weekend" : ""
+                    } ${result.isFullGroup ? "ring-2 ring-inset ring-amber-400" : ""} ${
+                      canPick ? "cursor-pointer hover:ring-2 hover:ring-accent" : ""
+                    } ${pendingKey === key ? "opacity-50" : ""}`}
                   >
                     {result.preferredCount > 0 && (
                       <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-[10px] font-medium text-emerald-950">

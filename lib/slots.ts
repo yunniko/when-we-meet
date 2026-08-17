@@ -62,6 +62,13 @@ export function formatHoursWindow(dayStartHour: number, dayEndHour: number): str
   return `${formatHour(dayStartHour)}–${String(dayEndHour).padStart(2, "0")}:00`;
 }
 
+export function isWeekend(date: string): boolean {
+  // Same UTC-noon parse trick as formatDayLabel, for the same reason: avoid
+  // the day-of-week shifting depending on the runtime's local timezone.
+  const day = new Date(`${date}T12:00:00Z`).getUTCDay();
+  return day === 0 || day === 6;
+}
+
 export function formatDayLabel(date: string): string {
   // date is "YYYY-MM-DD"; parse as UTC noon to dodge any DST edge shifting
   // the displayed weekday in the server's local timezone.

@@ -28,9 +28,25 @@ export function JoinForm({
         {roomTitle || "Untitled room"}
       </h1>
       {participantNames.length > 0 && (
-        <p className="mt-2 text-sm text-muted">
-          Already in this room: {participantNames.join(", ")}
-        </p>
+        <div className="mt-2 text-sm text-muted">
+          Already in this room:{" "}
+          {participantNames.map((name, i) => (
+            <span key={name}>
+              {i > 0 && ", "}
+              <form action={formAction} onSubmit={() => setDismissed(false)} className="inline">
+                <input type="hidden" name="name" value={name} />
+                <button
+                  type="submit"
+                  className="text-accent underline hover:text-accent-hover"
+                  title={`It's me — continue as ${name}`}
+                >
+                  {name}
+                </button>
+              </form>
+            </span>
+          ))}
+          {" "}— click your name if it&apos;s you.
+        </div>
       )}
 
       <div className="mt-6 rounded-2xl border border-border bg-surface p-6 shadow-sm">
@@ -90,6 +106,11 @@ export function JoinForm({
             <label htmlFor="name" className="text-sm font-medium">
               Your name
             </label>
+            <p className="-mt-1.5 text-xs text-muted">
+              Must be unique in this room. If you come back later on a
+              different browser or device to edit your marks, you&apos;ll
+              need to enter this same name again.
+            </p>
             <input
               id="name"
               name="name"

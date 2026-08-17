@@ -26,7 +26,12 @@ export default async function ResultsPage({
 
   const dates = enumerateDates(room.startDate, room.endDate);
   const hours = enumerateHours(room.dayStartHour, room.dayEndHour);
-  const totalParticipants = await prisma.participant.count({ where: { roomId: room.id } });
+  const participants = await prisma.participant.findMany({
+    where: { roomId: room.id },
+    select: { name: true },
+    orderBy: { createdAt: "asc" },
+  });
+  const totalParticipants = participants.length;
   const rows = await prisma.availability.findMany({
     where: { participant: { roomId: room.id } },
     select: { slotDate: true, slotHour: true, status: true, preferred: true },
@@ -46,6 +51,9 @@ export default async function ResultsPage({
             {formatDateRange(room.startDate, room.endDate)} ·{" "}
             {formatHoursWindow(room.dayStartHour, room.dayEndHour)} · {room.timezone} ·{" "}
             {totalParticipants} {totalParticipants === 1 ? "person" : "people"}
+          </p>
+          <p className="mt-1 text-sm text-muted">
+            Participants: {participants.map((p) => p.name).join(", ")}
           </p>
         </div>
         <Link href={`/r/${room.slug}`} className="text-sm font-medium text-accent underline hover:text-accent-hover">

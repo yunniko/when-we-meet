@@ -7,6 +7,7 @@ import {
   formatDayLabel,
   formatHour,
   formatHoursWindow,
+  isWeekend,
   slotKey,
   summarizeAvailability,
 } from "@/lib/slots";
@@ -14,6 +15,18 @@ import {
 describe("dateOnly", () => {
   it("extracts YYYY-MM-DD from a UTC-midnight Date", () => {
     expect(dateOnly(new Date("2026-08-21T00:00:00Z"))).toBe("2026-08-21");
+  });
+});
+
+describe("isWeekend", () => {
+  it("is true for Saturday and Sunday", () => {
+    expect(isWeekend("2026-08-22")).toBe(true); // Sat
+    expect(isWeekend("2026-08-23")).toBe(true); // Sun
+  });
+
+  it("is false for weekdays", () => {
+    expect(isWeekend("2026-08-21")).toBe(false); // Fri
+    expect(isWeekend("2026-08-24")).toBe(false); // Mon
   });
 });
 

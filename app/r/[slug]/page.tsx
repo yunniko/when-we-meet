@@ -9,6 +9,7 @@ import type { CellMark } from "@/lib/slots";
 import { JoinForm } from "@/app/r/[slug]/join-form";
 import { AvailabilityGrid } from "@/app/r/[slug]/availability-grid";
 import { FinalizedBanner } from "@/app/r/[slug]/finalized-banner";
+import { LeaveRoomButton } from "@/app/r/[slug]/leave-room-button";
 import { leaveIdentity } from "@/app/r/[slug]/actions";
 
 export default async function RoomPage({
@@ -93,6 +94,9 @@ export default async function RoomPage({
               Not you? Use a different name
             </button>
           </form>
+          <div className="mt-1">
+            <LeaveRoomButton roomId={room.id} slug={room.slug} />
+          </div>
         </div>
       </div>
 

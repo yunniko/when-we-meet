@@ -96,6 +96,44 @@ export async function leaveIdentity(
   redirect(`/r/${ctx.slug}`);
 }
 
+// Distinct from leaveIdentity: that one just switches whose cookie is
+// active (the participant and their marks stay in the room, reclaimable
+// later via the name-collision "is this you?" flow). This one deletes the
+// participant's row — and, via the Availability -> Participant cascade,
+// every mark they made — permanently. Irreversible, so the UI gates this
+// behind an explicit confirmation step; this action itself re-derives the
+// participant from the cookie rather than trusting a client-supplied id,
+// same as everywhere else in this file.
+export async function leaveRoom(
+  ctx: { roomId: string; slug: string },
+  _formData: FormData,
+): Promise<void> {
+  const participant = await getCurrentParticipant(ctx.roomId);
+  if (participant) {
+    const room = await prisma.room.findUnique({ where: { id: ctx.roomId } });
+    const wasCreator = room?.creatorParticipantId === participant.id;
+
+    await prisma.participant.delete({ where: { id: participant.id } });
+
+    if (wasCreator) {
+      // Hand creator permissions to whoever's been in the room longest, so
+      // someone can still finalize/clear a meeting time rather than leaving
+      // the room permanently ownerless. If nobody's left, it just has no
+      // creator — same as if the original creator had never joined (D7).
+      const next = await prisma.participant.findFirst({
+        where: { roomId: ctx.roomId },
+        orderBy: { createdAt: "asc" },
+      });
+      await prisma.room.update({
+        where: { id: ctx.roomId },
+        data: { creatorParticipantId: next?.id ?? null },
+      });
+    }
+  }
+  await clearParticipantCookie(ctx.roomId);
+  redirect(`/r/${ctx.slug}`);
+}
+
 export type SlotUpdate = {
   date: string;
   hour: number;
