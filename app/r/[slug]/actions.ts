@@ -150,10 +150,22 @@ export type SlotUpdate = {
   preferred: boolean;
 };
 
+// A room's grid can never legitimately have more distinct slots than its
+// own bounds allow (60-day range cap × 24 hours = 1440, see
+// lib/validation.ts). This request isn't shaped like a real paint stroke
+// (those touch at most a few dozen cells) — it's a hard ceiling against a
+// scripted request bypassing the grid UI entirely and submitting an
+// oversized/duplicated array to force an expensive transaction.
+const MAX_SLOTS_PER_SAVE = 1500;
+
 export async function saveAvailability(
   roomId: string,
   slots: SlotUpdate[],
 ): Promise<{ ok: true } | { ok: false; error: string }> {
+  if (slots.length > MAX_SLOTS_PER_SAVE) {
+    return { ok: false, error: "Too many slots in one request." };
+  }
+
   const participant = await getCurrentParticipant(roomId);
   if (!participant) return { ok: false, error: "You're not joined in this room." };
 
