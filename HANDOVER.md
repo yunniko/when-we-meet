@@ -730,6 +730,68 @@ per-script setting would otherwise have caused it. tsc/eslint/53 unit/5
 e2e all green; pushed and redeployed; confirmed live and confirmed the
 other sites on the shared host unaffected.
 
+## Security review (Owner-directed, 2026-08-18)
+
+Owner asked what a technically skilled friend could find if they tried to
+"hack" the app. Reviewed the actual code rather than guessing: no raw SQL
+anywhere (Prisma's typed query builder only, so no SQL injection surface),
+no `dangerouslySetInnerHTML` anywhere (no XSS vector — room titles and
+participant names, the only free-text user input rendered back to other
+users, go through React's default escaping), httpOnly/secure/sameSite
+cookies, every server action re-derives identity from the cookie and
+re-verifies authorization server-side rather than trusting the client
+(consistent pattern across the whole `app/r/[slug]/actions.ts` file), no
+secrets ever committed (`.env*` gitignored, confirmed via `git log`), and
+`NODE_ENV=production` correctly set in the Docker image (no leaked stack
+traces).
+
+**Not a bug, but flagged as something he'll immediately notice and
+correctly demonstrate**: there's no authentication by design (see the
+G-001 trust model) — anyone holding a room's link who knows or guesses a
+participant's exact display name can claim that identity via the ordinary
+"is this you?" collision flow, no password involved; even without
+claiming it, typing an exact name reveals that person's day-by-day
+can/cannot mark counts. This is the intentional "trusted friend group"
+model, not an oversight — worth remembering if the trust model is ever
+revisited, but not something to "fix."
+
+**Two real gaps found and fixed**:
+- **No clickjacking protection** — neither `next.config.ts` nor the nginx
+  vhost set any framing-related headers, so the app could be embedded in a
+  malicious iframe and its one-click destructive-ish actions (finalize/
+  clear a meeting time, leave a room) targeted. Fixed: `next.config.ts`
+  now sends `X-Frame-Options: DENY`, `Content-Security-Policy:
+  frame-ancestors 'none'`, `X-Content-Type-Options: nosniff`, and
+  `Referrer-Policy: strict-origin-when-cross-origin` on every route. Not a
+  full CSP (no `script-src`/`style-src` lockdown) — that would need a
+  careful audit of Next.js's own inline hydration/font-preload output to
+  avoid breaking rendering, and wasn't the reported concern; worth a
+  separate pass if tighter script/style policy is ever wanted.
+- **`saveAvailability` accepted an unbounded slots array** —
+  `app/r/[slug]/actions.ts` never capped how many entries a single request
+  could contain, so a scripted request bypassing the grid UI entirely
+  could submit a huge/duplicated array and force an oversized `$transaction`.
+  Fixed: rejects outright above `MAX_SLOTS_PER_SAVE = 1500` — comfortably
+  above the largest real paint stroke, pinned to the room grid's own
+  theoretical ceiling (60-day range cap × 24 hours = 1440, see
+  `lib/validation.ts`).
+
+**Already known and unchanged (see D4)**: no rate-limiting on room
+creation or joins beyond the flat 100-participant-per-room cap — a
+deliberate scope decision for this trust model, restated here since it's
+exactly what a skilled friend would try first, not something this round
+addressed.
+
+**Verified**: full suite green (tsc, eslint, 53 unit, 5 e2e — the e2e
+suite's real paint-and-save flow confirms the new cap doesn't affect
+normal usage), headers confirmed present via `curl -D -` both locally and
+on production after deploy. Pushed and redeployed; confirmed the other
+sites on the shared host unaffected. No dedicated automated test for the
+slot-count cap (a simple length check, same rigor level as the
+participant-count cap in the earlier round) or for the headers (framework
+config, not app logic) — verified manually instead, consistent with how
+those were handled elsewhere in this project.
+
 ## Git remote & deployment (post-M5, Owner-directed, 2026-08-17)
 
 **GitHub**: `origin` is `git@github.com:yunniko/when-we-meet.git`, pushed

@@ -148,6 +148,21 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       tsc/eslint clean throughout.
 
 **Progress log** (newest first; The Company appends at every stopping point):
+- 2026-08-18 — **Security review**, Owner-directed ("my friend is a strong
+  programmer, what vulnerabilities could he find?"). Reviewed the actual
+  code: no SQL injection surface (Prisma only, no raw queries), no XSS
+  vector (no `dangerouslySetInnerHTML`, React's default escaping covers
+  the only free-text user input), httpOnly/secure cookies, every server
+  action re-verifies authorization server-side. Flagged (not fixed, by
+  design) that the app has no authentication — anyone with a room link who
+  knows a participant's name can claim their identity via the ordinary
+  collision flow, the documented G-001 trust model. Found and fixed two
+  real gaps: no clickjacking protection (added X-Frame-Options/CSP
+  frame-ancestors/nosniff/Referrer-Policy headers) and an unbounded slots
+  array in `saveAvailability` (capped at 1500, pinned to the room grid's
+  own theoretical max). Restated the already-known, unchanged
+  no-rate-limiting gap (D4). Full suite green; pushed and redeployed;
+  confirmed other sites on the shared host unaffected.
 - 2026-08-17 — **CANNOT-ranking, join-page clarity, and a 100-participant
   cap**, Owner-directed, pushed and redeployed live (two rounds). Owner
   asked whether unmarked slots should be inferred as CAN/CANNOT based on
