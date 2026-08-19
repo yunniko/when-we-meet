@@ -148,6 +148,19 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       tsc/eslint clean throughout.
 
 **Progress log** (newest first; The Company appends at every stopping point):
+- 2026-08-20 — **Mobile layout fixes**, Owner-directed (three bugs reported
+  with screenshots: misaligned "New event" button, overflowing brush
+  toolbar, chaotic Best Times list). Reproduced with real Playwright
+  device emulation (Pixel 5) since neither `resize_window` nor the usual
+  iframe-emulation trick works anymore — the latter is now correctly
+  blocked by this project's own clickjacking CSP from the security-review
+  round. Root cause all three: flex layouts that never accounted for
+  content wrapping on narrow screens (a shrink-to-fit `text-right` block
+  landing off-center once wrapped, a button row missing its own
+  `flex-wrap`, and Best Times rows fighting to stay side-by-side at every
+  width). Fixed with standard responsive stacking patterns. 55 unit + 5
+  e2e green; pushed and redeployed; confirmed live and confirmed other
+  sites on the shared host unaffected.
 - 2026-08-19 — **Status page**, Owner-directed. `/status?key=...` shows
   room/participant counts and a paginated, newest-first room list
   (title/created/active-or-expired/participant count). Since this is a

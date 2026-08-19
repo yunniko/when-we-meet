@@ -847,6 +847,63 @@ docker-compose fix); confirmed live on production (`4 rooms · 13
 participants` at time of writing) and confirmed the other sites on the
 shared host unaffected.
 
+## Mobile layout fixes (Owner-directed, 2026-08-20)
+
+Owner reported three mobile bugs with screenshots (Czech UI): the "+ New
+event" button floating in an odd off-center position instead of
+left-or-right-aligned like everything else, brush-toolbar buttons
+overflowing the screen edge, and the Best Times list looking chaotic.
+
+**Reproduction was the hard part, not the fix.** `resize_window` doesn't
+actually change the automation viewport in this environment (confirmed
+again, matches earlier M2/M4 notes), and a same-origin `<iframe>` wrapper
+page — the technique M4 used successfully — no longer works either, because
+it's now correctly blocked by this project's own `frame-ancestors 'none'`
+CSP (see the security-review round) — a good sign the header works, a
+problem for this specific debugging technique. Landed on driving a real
+Chromium instance directly via Playwright (`chromium.launch()` +
+`devices["Pixel 5"]`), which the project already depends on for e2e and
+properly emulates a narrow viewport — screenshotted the exact reported
+flow (join, grid, results) in Czech against a seeded 3-participant room,
+confirmed all three bugs precisely, fixed them, then re-ran the same
+script to confirm the fix.
+
+**Root cause, all three**: CSS that never accounted for what happens once
+flex content wraps onto a narrow screen.
+- Room/results page headers: the right-side info block (New Event button,
+  "Marking as X", etc.) used `text-right`/`items-end` inside a flex child
+  with no explicit width. Once the header wrapped to two lines on mobile,
+  that block sized itself to its own widest *line of text* rather than the
+  page width — so "right-aligning" inside it landed everything in a
+  narrow, randomly-positioned island instead of at the true left or right
+  edge. Fixed with the standard responsive pattern: `flex-col` (stacked,
+  left-aligned) by default, only becoming the two-column
+  `sm:flex-row sm:justify-between` desktop layout at the `sm:` breakpoint.
+- `availability-grid.tsx`'s brush toolbar: the button row had `flex
+  gap-1.5` with no `flex-wrap` of its own (only its *parent* had one), so
+  on narrow screens the fourth button ran straight past the viewport edge
+  instead of dropping to a second row. Added `flex-wrap` to that row too.
+- `results-board.tsx`'s Best Times rows tried to keep the date/time and
+  the can-count/badge/star/pick-button cluster side by side at every
+  width via `justify-between`. Now they stack (date above, cluster below)
+  below `sm:`, and the cluster itself also gets `flex-wrap` so it doesn't
+  force overflow even stacked, verified against both the plain and
+  `canPick` (creator, with the extra "Pick this time" button) variants.
+
+**Verified**: Playwright/Pixel-5 screenshots before and after for all
+three issues (join page, grid page, results page, both participant and
+creator views), 55 unit + 5 e2e tests still green (this round touched no
+business logic, only layout classes). Pushed and redeployed; confirmed
+live and confirmed the other sites on the shared host unaffected. No
+dedicated automated test — this is CSS/layout, not logic; the Playwright
+script used for verification was a throwaway debugging aid (temp file
+outside the repo), not a kept test — Playwright doesn't currently run any
+e2e spec at a narrow viewport, so a real regression test for this class of
+bug would mean adding a dedicated mobile-viewport project to
+`playwright.config.ts`, which weighs the cost of a permanent second full
+test pass against catching narrow-viewport CSS regressions; flagged as a
+worthwhile follow-up, not done here since it wasn't asked for.
+
 ## Git remote & deployment (post-M5, Owner-directed, 2026-08-17)
 
 **GitHub**: `origin` is `git@github.com:yunniko/when-we-meet.git`, pushed
