@@ -18,6 +18,10 @@ model Room {
   // sequential-feeling without making rooms enumerable).
   slug         String   @unique
   title        String?
+  // Optional free text the creator can use for context/instructions (e.g.
+  // "bring snacks", a location). Never parsed/used by app logic — display
+  // only, same trust level as title (rendered as plain text, no markup).
+  description  String?
   timezone     String
   startDate    DateTime @db.Date
   endDate      DateTime @db.Date

@@ -27,6 +27,25 @@ describe("createRoomSchema", () => {
     if (result.success) expect(result.data.title).toBeUndefined();
   });
 
+  it("accepts an omitted description and trims a whitespace-only one to undefined", () => {
+    const omitted = createRoomSchema.safeParse(base);
+    expect(omitted.success).toBe(true);
+    if (omitted.success) expect(omitted.data.description).toBeUndefined();
+
+    const blank = createRoomSchema.safeParse({ ...base, description: "   " });
+    expect(blank.success).toBe(true);
+    if (blank.success) expect(blank.data.description).toBeUndefined();
+  });
+
+  it("keeps a real description and rejects one over 2000 characters", () => {
+    const ok = createRoomSchema.safeParse({ ...base, description: "Bring snacks!" });
+    expect(ok.success).toBe(true);
+    if (ok.success) expect(ok.data.description).toBe("Bring snacks!");
+
+    const tooLong = createRoomSchema.safeParse({ ...base, description: "a".repeat(2001) });
+    expect(tooLong.success).toBe(false);
+  });
+
   it("rejects an end date before the start date", () => {
     const result = createRoomSchema.safeParse({ ...base, startDate: "2026-08-23", endDate: "2026-08-21" });
     expect(result.success).toBe(false);

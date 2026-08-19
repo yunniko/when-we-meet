@@ -72,6 +72,9 @@ export default async function ResultsPage({
           <p className="mt-1 text-sm text-muted">
             {t("participantsLabel", { names: participants.map((p) => p.name).join(", ") })}
           </p>
+          {room.description && (
+            <p className="mt-2 text-sm whitespace-pre-wrap">{room.description}</p>
+          )}
         </div>
         <div className="flex flex-col gap-2 sm:items-end">
           <NewEventButton />

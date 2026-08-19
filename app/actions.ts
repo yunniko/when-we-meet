@@ -14,6 +14,7 @@ export type CreateRoomState = {
   fieldErrors?: Record<string, string>;
   values: {
     title: string;
+    description: string;
     timezone: string;
     startDate: string;
     endDate: string;
@@ -32,6 +33,7 @@ export async function createRoom(
 
   const raw = {
     title: String(formData.get("title") ?? ""),
+    description: String(formData.get("description") ?? ""),
     timezone: String(formData.get("timezone") ?? ""),
     startDate: String(formData.get("startDate") ?? ""),
     endDate: String(formData.get("endDate") ?? ""),
@@ -69,6 +71,7 @@ export async function createRoom(
     data: {
       slug,
       title: data.title,
+      description: data.description,
       timezone: data.timezone,
       startDate: new Date(`${data.startDate}T00:00:00Z`),
       endDate: new Date(`${data.endDate}T00:00:00Z`),

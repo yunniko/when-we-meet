@@ -12,6 +12,7 @@ export function JoinForm({
   roomId,
   slug,
   roomTitle,
+  roomDescription,
   dateRangeLabel,
   hoursLabel,
   timezone,
@@ -20,6 +21,7 @@ export function JoinForm({
   roomId: string;
   slug: string;
   roomTitle: string | null;
+  roomDescription: string | null;
   dateRangeLabel: string;
   hoursLabel: string;
   timezone: string;
@@ -40,6 +42,9 @@ export function JoinForm({
       <p className="mt-1 text-sm text-muted">
         {dateRangeLabel} · {hoursLabel} · {timezone}
       </p>
+      {roomDescription && (
+        <p className="mt-3 text-sm whitespace-pre-wrap">{roomDescription}</p>
+      )}
       <p className="mt-2 text-sm text-muted">{t("intro")}</p>
       {participantNames.length > 0 && (
         <div className="mt-3 text-sm text-muted">

@@ -56,6 +56,7 @@ export default async function RoomPage({
           roomId={room.id}
           slug={room.slug}
           roomTitle={room.title}
+          roomDescription={room.description}
           dateRangeLabel={formatDateRange(room.startDate, room.endDate)}
           hoursLabel={formatHoursWindow(room.dayStartHour, room.dayEndHour)}
           timezone={room.timezone}
@@ -92,6 +93,9 @@ export default async function RoomPage({
             {formatDateRange(room.startDate, room.endDate)} ·{" "}
             {hoursLabel} · {room.timezone}
           </p>
+          {room.description && (
+            <p className="mt-2 text-sm whitespace-pre-wrap">{room.description}</p>
+          )}
         </div>
         <div className="text-sm sm:text-right">
           <div className="mb-2">

@@ -18,6 +18,8 @@
     "roomNameLabel": "Name des Treffens",
     "optional": "(optional)",
     "roomNamePlaceholder": "z. B. Campingausflug",
+    "descriptionLabel": "Beschreibung",
+    "descriptionPlaceholder": "Alles Wissenswerte — was mitbringen, Treffpunkt usw.",
     "fromLabel": "Von",
     "toLabel": "Bis",
     "timezoneLabel": "Zeitzone",
@@ -44,7 +46,8 @@
       "rangeTooLong": "Der Planungszeitraum darf nicht länger als 60 Tage sein",
       "dayHourInvalid": "Gib eine gültige Stunde ein",
       "dayStartHourRange": "Die Startstunde muss zwischen 0 und 23 liegen",
-      "dayEndHourRange": "Die Endstunde muss zwischen 1 und 24 liegen"
+      "dayEndHourRange": "Die Endstunde muss zwischen 1 und 24 liegen",
+      "descriptionTooLong": "Die Beschreibung darf nicht länger als 2000 Zeichen sein"
     }
   },
   "JoinForm": {

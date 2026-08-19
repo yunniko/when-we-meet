@@ -18,6 +18,8 @@
     "roomNameLabel": "Room name",
     "optional": "(optional)",
     "roomNamePlaceholder": "e.g. Camping trip",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Any details worth sharing — bring snacks, location, etc.",
     "fromLabel": "From",
     "toLabel": "To",
     "timezoneLabel": "Timezone",
@@ -44,7 +46,8 @@
       "rangeTooLong": "Planning range can't be longer than 60 days",
       "dayHourInvalid": "Enter a valid hour",
       "dayStartHourRange": "Daily start hour must be between 0 and 23",
-      "dayEndHourRange": "Daily end hour must be between 1 and 24"
+      "dayEndHourRange": "Daily end hour must be between 1 and 24",
+      "descriptionTooLong": "Description can't be longer than 2000 characters"
     }
   },
   "JoinForm": {

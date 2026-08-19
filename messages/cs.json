@@ -18,6 +18,8 @@
     "roomNameLabel": "Název akce",
     "optional": "(nepovinné)",
     "roomNamePlaceholder": "např. Výlet na kole",
+    "descriptionLabel": "Popis",
+    "descriptionPlaceholder": "Cokoliv užitečného — co vzít s sebou, místo konání atd.",
     "fromLabel": "Od",
     "toLabel": "Do",
     "timezoneLabel": "Časové pásmo",
@@ -44,7 +46,8 @@
       "rangeTooLong": "Plánovací rozsah nesmí být delší než 60 dní",
       "dayHourInvalid": "Zadejte platnou hodinu",
       "dayStartHourRange": "Hodina začátku dne musí být mezi 0 a 23",
-      "dayEndHourRange": "Hodina konce dne musí být mezi 1 a 24"
+      "dayEndHourRange": "Hodina konce dne musí být mezi 1 a 24",
+      "descriptionTooLong": "Popis nesmí být delší než 2000 znaků"
     }
   },
   "JoinForm": {

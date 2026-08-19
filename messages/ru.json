@@ -18,6 +18,8 @@
     "roomNameLabel": "Название встречи",
     "optional": "(необязательно)",
     "roomNamePlaceholder": "например, Поход",
+    "descriptionLabel": "Описание",
+    "descriptionPlaceholder": "Любые детали — что взять с собой, место встречи и т.д.",
     "fromLabel": "С",
     "toLabel": "По",
     "timezoneLabel": "Часовой пояс",
@@ -44,7 +46,8 @@
       "rangeTooLong": "Диапазон планирования не может быть длиннее 60 дней",
       "dayHourInvalid": "Укажите корректный час",
       "dayStartHourRange": "Час начала дня должен быть от 0 до 23",
-      "dayEndHourRange": "Час окончания дня должен быть от 1 до 24"
+      "dayEndHourRange": "Час окончания дня должен быть от 1 до 24",
+      "descriptionTooLong": "Описание не может быть длиннее 2000 символов"
     }
   },
   "JoinForm": {

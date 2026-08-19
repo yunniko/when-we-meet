@@ -16,6 +16,12 @@ export const createRoomSchema = z
       .max(120)
       .optional()
       .transform((v) => (v ? v : undefined)),
+    description: z
+      .string()
+      .trim()
+      .max(2000, "descriptionTooLong")
+      .optional()
+      .transform((v) => (v ? v : undefined)),
     timezone: z.string().min(1, "timezoneRequired"),
     startDate: z.string().date("startDateInvalid"),
     endDate: z.string().date("endDateInvalid"),

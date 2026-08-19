@@ -47,6 +47,7 @@ function timezoneLabel(zone: string): string {
 const initialState: CreateRoomState = {
   values: {
     title: "",
+    description: "",
     timezone: "",
     startDate: "",
     endDate: "",
@@ -118,6 +119,24 @@ export function CreateRoomForm() {
           placeholder={t("roomNamePlaceholder")}
           className={inputClass}
         />
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="description" className="text-sm font-medium">
+          {t("descriptionLabel")} <span className="text-muted">{t("optional")}</span>
+        </label>
+        <textarea
+          id="description"
+          name="description"
+          rows={3}
+          maxLength={2000}
+          defaultValue={state.values.description}
+          placeholder={t("descriptionPlaceholder")}
+          className={`${inputClass} resize-y`}
+        />
+        {fieldError("description") && (
+          <p className="text-xs text-red-600">{fieldError("description")}</p>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
