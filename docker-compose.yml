@@ -43,6 +43,7 @@ services:
     environment:
       DATABASE_URL: postgresql://wwm:wwm@db:5432/when_we_meet
       APP_URL: ${APP_URL:-http://localhost:30010}
+      STATUS_PAGE_TOKEN: ${STATUS_PAGE_TOKEN:-}
     ports:
       - "127.0.0.1:30010:3000"
 
