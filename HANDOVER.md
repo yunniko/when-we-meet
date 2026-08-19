@@ -792,6 +792,61 @@ participant-count cap in the earlier round) or for the headers (framework
 config, not app logic) — verified manually instead, consistent with how
 those were handled elsewhere in this project.
 
+## Status page (Owner-directed, 2026-08-19)
+
+`app/status/page.tsx`: total room/participant counts plus a paginated
+(25/page), newest-first table of every room (title, created timestamp,
+active/expired status, participant count). Reuses `lib/expiry.ts::isRoomExpired`
+directly rather than recomputing the rule — the same function `findActiveRoom`
+uses for lazy deletion, so the status page's "expired" label always agrees
+with what would actually happen if anyone visited that room.
+
+**Access control was an explicit Owner decision, not a default I picked**:
+the app is otherwise deliberately unenumerable (12-char unguessable slugs,
+no listing endpoint anywhere — see D4), so a page that lists every room's
+title is a real departure from that. Asked the Owner how to gate it before
+building; they chose a shared-secret query token
+(`/status?key=<STATUS_PAGE_TOKEN>`) over HTTP Basic Auth (would need a
+sudo-level nginx change) or leaving it public. Missing/wrong key always
+404s — never a distinguishable "wrong password" response that would
+confirm the route exists. `STATUS_PAGE_TOKEN` unset (e.g. not configured
+in some environment) also 404s, fails closed rather than open.
+
+**Two separate tokens generated** (`node -e "crypto.randomBytes(24).toString('base64url')"`,
+~192 bits): one in the local `.env` (gitignored, not shared here) for dev,
+a different one appended directly to the production server's `.env`
+(`/var/www/repositories/when-we-meet/.env`, edited over SSH — not a sudo
+operation, the same file this project's `APP_URL`/`DATABASE_URL` already
+live in) — kept separate so a locally-logged/leaked dev token can't be
+used against production. The Owner has the production token from this
+session's chat log; regenerate and update both `.env` files plus
+`docker-compose.yml`'s `app` service if it ever needs rotating.
+
+**Bug caught before it shipped**: `docker-compose.yml` doesn't pass the
+host's `.env` through to containers wholesale — each service lists its
+env vars explicitly (same pattern `APP_URL` already used). Adding
+`STATUS_PAGE_TOKEN` to the server's `.env` alone would have silently done
+nothing; `/status` would 404 forever in any `--profile app` deployment
+regardless of what the host `.env` said. Caught by reasoning through the
+deploy path rather than just testing happy-path locally (`npm run dev`
+reads `.env` directly, so the gap wasn't visible until actually deployed)
+— fixed by adding `STATUS_PAGE_TOKEN: ${STATUS_PAGE_TOKEN:-}` to the `app`
+service alongside `APP_URL`.
+
+**Deliberately out of scope**: not wired into next-intl (an internal ops
+tool for the Owner, not user-facing — see the "translations, not formats"
+G-002 boundary for the same reasoning pattern applied elsewhere). No
+dedicated automated test (pagination math and the reused `isRoomExpired`
+call are both simple enough to verify manually, same rigor level as the
+recent participant/slot-count caps) — verified instead via `curl` (no
+key/wrong key/right key → 404/404/200) and by seeding a genuinely
+already-expired room directly in Postgres and confirming it rendered with
+the "expired" badge on the correct (last) page. tsc/eslint/53 unit/5 e2e
+all green throughout. Pushed and redeployed in two rounds (page, then the
+docker-compose fix); confirmed live on production (`4 rooms · 13
+participants` at time of writing) and confirmed the other sites on the
+shared host unaffected.
+
 ## Git remote & deployment (post-M5, Owner-directed, 2026-08-17)
 
 **GitHub**: `origin` is `git@github.com:yunniko/when-we-meet.git`, pushed
@@ -942,6 +997,9 @@ earlier remains a documented future direction, not started).
   plumbing; see D8 for why this exact shape (copied from listing-studio).
   `messages/{en,ru,cs,de}.json` are the translation files, English always
   the complete source of truth every other locale falls back to per-key.
+- `app/status/page.tsx` — token-gated internal status page (room/
+  participant counts, paginated room list). See "Status page" for the
+  access-control decision and the docker-compose gotcha it surfaced.
 
 ## Decision record (append-only; newest last)
 

@@ -148,6 +148,21 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       tsc/eslint clean throughout.
 
 **Progress log** (newest first; The Company appends at every stopping point):
+- 2026-08-19 — **Status page**, Owner-directed. `/status?key=...` shows
+  room/participant counts and a paginated, newest-first room list
+  (title/created/active-or-expired/participant count). Since this is a
+  real departure from the app's otherwise-unenumerable design (D4), asked
+  the Owner how to gate it before building rather than picking myself —
+  they chose a shared-secret query token over Basic Auth or leaving it
+  public. Caught a real deploy-path bug before it became a live issue:
+  `docker-compose.yml` doesn't forward the host `.env` wholesale, so
+  setting the token only on the server's `.env` would have silently done
+  nothing until `STATUS_PAGE_TOKEN` was also added to the `app` service's
+  explicit environment list (same pattern `APP_URL` already needed).
+  Verified via curl (no/wrong/right key → 404/404/200) and a seeded
+  already-expired room rendering correctly on its (last) page. Full suite
+  green; pushed and redeployed across two rounds (page, then the
+  docker-compose fix); confirmed live in production.
 - 2026-08-18 — **Security review**, Owner-directed ("my friend is a strong
   programmer, what vulnerabilities could he find?"). Reviewed the actual
   code: no SQL injection surface (Prisma only, no raw queries), no XSS
