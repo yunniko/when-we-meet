@@ -159,7 +159,7 @@ export function AvailabilityGrid({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-4">
-        <div className="flex gap-1.5">
+        <div className="flex flex-wrap gap-1.5">
           {BRUSH_KEYS.map((b) => (
             <button
               key={b.value}

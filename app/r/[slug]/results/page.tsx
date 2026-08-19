@@ -59,7 +59,7 @@ export default async function ResultsPage({
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-8">
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">
             {t("pageTitle", { title: room.title || tCommon("untitledRoom") })}
@@ -73,7 +73,7 @@ export default async function ResultsPage({
             {t("participantsLabel", { names: participants.map((p) => p.name).join(", ") })}
           </p>
         </div>
-        <div className="flex flex-col items-end gap-2">
+        <div className="flex flex-col gap-2 sm:items-end">
           <NewEventButton />
           <Link href={`/r/${room.slug}`} className="text-sm font-medium text-accent underline hover:text-accent-hover">
             {t("editLink")}

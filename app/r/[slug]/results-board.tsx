@@ -139,11 +139,11 @@ export function ResultsBoard({
             const key = slotKey(r.date, r.hour);
             return (
               <li key={key} className="flex flex-col gap-1 rounded-md border border-border px-3 py-2">
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                   <span>
                     {formatDayLabel(r.date)}, {formatHour(r.hour)}–{formatHour((r.hour + 1) % 24)}
                   </span>
-                  <span className="flex items-center gap-2 text-muted">
+                  <span className="flex flex-wrap items-center gap-2 text-muted">
                     {t("cellTitleBase", { can: r.canCount, total: r.totalParticipants })}
                     {r.isFullGroup && (
                       <span className="rounded-full bg-amber-400/20 px-1.5 py-0.5 text-xs font-medium text-amber-700">
