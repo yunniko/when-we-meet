@@ -148,6 +148,14 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       tsc/eslint clean throughout.
 
 **Progress log** (newest first; The Company appends at every stopping point):
+- 2026-08-20 — **Optional room description**, Owner-directed. Added
+  `Room.description` (nullable text, new migration), an optional multi-line
+  textarea on room creation (max 2000 chars, blank collapses to unset, same
+  trust/validation shape as `title`), shown with line breaks preserved on
+  the join page, joined room page, and results page. Translated across all
+  four locales. 55 unit + 5 e2e green; verified live in a real browser
+  (create → join → grid → results, description visible with line breaks
+  intact at every stage); pushed and redeployed.
 - 2026-08-20 — **Mobile layout fixes**, Owner-directed (three bugs reported
   with screenshots: misaligned "New event" button, overflowing brush
   toolbar, chaotic Best Times list). Reproduced with real Playwright

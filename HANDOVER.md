@@ -904,6 +904,40 @@ bug would mean adding a dedicated mobile-viewport project to
 test pass against catching narrow-viewport CSS regressions; flagged as a
 worthwhile follow-up, not done here since it wasn't asked for.
 
+## Optional room description (Owner-directed, 2026-08-20)
+
+Owner asked for an optional multi-line description field on room creation,
+shown to everyone who looks at the room.
+
+**What was added**: `Room.description` (nullable `TEXT`, migration
+`20260820120000_room_description`). Same trust/validation shape as `title`:
+optional, trimmed, blank collapses to `undefined` (not stored as an empty
+string), capped at 2000 characters (`lib/validation.ts`, new
+`descriptionTooLong` error key resolved the same bare-key-through-`t()`
+pattern as every other validation error in this project). Rendered with
+`whitespace-pre-wrap` wherever it's shown — line breaks the creator typed
+are preserved, but it's still plain text, never parsed or interpreted (same
+trust level as `title`: display only, no markup, no links auto-created).
+
+Shown in three places: the join page (`join-form.tsx`, for visitors who
+haven't joined yet), the joined room/grid page (`page.tsx`), and the results
+page (`results/page.tsx`) — all three already loaded the full `Room` row via
+`findActiveRoom`, so no query changes were needed, just passing/rendering
+the new field. Label, placeholder, and error message translated across all
+four locales (EN/RU/CS/DE), following the existing `CreateRoom` namespace
+structure.
+
+**Verified**: unit tests for the blank-collapses-to-undefined and
+over-2000-chars-rejected behavior (`tests/unit/validation.spec.ts`, 55/55
+passing including these). Full manual pass in a real browser (Chrome,
+via claude-in-chrome, not Playwright emulation this time since there was no
+CSP/viewport obstacle) — created a room with a two-line description,
+confirmed it rendered correctly with the line break preserved on the join
+page, the joined grid page (as "Alice"), and the results page. Test room
+deleted afterward. 5/5 e2e tests still pass (none of them touch
+description, but they exercise the create/join/results flow this change
+sits inside). `tsc --noEmit` and `eslint .` clean.
+
 ## Git remote & deployment (post-M5, Owner-directed, 2026-08-17)
 
 **GitHub**: `origin` is `git@github.com:yunniko/when-we-meet.git`, pushed
