@@ -24,6 +24,7 @@
     "toLabel": "По",
     "timezoneLabel": "Часовой пояс",
     "timezoneDetecting": "Определяем…",
+    "timezoneChange": "Изменить",
     "timezoneHelp": "Все участники комнаты отмечают и видят время в этом едином часовом поясе.",
     "dailyWindowLegend": "Дневной интервал времени",
     "dailyStartLabel": "Начало дня",

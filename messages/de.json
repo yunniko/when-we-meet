@@ -24,6 +24,7 @@
     "toLabel": "Bis",
     "timezoneLabel": "Zeitzone",
     "timezoneDetecting": "Wird ermittelt…",
+    "timezoneChange": "Ändern",
     "timezoneHelp": "Alle Teilnehmer dieses Raums tragen ihre Verfügbarkeit in dieser einen Zeitzone ein und sehen sie auch so.",
     "dailyWindowLegend": "Tägliches Zeitfenster",
     "dailyStartLabel": "Tagesbeginn",

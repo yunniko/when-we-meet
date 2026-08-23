@@ -66,6 +66,15 @@ function timezoneLabel(zone: string): string {
   return zone.slice(zone.indexOf("/") + 1).replaceAll("_", " ").replaceAll("/", " / ");
 }
 
+// The region-qualified version shown in the collapsed info label — plain
+// `timezoneLabel` on its own (e.g. "Prague") drops the region, which reads
+// fine inside a grouped <select> but is ambiguous standing alone next to a
+// "Change" button.
+function fullTimezoneLabel(zone: string): string {
+  if (!zone.includes("/")) return zone;
+  return `${zone.split("/")[0]} / ${timezoneLabel(zone)}`;
+}
+
 const initialState: CreateRoomState = {
   values: {
     title: "",
@@ -115,9 +124,17 @@ export function CreateRoomForm() {
     // changes — depending on either would just re-run this pointlessly.
   }, []);
 
+  // Default view is a compact "Prague — Change" label, not the raw
+  // <select>, so the form doesn't lead with a ~400-option dropdown when the
+  // guess is almost always already right. "Change" swaps to the <select>;
+  // picking a value there swaps straight back to the label (the Owner's
+  // requested flow) rather than leaving the dropdown open after a choice.
+  const [isEditingTimezone, setIsEditingTimezone] = useState(false);
+
   function handleTimezoneChange(event: ChangeEvent<HTMLSelectElement>) {
     const zone = event.target.value;
     setTimezone(zone);
+    setIsEditingTimezone(false);
     try {
       localStorage.setItem(LAST_TIMEZONE_STORAGE_KEY, zone);
     } catch {
@@ -239,29 +256,49 @@ export function CreateRoomForm() {
         <label htmlFor="timezone" className="text-sm font-medium">
           {t("timezoneLabel")}
         </label>
-        <select
-          id="timezone"
-          name="timezone"
-          required
-          value={timezone}
-          onChange={handleTimezoneChange}
-          className={inputClass}
-        >
-          {!timezone && (
-            <option value="" disabled hidden>
-              {t("timezoneDetecting")}
-            </option>
-          )}
-          {zoneGroups.map(({ region, zones }) => (
-            <optgroup key={region} label={region}>
-              {zones.map((z) => (
-                <option key={z} value={z}>
-                  {timezoneLabel(z)}
-                </option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
+        {/* The actual submitted value always comes from this hidden input,
+            regardless of which view below is showing — the <select> (when
+            open) is deliberately unnamed so it never double-submits. */}
+        <input type="hidden" name="timezone" value={timezone} />
+        {isEditingTimezone ? (
+          <select
+            id="timezone"
+            required
+            autoFocus
+            value={timezone}
+            onChange={handleTimezoneChange}
+            className={inputClass}
+          >
+            {!timezone && (
+              <option value="" disabled hidden>
+                {t("timezoneDetecting")}
+              </option>
+            )}
+            {zoneGroups.map(({ region, zones }) => (
+              <optgroup key={region} label={region}>
+                {zones.map((z) => (
+                  <option key={z} value={z}>
+                    {timezoneLabel(z)}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+        ) : (
+          <div
+            id="timezone"
+            className={`${inputClass} flex items-center justify-between gap-3`}
+          >
+            <span>{timezone ? fullTimezoneLabel(timezone) : t("timezoneDetecting")}</span>
+            <button
+              type="button"
+              onClick={() => setIsEditingTimezone(true)}
+              className="shrink-0 text-xs font-medium text-accent underline hover:text-accent-hover"
+            >
+              {t("timezoneChange")}
+            </button>
+          </div>
+        )}
         <p className="text-xs text-muted">{t("timezoneHelp")}</p>
         {fieldError("timezone") && (
           <p className="text-xs text-red-600">{fieldError("timezone")}</p>

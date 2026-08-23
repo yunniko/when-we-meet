@@ -8,6 +8,9 @@ export async function createRoom(
   await page.getByLabel("Room name (optional)").fill(opts.title);
   await page.getByLabel("From", { exact: true }).fill(opts.startDate);
   await page.getByLabel("To", { exact: true }).fill(opts.endDate);
+  // The timezone field defaults to a collapsed "<guessed zone> — Change"
+  // label, not the raw <select> — click through to reveal it first.
+  await page.getByRole("button", { name: "Change" }).click();
   // Not "UTC" — that alias isn't in every ICU's supportedValuesOf("timeZone")
   // list (confirmed absent from this machine's Node build), so the <select>
   // wouldn't have an option for it. Any real IANA zone works equally well
