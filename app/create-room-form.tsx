@@ -1,23 +1,45 @@
 "use client";
 
-import { useActionState, useState, useTransition, type FormEvent } from "react";
+import {
+  useActionState,
+  useEffect,
+  useLayoutEffect,
+  useState,
+  useTransition,
+  type ChangeEvent,
+  type FormEvent,
+} from "react";
 import { useTranslations } from "next-intl";
 import { createRoom, type CreateRoomState } from "@/app/actions";
 import { DAILY_PRESETS, type DailyPresetKey } from "@/lib/room-presets";
 import { formatHoursWindow } from "@/lib/slots";
+import { pickGuessedTimezone } from "@/lib/timezone-guess";
 
 const inputClass =
   "rounded-md border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-accent";
 
 const PRESET_KEYS: DailyPresetKey[] = ["evening", "wholeDay", "morning", "midday", "custom"];
 
-function guessTimezone(): string {
-  try {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-  } catch {
-    return "UTC";
-  }
-}
+const LAST_TIMEZONE_STORAGE_KEY = "wwm_last_timezone";
+
+// The guess only ever runs client-side (see the effect in CreateRoomForm)
+// because a server has no idea what timezone the visitor is in — guessing
+// during SSR would just report the *server's* timezone. This component is
+// still server-rendered on first request (it's a plain client component,
+// not dynamic-imported with ssr:false), so touching Intl/localStorage
+// anywhere in the render body — including a useState initializer — runs on
+// the server too and produces a value the client then has to silently
+// overwrite after hydration. That overwrite used to be racy (an
+// uncontrolled <select> keyed off `defaultValue`, which React only applies
+// once at mount), which is why the guess sometimes never appeared at all,
+// especially on slower devices: whichever value was on-screen when the
+// user first looked at the field is what stuck. The select is controlled
+// now specifically so a post-mount guess reliably updates it.
+//
+// useLayoutEffect (rather than useEffect) so the guess is applied before
+// the browser paints — no flash of the wrong zone. It's a no-op during SSR
+// (guarded below) since React warns if it's called there.
+const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 // Grouped by region (the part before the first "/") so the <select> is
 // scannable instead of one flat alphabetical list of ~400 entries.
@@ -63,8 +85,47 @@ export function CreateRoomForm() {
     initialState,
   );
   const [isPending, startTransition] = useTransition();
-  const [timezone] = useState(() => state.values.timezone || guessTimezone());
+  const [timezone, setTimezone] = useState(() => state.values.timezone || "");
   const zoneGroups = groupedTimezoneOptions();
+
+  // Runs once, client-only, after the zone list above is available. Skips
+  // guessing entirely if a value is already present (a resubmitted value
+  // from a failed validation, or — in principle — a future prefill source)
+  // so we never clobber something the user already chose.
+  useIsomorphicLayoutEffect(() => {
+    if (timezone) return;
+    let intlZone: string | null = null;
+    try {
+      intlZone = Intl.DateTimeFormat().resolvedOptions().timeZone || null;
+    } catch {
+      intlZone = null;
+    }
+    let rememberedZone: string | null = null;
+    try {
+      rememberedZone = localStorage.getItem(LAST_TIMEZONE_STORAGE_KEY);
+    } catch {
+      rememberedZone = null;
+    }
+    const offsetMinutes = new Date().getTimezoneOffset();
+    const supportedZones = new Set(zoneGroups.flatMap((g) => g.zones));
+    setTimezone(pickGuessedTimezone({ intlZone, rememberedZone, offsetMinutes, supportedZones }));
+    // Deliberately mount-only: `timezone` is read only to bail out if a
+    // value's already present, and zoneGroups is recomputed every render
+    // from a pure global (Intl's supported zones) that never actually
+    // changes — depending on either would just re-run this pointlessly.
+  }, []);
+
+  function handleTimezoneChange(event: ChangeEvent<HTMLSelectElement>) {
+    const zone = event.target.value;
+    setTimezone(zone);
+    try {
+      localStorage.setItem(LAST_TIMEZONE_STORAGE_KEY, zone);
+    } catch {
+      // Private browsing / storage disabled — the choice just won't be
+      // remembered for next time, which is fine, not fatal.
+    }
+  }
+
   const [preset, setPreset] = useState<DailyPresetKey>("evening");
   const showCustom = preset === "custom";
   const fieldError = (field: string) =>
@@ -181,9 +242,16 @@ export function CreateRoomForm() {
         <select
           id="timezone"
           name="timezone"
-          defaultValue={timezone}
+          required
+          value={timezone}
+          onChange={handleTimezoneChange}
           className={inputClass}
         >
+          {!timezone && (
+            <option value="" disabled hidden>
+              {t("timezoneDetecting")}
+            </option>
+          )}
           {zoneGroups.map(({ region, zones }) => (
             <optgroup key={region} label={region}>
               {zones.map((z) => (

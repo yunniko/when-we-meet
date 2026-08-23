@@ -23,6 +23,7 @@
     "fromLabel": "From",
     "toLabel": "To",
     "timezoneLabel": "Timezone",
+    "timezoneDetecting": "Detecting…",
     "timezoneHelp": "Everyone in this room marks and sees times in this single timezone.",
     "dailyWindowLegend": "Daily time window",
     "dailyStartLabel": "Daily start",

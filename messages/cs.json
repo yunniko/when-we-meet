@@ -23,6 +23,7 @@
     "fromLabel": "Od",
     "toLabel": "Do",
     "timezoneLabel": "Časové pásmo",
+    "timezoneDetecting": "Zjišťování…",
     "timezoneHelp": "Všichni účastníci místnosti označují a vidí časy v tomto jednom časovém pásmu.",
     "dailyWindowLegend": "Denní časové okno",
     "dailyStartLabel": "Začátek dne",
