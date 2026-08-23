@@ -148,6 +148,17 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       tsc/eslint clean throughout.
 
 **Progress log** (newest first; The Company appends at every stopping point):
+- 2026-08-23 — **SEO baseline**, Owner-directed (asked what's needed for
+  the site to be findable on Google). Added Open Graph/Twitter metadata +
+  `metadataBase`, `robots.txt` (allows `/`, disallows `/r` and `/status`),
+  and `sitemap.xml` (landing page only, served with an explicit XML
+  content-type to avoid a known Search Console gotcha — same fix as
+  listing-studio). `GOOGLE_SITE_VERIFICATION` is a dormant env-var seam.
+  Registering the site in Search Console itself, and everything beyond
+  technical SEO (backlinks, content, time), flagged to the Owner as
+  non-code follow-up. tsc/eslint clean, 63 unit + 5 e2e green; verified
+  locally that robots.txt/sitemap.xml reflect the real APP_URL and the
+  landing page's OG/Twitter tags render; pushed and redeployed.
 - 2026-08-23 — **Timezone field: collapsed label + Change button**,
   Owner-directed. The create-room timezone field now defaults to a compact
   "guessed zone — Change" label instead of always showing the ~400-option

@@ -904,6 +904,60 @@ bug would mean adding a dedicated mobile-viewport project to
 test pass against catching narrow-viewport CSS regressions; flagged as a
 worthwhile follow-up, not done here since it wasn't asked for.
 
+## SEO baseline (Owner-directed, 2026-08-23)
+
+Owner asked what's needed for the site to be findable on Google. Answer
+given: a technical baseline (metadata, robots.txt, sitemap.xml, a Search
+Console verification seam) is a small, doable piece of it; the actual hard
+part — ranking for anything — needs backlinks/mentions/content and time,
+which isn't something code produces. This round is the technical half.
+
+- **`app/layout.tsx`**: `generateMetadata` now sets `metadataBase` (from
+  `APP_URL`, same fallback pattern as everywhere else this env var is
+  used), Open Graph (`title`/`description`/`url`/`siteName`/`type`), and a
+  Twitter `summary` card, all reusing the existing translated
+  `Metadata.title`/`Metadata.description` strings — no new content to
+  translate. `GOOGLE_SITE_VERIFICATION` is a dormant seam (same pattern as
+  `STATUS_PAGE_TOKEN`): set the env var once the site is registered in
+  Search Console and the verification `<meta>` tag appears with no further
+  code change.
+- **`app/robots.ts`** (new): allows `/`, disallows `/r` (every room page —
+  private participant data, and rooms expire within days per
+  `lib/expiry.ts` anyway, so they'd be dead links in an index almost
+  immediately) and `/status` (the token-gated admin page — excluded so its
+  query-string key never ends up in crawler logs, even though it 404s
+  without a valid key regardless). Points at `/sitemap.xml`.
+- **`app/sitemap.xml/route.ts`** (new): a custom route handler, not the
+  framework's `sitemap.ts` convention — mirrors listing-studio's fix for a
+  documented issue where Google Search Console chokes on that convention's
+  hardcoded `Content-Type: application/xml` (no charset) response even
+  though the XML is valid; this serves `text/xml; charset=UTF-8` instead.
+  Lists only `/` (the landing page is the only public, indexable route).
+  Both this and `robots.ts` set `export const dynamic = "force-dynamic"` —
+  without it, Next prerenders them at Docker *build* time, before `APP_URL`
+  is set (it's only injected at container run time via
+  `docker-compose.yml`), permanently baking in the `localhost:3000`
+  fallback regardless of the real production URL.
+- **`docker-compose.yml`**: `GOOGLE_SITE_VERIFICATION` added to the `app`
+  service's environment passthrough, same shape as `STATUS_PAGE_TOKEN`.
+
+**Not done — needs the Owner**: actually registering the site in Google
+Search Console (proves domain ownership, e.g. a DNS TXT record or the HTML
+verification tag this round's seam supports) and setting
+`GOOGLE_SITE_VERIFICATION` on the server afterward. Also out of scope
+entirely: backlinks, content, and the months-scale ranking climb a
+brand-new domain goes through regardless of technical SEO quality — flagged
+to the Owner as a separate, non-code effort, not attempted here.
+
+**Verified**: `tsc`/`eslint` clean, 63 unit + 5 e2e green (no test coverage
+added — this is metadata/config, not business logic). Manually confirmed
+locally with `APP_URL` set to the dev server's own URL: `/robots.txt` and
+`/sitemap.xml` both correctly reflect it (not the `localhost:3000`
+fallback), `/sitemap.xml` serves with the `text/xml; charset=UTF-8`
+content-type, and the rendered landing page `<head>` carries the expected
+`og:*`/`twitter:*` meta tags. Pushed and redeployed; confirmed live and
+confirmed the other sites on the shared host unaffected.
+
 ## Timezone field: collapsed label + Change button (Owner-directed, 2026-08-23)
 
 Owner asked for the timezone field to default to a compact "guessed value +
