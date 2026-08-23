@@ -904,6 +904,73 @@ bug would mean adding a dedicated mobile-viewport project to
 test pass against catching narrow-viewport CSS regressions; flagged as a
 worthwhile follow-up, not done here since it wasn't asked for.
 
+## Combined About/Terms/Privacy page (Owner-directed, 2026-08-23)
+
+Owner asked for a single page covering About, terms and conditions
+(including a liability disclaimer), and personal-data/privacy information.
+
+**Reused listing-studio's legal-doc pattern rather than inventing one**
+(STANDARDS.md "minimize spread"): content lives in a markdown file
+(`docs/legal/about-terms-privacy.md`), rendered to HTML via `marked`
+(`lib/legal.ts`, new dependency — `^18.0.6`, same version listing-studio
+pins) and displayed at `/about` (`app/about/page.tsx`) inside a styled
+`<article>`, with a visible **"Draft for legal review — not legal advice"**
+banner, same as listing-studio's terms/privacy pages. Unlike
+listing-studio's three separate documents (terms/privacy/ai-disclosure),
+this is one page covering all three topics in one file, since the Owner
+asked for a single page and the app itself is much simpler (no accounts,
+no payments — far less to say).
+
+**Only the page chrome is translated** (back-link, draft banner, tab
+title/description — new `About` i18n namespace, all 4 locales) — the
+document body stays English-only in every locale, deliberately: this is
+legally load-bearing text (liability disclaimer, data-handling
+description), and a subtly wrong machine/manual translation of a legal
+document is worse than making non-English readers read English. Same
+choice listing-studio made for its own legal docs.
+
+**Operator identity reused, not invented**: "Iuliia Nikonorova, operating
+When We Meet as a private individual based in the Czech Republic (IČO
+pending)" — the exact identity/registration-status already drafted for
+craftale.eu, since it's the same real person/entity regardless of which
+site. Contact email is `info@julienika.cz` (Owner's choice, confirmed via
+AskUserQuestion before writing anything — the umbrella domain hosting this
+subdomain, not invented). **Not verified by this session**: whether that
+inbox is actually monitored — flagged to the Owner, not assumed.
+
+**Content reflects the app's actual behavior**, checked against the code
+rather than written generically: what's collected (self-reported,
+unverified display name; optional room title/description; availability
+marks; the two per-room `httpOnly` cookies from `lib/cookies.ts`, 180-day
+max-age; the non-`httpOnly` `locale` cookie from `lib/locale-actions.ts`,
+1-year); what's explicitly *not* done (no accounts, no analytics/trackers
+— confirmed by grepping the codebase and `package.json`, none present);
+retention (the existing 3-day-post-range/finalization expiry from
+`lib/expiry.ts`, described honestly as automatic deletion, not a
+data-request process); and self-service erasure via the existing "Leave
+room" feature. The Terms section adds the two things the Owner asked for
+explicitly — a "no warranty" clause and a limitation-of-liability
+clause — plus standard adjacent terms (no identity verification, acceptable
+use, changes, governing law: Czech Republic, matching the operator's
+domicile).
+
+**Other changes**: a small footer (`app/layout.tsx`) linking to `/about`
+from every page, added to `sitemap.xml` (priority 0.3, monthly — real
+public content, no reason to exclude it from the SEO work earlier this
+round). `Dockerfile` now copies `docs/legal` into the runtime image
+(`lib/legal.ts` reads it via `fs` at request time, not a bundled import).
+
+**Verified**: `tsc`/`eslint` clean, 63 unit + 5 e2e green (no new
+automated coverage — this is static content, not business logic).
+Manually confirmed in a real browser: the page renders correctly
+(headings, the numbered Terms list with decimal markers vs. the bulleted
+Privacy list with disc markers, bold emphasis), `marked`'s GFM autolinking
+turned every bare `info@julienika.cz` mention into a real `mailto:` link
+with no extra markup needed, the footer link is present sitewide, and
+switching to Czech translates the chrome while the document body correctly
+stays in English. Pushed and redeployed; confirmed live and confirmed the
+other sites on the shared host unaffected.
+
 ## SEO baseline (Owner-directed, 2026-08-23)
 
 Owner asked what's needed for the site to be findable on Google. Answer

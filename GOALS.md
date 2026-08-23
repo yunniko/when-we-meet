@@ -148,6 +148,20 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       tsc/eslint clean throughout.
 
 **Progress log** (newest first; The Company appends at every stopping point):
+- 2026-08-23 — **Combined About/Terms/Privacy page**, Owner-directed
+  (single page covering About, terms with a liability disclaimer, and
+  personal-data/privacy info). New `/about`, content in
+  `docs/legal/about-terms-privacy.md` rendered via `marked` — reused
+  listing-studio's legal-doc pattern (draft/not-legal-advice banner,
+  English-only body, translated chrome only) rather than inventing one.
+  Operator identity/registration status matches craftale.eu's (same real
+  person); contact email `info@julienika.cz` confirmed with the Owner
+  first via AskUserQuestion rather than invented. Content checked against
+  actual app behavior (cookies, retention via `lib/expiry.ts`, no
+  accounts/analytics). Linked from a new sitewide footer, added to
+  sitemap.xml. tsc/eslint clean, 63 unit + 5 e2e green; verified live in a
+  real browser including a locale switch (chrome translates, document body
+  correctly stays English); pushed and redeployed.
 - 2026-08-23 — **SEO baseline**, Owner-directed (asked what's needed for
   the site to be findable on Google). Added Open Graph/Twitter metadata +
   `metadataBase`, `robots.txt` (allows `/`, disallows `/r` and `/status`),
