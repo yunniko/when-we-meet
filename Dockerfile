@@ -24,6 +24,10 @@ ENV PORT=3000
 COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/.next/static ./.next/static
 COPY --from=build /app/public ./public
+# The About/Terms/Privacy page reads this at request time (lib/legal.ts) —
+# it's outside .next/standalone's own file-tracing since marked reads it
+# via fs, not an import.
+COPY --from=build /app/docs/legal ./docs/legal
 
 EXPOSE 3000
 CMD ["node", "server.js"]

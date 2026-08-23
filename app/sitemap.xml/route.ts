@@ -34,20 +34,33 @@ function escapeXml(value: string): string {
   });
 }
 
-// Only the landing page — see robots.ts for why every /r/<slug> room page
-// is excluded (private, and rooms expire within days anyway per
+type Entry = { path: string; priority: number; changeFrequency: string };
+
+// Only the truly public pages — see robots.ts for why every /r/<slug> room
+// page is excluded (private, and rooms expire within days anyway per
 // lib/expiry.ts, so they'd be dead links in a crawler's index almost
 // immediately regardless).
+const routes: Entry[] = [
+  { path: "/", priority: 1, changeFrequency: "weekly" },
+  { path: "/about", priority: 0.3, changeFrequency: "monthly" },
+];
+
 export function GET(): NextResponse {
   const lastmod = new Date().toISOString();
+  const urls = routes
+    .map(
+      ({ path, priority, changeFrequency }) => `  <url>
+    <loc>${escapeXml(`${baseUrl}${path}`)}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>${changeFrequency}</changefreq>
+    <priority>${priority}</priority>
+  </url>`,
+    )
+    .join("\n");
+
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>${escapeXml(baseUrl)}/</loc>
-    <lastmod>${lastmod}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1</priority>
-  </url>
+${urls}
 </urlset>
 `;
 

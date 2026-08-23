@@ -4,7 +4,8 @@
   },
   "Common": {
     "untitledRoom": "Bez názvu",
-    "newEvent": "Nová akce"
+    "newEvent": "Nová akce",
+    "aboutLink": "O aplikaci, podmínky a soukromí"
   },
   "Metadata": {
     "title": "When We Meet",
@@ -138,5 +139,11 @@
       "outOfRange": "Tento čas není v rozsahu místnosti.",
       "notFuture": "Můžete vybrat jen čas v budoucnosti."
     }
+  },
+  "About": {
+    "pageTitle": "O aplikaci, podmínky a soukromí",
+    "pageDescription": "Co je When We Meet, jak nakládáme s vašimi údaji a za jakých podmínek službu používáte.",
+    "backHome": "Zpět na When We Meet",
+    "draftBanner": "Návrh k právní kontrole — tento dokument ještě nebyl schválen právníkem a může se změnit."
   }
 }

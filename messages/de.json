@@ -4,7 +4,8 @@
   },
   "Common": {
     "untitledRoom": "Ohne Titel",
-    "newEvent": "Neues Treffen"
+    "newEvent": "Neues Treffen",
+    "aboutLink": "Über uns, AGB & Datenschutz"
   },
   "Metadata": {
     "title": "When We Meet",
@@ -138,5 +139,11 @@
       "outOfRange": "Diese Zeit liegt außerhalb des Zeitraums dieses Raums.",
       "notFuture": "Du kannst nur eine Zeit in der Zukunft wählen."
     }
+  },
+  "About": {
+    "pageTitle": "Über uns, AGB & Datenschutz",
+    "pageDescription": "Was When We Meet ist, wie wir mit deinen Daten umgehen und zu welchen Bedingungen der Dienst genutzt wird.",
+    "backHome": "Zurück zu When We Meet",
+    "draftBanner": "Entwurf zur rechtlichen Prüfung — dieses Dokument wurde noch nicht von einem Anwalt freigegeben und kann sich ändern."
   }
 }

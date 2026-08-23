@@ -4,7 +4,8 @@
   },
   "Common": {
     "untitledRoom": "Untitled room",
-    "newEvent": "New event"
+    "newEvent": "New event",
+    "aboutLink": "About, Terms & Privacy"
   },
   "Metadata": {
     "title": "When We Meet",
@@ -138,5 +139,11 @@
       "outOfRange": "That slot isn't in this room's range.",
       "notFuture": "You can only pick a time in the future."
     }
+  },
+  "About": {
+    "pageTitle": "About, Terms & Privacy",
+    "pageDescription": "What When We Meet is, how it handles your data, and the terms of using it.",
+    "backHome": "Back to When We Meet",
+    "draftBanner": "Draft for legal review — this document has not yet been approved by counsel and may change."
   }
 }
