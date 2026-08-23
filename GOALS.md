@@ -148,6 +148,21 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       tsc/eslint clean throughout.
 
 **Progress log** (newest first; The Company appends at every stopping point):
+- 2026-08-23 — **Timezone auto-detection fix + more fallback guesses**,
+  Owner-directed (reported: mobile doesn't guess the timezone at all).
+  Root cause: the guess ran during SSR (inside a useState initializer in a
+  plain client component) and the `<select>` was uncontrolled, so the
+  client's real guess wasn't reliably re-applied post-hydration — a race
+  that mobile's slower hydration made far more likely to lose, sometimes
+  landing on the alphabetically-first option instead of any guess at all.
+  Fixed: guessing now happens only client-side in a pre-paint layout
+  effect, against a controlled select — no more race regardless of device
+  speed. Also added two fallback sources (a remembered previous choice via
+  localStorage, then a coarse UTC-offset→zone mapping) for when Intl's zone
+  name is unavailable or unsupported, pure/unit-tested in
+  `lib/timezone-guess.ts`. 8 new unit + 63 total unit + 5 e2e green;
+  verified via Playwright device emulation including a CPU-throttled
+  mobile case reproducing the original race; pushed and redeployed.
 - 2026-08-20 — **Optional room description**, Owner-directed. Added
   `Room.description` (nullable text, new migration), an optional multi-line
   textarea on room creation (max 2000 chars, blank collapses to unset, same

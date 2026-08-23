@@ -904,6 +904,81 @@ bug would mean adding a dedicated mobile-viewport project to
 test pass against catching narrow-viewport CSS regressions; flagged as a
 worthwhile follow-up, not done here since it wasn't asked for.
 
+## Timezone auto-detection fix + extra fallback guesses (Owner-directed, 2026-08-23)
+
+Owner reported the timezone `<select>` on the create-room form didn't guess
+the visitor's timezone at all on mobile (landing on the alphabetically-first
+option, "Africa/Abidjan"), and asked for more ways to guess/prefill it.
+
+**Root cause**: the guess ran inside a `useState(() => guessTimezone())`
+initializer in `create-room-form.tsx`. That file is a plain client
+component (no `dynamic(..., { ssr: false })`), so Next.js still
+server-renders it on first request — meaning `Intl.DateTimeFormat().resolvedOptions().timeZone`
+ran on the *server* first, returning the VPS's timezone, not the visitor's.
+The `<select>` used `defaultValue`, an uncontrolled prop React only applies
+once at mount; after hydration, React doesn't reliably re-apply a changed
+`defaultValue`, so whatever was on-screen when the DOM first painted is
+what tended to stick. This is a race, not a hard rule, which is exactly why
+it looked fine on desktop (JS parses/hydrates fast enough that nobody ever
+sees or interacts with the pre-hydration state) but broke on slower mobile
+hardware, where there's a real window for the wrong value to be visible or
+even to end up submitted.
+
+**Fix**: the guess now only ever runs client-side, inside a
+`useLayoutEffect` (fires before first paint, so no visible flash) gated by
+`typeof window !== "undefined"` so it's a no-op — not a warning — during
+SSR. The `<select>` is now controlled (`value` + `onChange`) so a
+post-mount `setTimezone(...)` reliably updates it, closing the race
+entirely regardless of device speed.
+
+**More guessing methods** (the Owner's second ask), in
+`lib/timezone-guess.ts` (pure, unit-tested, no DOM/browser API calls of its
+own — the component reads `Intl`/`localStorage`/`Date` and passes the
+results in): tried in order,
+1. A live `Intl.DateTimeFormat().resolvedOptions().timeZone` reading — most
+   accurate, reflects where the visitor actually is right now.
+2. A remembered previous choice, read from `localStorage`
+   (`wwm_last_timezone`) — written whenever the user changes the dropdown
+   themselves, so an explicit correction (e.g. Intl guessed wrong, or a
+   privacy-hardened browser normalizes it) persists across future visits.
+3. A coarse UTC-offset → `Etc/GMT±N` mapping (`offsetMinutesToEtcZone`),
+   derived from `Date.prototype.getTimezoneOffset()` — needs nothing but
+   basic `Date`, so it's a floor under (2) even if Intl's zone-*name*
+   resolution is unavailable. Half/quarter-hour offsets round to the
+   nearest whole hour (a deliberate precision loss — this only runs when
+   the better sources already failed). Etc/GMT's sign convention is
+   POSIX-inverted from everyday usage (`Etc/GMT+5` = UTC-5); the module's
+   doc comment explains why the negation is there.
+4. Plain `"UTC"`, if literally nothing else resolved to a zone the running
+   browser's `Intl.supportedValuesOf("timeZone")` actually contains.
+
+Every candidate is checked against the browser's real supported-zones set
+before being used, so the guess can never select a value that isn't
+actually one of the `<select>`'s options.
+
+**Considered and left out**: IP-based geolocation via a CDN/edge geo header
+(e.g. what Vercel's `x-vercel-ip-timezone` provides) — would be the most
+robust source since it works even with JS disabled and needs no client
+guessing at all, but this app isn't behind a geo-aware CDN (plain
+nginx/Caddy on the shared VPS, see "Git remote & deployment" below), and
+adding a third-party geo-IP service would mean external spend/an account,
+which needs Owner approval per VALUES.md — flagged as a possible future
+enhancement, not pursued here.
+
+**Verified**: 8 new unit tests for `lib/timezone-guess.ts` (offset→zone
+mapping including sign inversion, rounding, and clamping; and the full
+preference-order resolver), 63/63 unit + 5/5 e2e green (the e2e suite
+already exercises `selectOption` on this field, confirming the now-controlled
+select still accepts programmatic selection). Manually verified with
+Playwright device emulation (throwaway script, not kept) across: desktop
+with a real timezone, Pixel-5 mobile with a real (non-UTC) timezone —
+matching the reported bug exactly and confirmed fixed — and a Pixel-5
+context under 6x CPU throttling, which reproduced the slow-hydration
+scenario the bug report was about and confirmed the guess still lands
+correctly once hydration completes, however long that takes, since there's
+no longer a race to lose. Pushed and redeployed; confirmed live and
+confirmed the other sites on the shared host unaffected.
+
 ## Optional room description (Owner-directed, 2026-08-20)
 
 Owner asked for an optional multi-line description field on room creation,
