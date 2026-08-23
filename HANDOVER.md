@@ -1015,6 +1015,11 @@ sits inside). `tsc --noEmit` and `eslint .` clean.
 
 ## Git remote & deployment (post-M5, Owner-directed, 2026-08-17)
 
+Shared-server access, the site/port inventory, and the "don't affect other
+sites" rules now live in `E:\CLAUDE\COMPANY\INFRASTRUCTURE.md` (added
+2026-08-23) — that's the canonical cross-project reference; the narrative
+below is this project's own decision record for how it got set up.
+
 **GitHub**: `origin` is `git@github.com:yunniko/when-we-meet.git`, pushed
 (Owner confirmed). Commit authors were rewritten (`git filter-branch
 --env-filter`, all 8 commits at the time) from the local git config's email
