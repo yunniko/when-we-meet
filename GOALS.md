@@ -148,6 +148,15 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       tsc/eslint clean throughout.
 
 **Progress log** (newest first; The Company appends at every stopping point):
+- 2026-08-23 — **Timezone field: collapsed label + Change button**,
+  Owner-directed. The create-room timezone field now defaults to a compact
+  "guessed zone — Change" label instead of always showing the ~400-option
+  `<select>`; clicking Change reveals the select (pre-set, autofocused),
+  and picking a value collapses it straight back to the label. The
+  submitted value moved to an always-present hidden input since the
+  visible control now alternates between a div and a select. 63 unit + 5
+  e2e green (e2e helper updated to click Change first); verified live in a
+  real browser including a full create-room submit; pushed and redeployed.
 - 2026-08-23 — **Timezone auto-detection fix + more fallback guesses**,
   Owner-directed (reported: mobile doesn't guess the timezone at all).
   Root cause: the guess ran during SSR (inside a useState initializer in a

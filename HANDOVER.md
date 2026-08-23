@@ -904,6 +904,48 @@ bug would mean adding a dedicated mobile-viewport project to
 test pass against catching narrow-viewport CSS regressions; flagged as a
 worthwhile follow-up, not done here since it wasn't asked for.
 
+## Timezone field: collapsed label + Change button (Owner-directed, 2026-08-23)
+
+Owner asked for the timezone field to default to a compact "guessed value +
+Change button" display instead of always showing the raw `<select>`
+(~400 options), with picking a value from the select collapsing it back to
+the label.
+
+`create-room-form.tsx` gained an `isEditingTimezone` boolean (default
+`false`). In label mode it renders a `<div>` styled like the other inputs,
+showing `fullTimezoneLabel(timezone)` (region-qualified, e.g.
+"Europe / Prague" — plain `timezoneLabel` alone reads fine inside a grouped
+`<select>` but is ambiguous standing next to a button) plus a "Change"
+button that flips the flag. In edit mode it renders the `<select>` from the
+previous round (same controlled value/onChange, same guessing logic
+untouched), `autoFocus`ed since it's freshly mounted each time. Picking an
+option in `handleTimezoneChange` now also flips the flag back to `false` —
+same effect as the Owner asking for "return to initial state" on choice.
+
+**Because the visible control now alternates between a `<div>` and a
+`<select>`, neither of which can be relied on alone to always be present
+and named**, the actual form-submitted value moved to an always-mounted
+`<input type="hidden" name="timezone" value={timezone}>`. The `<select>`
+itself carries no `name` anymore, so it's purely a picker UI, never a
+double-submit source. This also means the `required` attribute on the
+select is cosmetic (blocks the picker's own native validation, but doesn't
+block form submission via the hidden input) — real enforcement is still
+server-side (`timezoneRequired` in `lib/validation.ts`), unchanged.
+
+`tests/e2e/helpers.ts`'s `createRoom` helper updated to click the "Change"
+button before `selectOption(...)`, since `getByLabel("Timezone").selectOption(...)`
+requires an actual mounted `<select>`, which is no longer the default view.
+
+**Verified**: 63 unit + 5 e2e green (e2e specifically re-verifies the new
+click-through-to-select flow, since the helper now depends on it). Manually
+verified in a real browser: default view shows the guessed zone as a label,
+"Change" reveals the select pre-set to the current value and focused,
+picking a different zone collapses back to the label showing the new
+value, and a full room-creation submit correctly persisted the picked zone
+(`America/New_York` end-to-end, confirmed via the created room's page and
+cleaned up afterward). Pushed and redeployed; confirmed live and confirmed
+the other sites on the shared host unaffected.
+
 ## Timezone auto-detection fix + extra fallback guesses (Owner-directed, 2026-08-23)
 
 Owner reported the timezone `<select>` on the create-room form didn't guess
