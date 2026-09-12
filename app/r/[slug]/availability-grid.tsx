@@ -2,10 +2,17 @@
 
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { saveAvailability, type SlotUpdate } from "@/app/r/[slug]/actions";
-import { formatDayLabel, formatHour, isWeekend, slotKey, type CellMark, type SlotStatus } from "@/lib/slots";
-
-type Brush = SlotStatus | "CLEAR" | "PREFER";
+import { saveAvailability } from "@/app/r/[slug]/actions";
+import {
+  applyBrush,
+  cellsBetween,
+  preferStrokeSets,
+  type Brush,
+  type CellIndex,
+  type Marks,
+  type SlotUpdate,
+} from "@/lib/paint";
+import { formatDayLabel, formatHour, isWeekend, slotKey, type CellMark } from "@/lib/slots";
 
 const BRUSH_KEYS: { value: Brush; swatchClass: string }[] = [
   { value: "CAN", swatchClass: "bg-emerald-500" },
@@ -21,12 +28,26 @@ const BRUSH_LABEL_KEYS: Record<Brush, string> = {
   CLEAR: "clear",
 };
 
+// A finger landing on a cell may be about to scroll the grid or about to
+// paint it. Holding still for this long commits to painting; moving further
+// than the slop before that lets the browser scroll instead. A lift before
+// either is a tap and paints that one cell. Mouse and pen paint at once.
+// See D009.
+const TOUCH_HOLD_MS = 250;
+const TOUCH_SLOP_PX = 8;
+
 function cellClass(mark: CellMark | undefined, weekend: boolean): string {
   if (mark?.status === "CAN") return "bg-emerald-500/80 hover:bg-emerald-500";
   if (mark?.status === "CANNOT") return "bg-rose-500/70 hover:bg-rose-500/90";
   return weekend
     ? "bg-weekend hover:bg-foreground/[.07]"
     : "bg-foreground/[.03] hover:bg-foreground/[.07]";
+}
+
+function cellAt(x: number, y: number): CellIndex | null {
+  const el = document.elementFromPoint(x, y)?.closest<HTMLElement>("[data-date-idx]");
+  if (!el) return null;
+  return { dateIdx: Number(el.dataset.dateIdx), hourIdx: Number(el.dataset.hourIdx) };
 }
 
 export function AvailabilityGrid({
@@ -41,94 +62,65 @@ export function AvailabilityGrid({
   initialAvailability: Record<string, CellMark>;
 }) {
   const t = useTranslations("AvailabilityGrid");
-  const [marks, setMarks] = useState<Record<string, CellMark>>(initialAvailability);
+  const [marks, setMarks] = useState<Marks>(initialAvailability);
   const [brush, setBrush] = useState<Brush>("CAN");
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const gridRef = useRef<HTMLDivElement>(null);
+  // Mirror of `marks` for event handlers, so a stroke reads its own earlier
+  // cells without waiting for a render.
+  const marksRef = useRef<Marks>(initialAvailability);
   const painting = useRef(false);
   const strokeChanges = useRef<Map<string, SlotUpdate>>(new Map());
-  // Last (dateIndex, hourIndex) painted during the current stroke, so a fast
-  // drag/swipe that skips pointerenter events on intermediate cells (common
-  // on touch, and even with a fast mouse) still fills the gap in between.
-  const lastPaintedIndex = useRef<{ dateIdx: number; hourIdx: number } | null>(null);
-  // For the PREFER brush: whether this whole stroke sets or clears
-  // "preferred", decided once from the first cell touched, so dragging over
-  // a mix of already-preferred and not-yet-preferred CAN cells doesn't flip
-  // each one independently.
-  const strokeSetsPreferred = useRef(true);
+  const lastPainted = useRef<CellIndex | null>(null);
+  const preferSets = useRef(true);
+  // A touch that has landed but not yet decided between scroll and paint.
+  const hold = useRef<{ cell: CellIndex; x: number; y: number; timer: number } | null>(null);
 
-  const paintCell = useCallback(
-    (date: string, hour: number) => {
-      const key = slotKey(date, hour);
-      setMarks((prev) => {
-        const current = prev[key];
-
-        if (brush === "CLEAR") {
-          if (!current) return prev;
-          const next = { ...prev };
-          delete next[key];
-          strokeChanges.current.set(key, { date, hour, status: null, preferred: false });
-          return next;
-        }
-
-        if (brush === "PREFER") {
-          if (!current || current.status !== "CAN") return prev; // only applies to CAN slots
-          const preferred = strokeSetsPreferred.current;
-          if (current.preferred === preferred) return prev;
-          strokeChanges.current.set(key, { date, hour, status: "CAN", preferred });
-          return { ...prev, [key]: { status: "CAN", preferred } };
-        }
-
-        // CAN / CANNOT: keep an existing "preferred" mark only when
-        // repainting CAN over CAN; anything else forces it off (preferred
-        // only makes sense on a CAN slot).
-        const preferred = brush === "CAN" && current?.status === "CAN" ? current.preferred : false;
-        strokeChanges.current.set(key, { date, hour, status: brush, preferred });
-        return { ...prev, [key]: { status: brush, preferred } };
-      });
-    },
-    [brush],
-  );
-
-  const paintCellAtIndex = useCallback(
-    (dateIdx: number, hourIdx: number) => {
-      const last = lastPaintedIndex.current;
-      if (last) {
-        // Fill every grid cell on the straight line from the last painted
-        // cell to this one (steps along whichever axis moved further).
-        const dSteps = dateIdx - last.dateIdx;
-        const hSteps = hourIdx - last.hourIdx;
-        const steps = Math.max(Math.abs(dSteps), Math.abs(hSteps));
-        for (let i = 1; i <= steps; i++) {
-          const d = last.dateIdx + Math.round((dSteps * i) / steps);
-          const h = last.hourIdx + Math.round((hSteps * i) / steps);
-          paintCell(dates[d], hours[h]);
-        }
-      } else {
-        paintCell(dates[dateIdx], hours[hourIdx]);
+  const paintCells = useCallback(
+    (cells: CellIndex[]) => {
+      let next = marksRef.current;
+      for (const { dateIdx, hourIdx } of cells) {
+        const date = dates[dateIdx];
+        const hour = hours[hourIdx];
+        if (date === undefined || hour === undefined) continue;
+        const res = applyBrush(next, date, hour, brush, preferSets.current);
+        if (!res.change) continue;
+        next = res.marks;
+        strokeChanges.current.set(slotKey(date, hour), res.change);
       }
-      lastPaintedIndex.current = { dateIdx, hourIdx };
+      if (next !== marksRef.current) {
+        marksRef.current = next;
+        setMarks(next);
+      }
     },
-    [dates, hours, paintCell],
+    [brush, dates, hours],
   );
 
-  const startStroke = useCallback(
-    (dateIdx: number, hourIdx: number) => {
+  const extendStroke = useCallback(
+    (cell: CellIndex) => {
+      paintCells(cellsBetween(lastPainted.current, cell));
+      lastPainted.current = cell;
+    },
+    [paintCells],
+  );
+
+  const beginStroke = useCallback(
+    (cell: CellIndex) => {
       painting.current = true;
-      lastPaintedIndex.current = null;
+      lastPainted.current = null;
       if (brush === "PREFER") {
-        const key = slotKey(dates[dateIdx], hours[hourIdx]);
-        const current = marks[key];
-        strokeSetsPreferred.current = !(current?.status === "CAN" && current.preferred);
+        const first = marksRef.current[slotKey(dates[cell.dateIdx], hours[cell.hourIdx])];
+        preferSets.current = preferStrokeSets(first);
       }
-      paintCellAtIndex(dateIdx, hourIdx);
+      extendStroke(cell);
     },
-    [brush, dates, hours, marks, paintCellAtIndex],
+    [brush, dates, hours, extendStroke],
   );
 
   const endStroke = useCallback(() => {
     if (!painting.current) return;
     painting.current = false;
-    lastPaintedIndex.current = null;
+    lastPainted.current = null;
     const changes = [...strokeChanges.current.values()];
     strokeChanges.current.clear();
     if (changes.length === 0) return;
@@ -138,6 +130,12 @@ export function AvailabilityGrid({
       .catch(() => setSaveState("error"));
   }, [roomId]);
 
+  const cancelHold = useCallback(() => {
+    if (!hold.current) return;
+    window.clearTimeout(hold.current.timer);
+    hold.current = null;
+  }, []);
+
   useEffect(() => {
     if (saveState !== "saved") return;
     const t = setTimeout(() => setSaveState("idle"), 1500);
@@ -146,15 +144,75 @@ export function AvailabilityGrid({
 
   useEffect(() => {
     function handleUp() {
+      const pending = hold.current;
+      if (pending) {
+        // Lifted before the hold timer: a tap, paints just that cell.
+        cancelHold();
+        beginStroke(pending.cell);
+      }
+      endStroke();
+    }
+    function handleCancel() {
+      // The browser took the touch over (it started scrolling).
+      cancelHold();
       endStroke();
     }
     window.addEventListener("pointerup", handleUp);
-    window.addEventListener("pointercancel", handleUp);
+    window.addEventListener("pointercancel", handleCancel);
     return () => {
       window.removeEventListener("pointerup", handleUp);
-      window.removeEventListener("pointercancel", handleUp);
+      window.removeEventListener("pointercancel", handleCancel);
+      cancelHold();
     };
-  }, [endStroke]);
+  }, [beginStroke, cancelHold, endStroke]);
+
+  useEffect(() => {
+    // Once a touch stroke is painting, keep the browser from turning the
+    // finger's movement into a scroll. Must be a non-passive native
+    // listener: React's onTouchMove is passive and cannot preventDefault.
+    const grid = gridRef.current;
+    if (!grid) return;
+    function handleTouchMove(e: TouchEvent) {
+      if (painting.current) e.preventDefault();
+    }
+    grid.addEventListener("touchmove", handleTouchMove, { passive: false });
+    return () => grid.removeEventListener("touchmove", handleTouchMove);
+  }, []);
+
+  const onPointerDown = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      const cell = cellAt(e.clientX, e.clientY);
+      if (!cell) return;
+      if (e.pointerType === "touch") {
+        cancelHold();
+        const timer = window.setTimeout(() => {
+          hold.current = null;
+          beginStroke(cell);
+          navigator.vibrate?.(10);
+        }, TOUCH_HOLD_MS);
+        hold.current = { cell, x: e.clientX, y: e.clientY, timer };
+        return;
+      }
+      if (e.button !== 0) return;
+      beginStroke(cell);
+    },
+    [beginStroke, cancelHold],
+  );
+
+  const onPointerMove = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (painting.current) {
+        const cell = cellAt(e.clientX, e.clientY);
+        if (cell) extendStroke(cell);
+        return;
+      }
+      const pending = hold.current;
+      if (pending && Math.hypot(e.clientX - pending.x, e.clientY - pending.y) > TOUCH_SLOP_PX) {
+        cancelHold(); // moved too soon: this touch is a scroll
+      }
+    },
+    [cancelHold, extendStroke],
+  );
 
   return (
     <div className="flex flex-col gap-3">
@@ -186,12 +244,25 @@ export function AvailabilityGrid({
 
       <p className="text-xs text-muted">{t("instructions")}</p>
 
-      <div className="max-h-[70vh] overflow-auto rounded-md border border-border">
+      <div
+        data-testid="grid-scroll"
+        className="max-h-[70vh] overflow-auto rounded-md border border-border"
+      >
         <div
+          ref={gridRef}
           className="inline-grid select-none"
           style={{
             gridTemplateColumns: `72px repeat(${dates.length}, minmax(56px, 1fr))`,
-            touchAction: "none",
+            // Scrolling and pinch-zoom stay native; a stroke opts out of
+            // scrolling through the touchmove listener above.
+            touchAction: "manipulation",
+            WebkitTouchCallout: "none",
+          }}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onContextMenu={(e) => {
+            // A long press must not open the context menu mid-stroke.
+            if (hold.current || painting.current) e.preventDefault();
           }}
         >
           <div className="sticky left-0 top-0 z-20 border-b border-r border-border bg-surface" />
@@ -218,13 +289,8 @@ export function AvailabilityGrid({
                   <div
                     key={key}
                     data-testid={`slot-${date}-${hour}`}
-                    onPointerDown={(e) => {
-                      e.currentTarget.releasePointerCapture(e.pointerId);
-                      startStroke(dateIdx, hourIdx);
-                    }}
-                    onPointerEnter={() => {
-                      if (painting.current) paintCellAtIndex(dateIdx, hourIdx);
-                    }}
+                    data-date-idx={dateIdx}
+                    data-hour-idx={hourIdx}
                     className={`relative h-10 border-l border-t border-border ${cellClass(mark, isWeekend(date))}`}
                   >
                     {mark?.preferred && (

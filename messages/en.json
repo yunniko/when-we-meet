@@ -95,7 +95,7 @@
     "saving": "Saving…",
     "saved": "Saved",
     "saveError": "Couldn't save — try again",
-    "instructions": "Click, or click and drag, to paint slots (works with touch too). \"Prefer\" only applies to slots already marked Can."
+    "instructions": "Click, or click and drag, to paint slots. On a touch screen: tap a slot, or press and hold, then drag; swipe to scroll. \"Prefer\" only applies to slots already marked Can."
   },
   "FinalizedBanner": {
     "title": "📌 Meeting time set: {when}",

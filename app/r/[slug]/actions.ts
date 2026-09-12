@@ -10,7 +10,7 @@ import { getCurrentParticipant } from "@/lib/participant";
 import { claimCreatorIfEligible, isRoomOwner } from "@/lib/owner";
 import { isSlotInFuture } from "@/lib/time";
 import { summarizeAvailability, type MarkSummary } from "@/lib/slots";
-import type { SlotStatus } from "@/lib/slots";
+import type { SlotUpdate } from "@/lib/paint";
 import { MAX_PARTICIPANTS_PER_ROOM } from "@/lib/validation";
 
 export type JoinState =
@@ -143,12 +143,7 @@ export async function leaveRoom(
   redirect(`/r/${ctx.slug}`);
 }
 
-export type SlotUpdate = {
-  date: string;
-  hour: number;
-  status: SlotStatus | null;
-  preferred: boolean;
-};
+export type { SlotUpdate };
 
 // A room's grid can never legitimately have more distinct slots than its
 // own bounds allow (60-day range cap × 24 hours = 1440, see

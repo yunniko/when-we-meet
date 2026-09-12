@@ -95,7 +95,7 @@
     "saving": "Wird gespeichert…",
     "saved": "Gespeichert",
     "saveError": "Speichern fehlgeschlagen — versuche es erneut",
-    "instructions": "Klicke oder klicke und ziehe, um Zeiten einzutragen (funktioniert auch mit Touch). „Bevorzugt“ gilt nur für bereits mit „Kann“ markierte Zeiten."
+    "instructions": "Klicke oder klicke und ziehe, um Zeiten einzutragen. Auf dem Touchscreen: Tippe auf ein Feld oder halte gedrückt und ziehe dann; Wischen scrollt. „Bevorzugt“ gilt nur für bereits mit „Kann“ markierte Zeiten."
   },
   "FinalizedBanner": {
     "title": "📌 Besprechungszeit festgelegt: {when}",
