@@ -11,3 +11,4 @@ Numbers match the former `HANDOVER.md` `Dn` entries (referenced from `AGENTS.md`
 - D007 — Creator is a participant — active
 - D008 — next-intl, fixed four locales — active
 - D009 — Touch paints on hold or tap; swipe scrolls the grid — active
+- D010 — Membership and ownership writes serialize on a room row lock — active

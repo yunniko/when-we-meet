@@ -1,15 +1,17 @@
 # Handover — When We Meet
-Last verified: 2026-09-12 at 4f0a539
+Last verified: 2026-09-13 at 3619a36
 
 Account-free group scheduling: a room with a date range, participants paint CAN/CANNOT/prefer
 in 1-hour slots, results rank the overlaps, the creator can finalize a time. Goals: `GOALS.md`
-G-001 and G-002 (both fully built, both ACTIVE pending Owner sign-off). Conventions:
+G-001 and G-002 (both fully built, both ACTIVE pending Owner sign-off); G-003 (owner removes a
+participant) is ACTIVE at M1 of 2; G-004 (invited-names list) is planned, DRAFT. Conventions:
 `AGENTS.md`. Charter: `E:\CLAUDE\COMPANY\`.
 
 ## Current state
 
 - **Live** at https://meet.app.julienika.cz (HTTP 200 re-checked 2026-09-12). App port 30010,
-  Postgres 54321 (127.0.0.1). Live build is 4f0a539 (deployed 2026-09-12).
+  Postgres 54321 (127.0.0.1). Live build is 4f0a539 (deployed 2026-09-12); 3619a36 (G-003 M1)
+  is committed and pushed, not deployed.
 - Done and deployed: G-001 M1–M5 (rooms, cookie identity with "is this you?", drag-painted grid,
   prefer layer, results heatmap + Best times, creator finalize/clear, 3-day expiry), the
   post-launch rounds (weekend shading, sticky headers, leave-room with ownership transfer,
@@ -19,8 +21,10 @@ G-001 and G-002 (both fully built, both ACTIVE pending Owner sign-off). Conventi
   (robots, sitemap, OG, a dormant `GOOGLE_SITE_VERIFICATION` seam), timezone auto-detect with
   fallbacks and a collapsed picker, optional room description, touch hold-to-paint with native
   swipe scrolling and no saves for strokes that change nothing (D009).
-- Verification on 2026-09-12: `npm run test:unit` 75/75; `npm run test:e2e` 6/6 against the
-  local dev Postgres (Docker), including a Pixel-5 touch spec.
+- G-003 M1 (2026-09-13): `removeParticipant` server action exists with all checks (D010) but no
+  UI calls it yet; saves refuse a stale or switched identity and the grid reloads.
+- Verification on 2026-09-13: `npm run test:unit` 82/82; `npm run test:e2e` 8/8 against the
+  local dev Postgres (Docker), including a Pixel-5 touch spec and two stale-identity specs.
 - Working tree: an uncommitted doc-reference edit to the previous handover (2026-09-06); the
   old handover is kept as `docs/handover-legacy-2026-09-12.md` until reviewed, then delete it.
 
@@ -31,7 +35,8 @@ G-001 and G-002 (both fully built, both ACTIVE pending Owner sign-off). Conventi
   `expiry.ts`, `time.ts` (the only real tz conversion), `room-presets.ts`, `timezone-guess.ts`;
   server-only `cookies.ts`, `participant.ts`, `owner.ts`, `room-access.ts`, `legal.ts`.
 - `app/actions.ts` (createRoom) and `app/r/[slug]/actions.ts` (joinRoom, leave, saveAvailability,
-  select/deselectFinalSlot) re-derive identity from the cookie every call.
+  removeParticipant, select/deselectFinalSlot) re-derive identity from the cookie every call.
+  Name rules shared by join and removal: `lib/roster.ts`.
 - `app/r/[slug]/`: join form, availability grid (pointer events; brush rules and stroke
   interpolation in `lib/paint.ts`; touch gestures per D009),
   results board, finalized banner. `app/status/page.tsx` needs `?key=STATUS_PAGE_TOKEN`.
@@ -44,8 +49,10 @@ G-001 and G-002 (both fully built, both ACTIVE pending Owner sign-off). Conventi
 
 - Slots are wall-clock pairs; never route them through Date/timezone math (D002).
 - Load rooms only via `findActiveRoom` (D006). Creator rights follow the participant (D007).
-- Any element whose `defaultValue` must refresh on a server-driven change needs a `key` (the
-  locale select) — same bug class as listing-studio D057.
+- Any element whose `defaultValue` or client state must refresh on a server-driven change needs
+  a `key` (the locale select; the availability grid keyed by participant id) — same bug class as
+  listing-studio D057.
+- Any write that changes a room's members or owner runs under the room row lock (D010).
 - Forms that must keep state after a failed action call the `useActionState` action manually
   from `onSubmit`, not through the native `action` prop (React 19 resets the form otherwise).
 - Env vars reach the container only if listed in `docker-compose.yml`'s `app` service
@@ -56,6 +63,8 @@ G-001 and G-002 (both fully built, both ACTIVE pending Owner sign-off). Conventi
 
 ## Next steps and open questions
 
+- G-003 M2 (owner Participants panel with type-to-confirm removal) awaits Owner approval; then
+  G-004 per its plan in `GOALS.md`.
 - Try drag-paint, tap and swipe on a real phone against the live site (Chromium emulation only
   so far).
 - Owner: sign off G-001 and G-002; register the site in Google Search Console and set
@@ -79,4 +88,4 @@ G-001 and G-002 (both fully built, both ACTIVE pending Owner sign-off). Conventi
 
 ## Decisions
 
-`docs/decisions/README.md` (D001–D009).
+`docs/decisions/README.md` (D001–D010).

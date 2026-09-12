@@ -741,7 +741,7 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
   no-account app" reasoning is why locale stays cookie-based here too, not
   a login preference. Not started yet — M1 is next.
 
-### G-003 · Owner can remove a participant — DRAFT
+### G-003 · Owner can remove a participant — ACTIVE
 - **What:** The room creator (the participant tagged as owner, D007) gets a
   "Participants" panel on the room page listing everyone in the room, each
   with a Remove control. Removing is gated behind typing that participant's
@@ -780,7 +780,7 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
   existing "Leave the room" flow. EN/RU/CS/DE shipped with the feature.
 
 **Milestones** (planned 2026-09-13, awaiting Owner approval):
-- [ ] M1 — Pure logic + action: name-match rule in `lib/roster.ts` (unit-
+- [x] M1 — Pure logic + action: name-match rule in `lib/roster.ts` (unit-
   tested), `removeParticipant` with every check in AC 1–3 inside one
   transaction, `saveAvailability` returning a distinguishable removed/
   mismatch result and taking the expected participant id. Verified by unit
@@ -790,6 +790,17 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
   full-flow e2e, handover + decision record, deploy after approval.
 
 **Progress log** (newest first):
+- 2026-09-13 — **M1 reached (commit 3619a36).** `removeParticipant` action
+  with every AC 1–3 check inside a room-row-locked transaction (D010);
+  `leaveRoom` moved under the same lock. `saveAvailability` takes the expected
+  participant id and returns `removed`/`mismatch` codes; the grid re-renders
+  from the server on either and is keyed by participant id (found by the new
+  e2e: without the key, the previous person's marks survived the re-render).
+  Verified: unit 82/82 (7 new), e2e 8/8 (2 new: removed-session and identity-
+  mismatch save paths), tsc/eslint clean. Not verified: the action itself has
+  no UI until M2, so its refusal branches are covered by types and reading,
+  not by a test — M2's panel e2e closes that. Not deployed. **Stopping at the
+  milestone boundary — awaiting Owner approval to start M2.**
 - 2026-09-13 — goal created and planned with the Owner; design put through
   a Codex critique exchange together with G-004 (outcome under G-004).
 
