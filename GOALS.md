@@ -148,6 +148,17 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       tsc/eslint clean throughout.
 
 **Progress log** (newest first; The Company appends at every stopping point):
+- 2026-09-12 — **Owner-reported bugs fixed (commit 47cea71):** (1) on a phone the
+  grid could not be scrolled to later days (`touch-action: none` made every touch
+  a stroke); now tap paints one cell, hold 250 ms then drag paints a run, swipe
+  scrolls (D009). (2) Painting a mark a cell already had (CAN over CAN) still
+  recorded a change and saved; brush logic moved to `lib/paint.ts`, no-op strokes
+  save nothing. Verified: unit 75/75 (12 new in `tests/unit/paint.spec.ts`), e2e
+  6/6 incl. new Pixel-5 touch spec driven by raw CDP touch events (one unrelated
+  first-run flake on the results-page navigation passed on retry and 2/2 rerun).
+  Not yet on a real phone. **PENDING APPROVAL:** push `master` and redeploy
+  meet.app.julienika.cz (`git pull && docker compose --profile app up -d --build`)
+  — leaves the workspace — logged 2026-09-12.
 - 2026-08-23 — **Combined About/Terms/Privacy page**, Owner-directed
   (single page covering About, terms with a liability disclaimer, and
   personal-data/privacy info). New `/about`, content in
