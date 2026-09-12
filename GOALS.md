@@ -740,3 +740,138 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
   reasons (frictionless-by-design); the same "don't add friction to a
   no-account app" reasoning is why locale stays cookie-based here too, not
   a login preference. Not started yet — M1 is next.
+
+### G-003 · Owner can remove a participant — DRAFT
+- **What:** The room creator (the participant tagged as owner, D007) gets a
+  "Participants" panel on the room page listing everyone in the room, each
+  with a Remove control. Removing is gated behind typing that participant's
+  name exactly (trimmed, case-insensitive) into a confirmation field; only
+  then does the destructive button enable. Removal deletes the participant
+  row and, through the existing cascade, every mark they made — the same
+  effect as that person choosing "Leave the room" themselves.
+- **Why:** Duplicate or mistaken joins ("Anna" and "anna k"), people who
+  dropped out, or a name typed by accident stay in the room forever, distort
+  the results ("everyone can" needs everyone), and only that person can
+  remove them today. This is a tidy-up tool inside the existing trust model
+  (anyone with the link can claim any name, including the owner's), not
+  enforceable moderation.
+- **Acceptance criteria:**
+  1. Only the owner sees the panel and only the owner's requests succeed:
+     the action re-derives identity from the cookie, resolves the room
+     through `findActiveRoom`, and refuses non-owners, targets from other
+     rooms, and the owner's own row (the owner uses "Leave the room" for
+     that, which transfers ownership).
+  2. The typed name must match the target's name (trimmed, case-
+     insensitive) both in the UI (button disabled otherwise) and again on
+     the server, so a crafted request can't skip it.
+  3. Ownership check and deletion happen in one transaction that re-reads
+     the room, so an ownership transfer racing the removal can't delete the
+     new owner.
+  4. After removal the person's marks are gone from results and from every
+     "also in room" list. Their browser: the next save is refused with a
+     distinguishable "you were removed" result, the grid reloads to the join
+     form. A save also carries the participant id the grid was rendered
+     for, and a mismatch (identity switched in another tab) is refused.
+  5. Cancel backs out with nothing changed. Works on a phone.
+  6. e2e covers: non-owner never sees the panel; mismatch keeps the button
+     disabled; cancel; confirm removes name and marks; the removed browser
+     lands on the join form on its next save.
+- **Constraints:** No new dependencies. Same confirmation styling as the
+  existing "Leave the room" flow. EN/RU/CS/DE shipped with the feature.
+
+**Milestones** (planned 2026-09-13, awaiting Owner approval):
+- [ ] M1 — Pure logic + action: name-match rule in `lib/roster.ts` (unit-
+  tested), `removeParticipant` with every check in AC 1–3 inside one
+  transaction, `saveAvailability` returning a distinguishable removed/
+  mismatch result and taking the expected participant id. Verified by unit
+  tests and a Playwright spec exercising the refusals through the UI.
+- [ ] M2 — Owner panel on the room page (participant list + type-to-confirm
+  removal), removed-session handling in the grid, i18n in four languages,
+  full-flow e2e, handover + decision record, deploy after approval.
+
+**Progress log** (newest first):
+- 2026-09-13 — goal created and planned with the Owner; design put through
+  a Codex critique exchange together with G-004 (outcome under G-004).
+
+### G-004 · Invited-names list with "anyone" / "listed only" joining — DRAFT
+- **What:** The owner can predefine who is expected in the room — at
+  creation (an optional "invited names" box, one per line) and later from
+  the Participants panel (add a name; remove a name nobody has claimed yet).
+  Each room has a join rule: **anyone with the link can add their name**
+  (today's behaviour, the default) or **only listed names can join** (any
+  other name is refused with a clear message). Invited names appear on the
+  join page as "click your name" entries and are claimed through the
+  existing "is this you?" flow. Results show who hasn't joined yet.
+  (Named "join rule", not open/closed: "closed" already means "marking is
+  closed" after a time is finalized.)
+- **Why:** Organizers usually know exactly who they're scheduling with. A
+  predefined list makes joining a one-tap "that's me", keeps strangers with
+  the link from adding names, and turns "missing" from "hasn't marked" into
+  "hasn't even joined" — which is what an organizer actually chases.
+- **Acceptance criteria:**
+  1. Creation form gains an optional multi-line "invited names" field and
+     the join rule (default: anyone). Names are trimmed, deduplicated case-
+     insensitively, each ≤ 60 chars; at most 99 so the creator always has a
+     seat under the 100-participant cap; room and names are created in one
+     transaction.
+  2. Invited names are ordinary participant rows with `joinedAt` null. The
+     migration backfills `joinedAt` from `createdAt` for every existing
+     participant, so no existing room changes behaviour (rule "anyone",
+     empty list). Claiming sets `joinedAt` once, on the first successful
+     claim; "Not you?" and re-claiming from another device leave it alone.
+  3. Under "listed only", typing an unlisted name is refused with a
+     translated message; the rule is checked inside the same transaction
+     that creates the participant. The creator's browser (creation cookie)
+     may still join under any name, so the creator is never locked out.
+  4. The owner can switch the rule at any time, add names, and remove an
+     unclaimed name without typed confirmation — as a conditional delete
+     (`joinedAt` still null); if someone claimed it meanwhile, the UI falls
+     back to G-003's confirmation instead of deleting silently.
+  5. Results count only joined participants. While invited people haven't
+     joined, the results page says "N of M invited have joined" and lists
+     who is missing; the "everyone" badge is shown only when everyone
+     invited has joined. Ownership succession picks the earliest `joinedAt`
+     in one transaction with the leave; an ownerless room hands ownership
+     to the next participant who joins or claims.
+  6. Under "listed only", "Leave the room" resets the seat (marks deleted,
+     token rotated, `joinedAt` null) instead of deleting the name, so a
+     leaver isn't locked out; under "anyone" it deletes as today.
+  7. The status page counts joined and invited-but-unjoined separately.
+  8. Unit tests for list parsing/validation, the join rule, results
+     counting and succession; e2e for listed-only refusal, claiming an
+     invited name, creator bypass, and owner add/remove after creation.
+- **Constraints:** No new dependencies. Prisma migration with backfill.
+  EN/RU/CS/DE shipped with each visible piece, not as a final pass.
+
+**Milestones** (planned 2026-09-13, awaiting Owner approval):
+- [ ] M1 — Schema + lifecycle: migration with backfill (`Room.joinRule`,
+  `Participant.joinedAt`), participant lifecycle in one server module
+  (create, claim, remove-unclaimed conditionally, remove-confirmed, leave-
+  or-reset, succession by `joinedAt`), `computeResults` on joined
+  participants with the invited/joined counts, status-page split. Unit
+  tests; existing e2e still green. Decision record for the data model.
+- [ ] M2 — Roster at creation + join rule: creation form fields (99-name
+  cap, transactional create), `joinRoom` enforcing "listed only" with the
+  creator bypass, join page showing invited names, results page "N of M
+  joined" + missing list + badge rule, i18n. e2e for refusal, claim, bypass.
+- [ ] M3 — Owner panel roster editing (add, conditional remove, switch
+  rule), listed-only "leave" resetting the seat, i18n, handover, deploy
+  after approval.
+
+**Progress log** (newest first):
+- 2026-09-13 — goal created and planned with the Owner. **Codex critique
+  exchange** on the proposed design (invited names as participant rows
+  with `joinedAt`, versus a separate table): conceded and adopted —
+  migration backfill of `joinedAt` (otherwise every existing participant
+  reads as unjoined), succession by `joinedAt` inside the leave
+  transaction, conditional delete for unclaimed names, transactional
+  ownership check in removal, 99-name cap so the creator keeps a seat,
+  "N of M joined" instead of a misleading "everyone" badge, status-page
+  split, removed-session handling in the grid, expected-participant id on
+  saves, and "join rule" naming instead of open/closed. Rebutted — a
+  separate `RoomSeat` table only pays off if a seat must outlive the
+  participant identity, and the chosen default (removal drops the seat)
+  makes that unnecessary. Open point settled by recommendation: under
+  "listed only", leaving resets the seat rather than deleting it. Also
+  noted, pre-existing and out of scope: `joinRoom`/`leaveRoom`/
+  `saveAvailability` don't re-check room expiry the way the page does.
