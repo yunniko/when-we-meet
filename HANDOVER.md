@@ -1,5 +1,5 @@
 # Handover — When We Meet
-Last verified: 2026-09-12 at 47cea71
+Last verified: 2026-09-12 at 4f0a539
 
 Account-free group scheduling: a room with a date range, participants paint CAN/CANNOT/prefer
 in 1-hour slots, results rank the overlaps, the creator can finalize a time. Goals: `GOALS.md`
@@ -9,8 +9,7 @@ G-001 and G-002 (both fully built, both ACTIVE pending Owner sign-off). Conventi
 ## Current state
 
 - **Live** at https://meet.app.julienika.cz (HTTP 200 re-checked 2026-09-12). App port 30010,
-  Postgres 54321 (127.0.0.1). Live build is ee4fb2d (2026-08-23); 47cea71 (touch scrolling +
-  no-op save fix, 2026-09-12) is committed locally, not pushed or deployed.
+  Postgres 54321 (127.0.0.1). Live build is 4f0a539 (deployed 2026-09-12).
 - Done and deployed: G-001 M1–M5 (rooms, cookie identity with "is this you?", drag-painted grid,
   prefer layer, results heatmap + Best times, creator finalize/clear, 3-day expiry), the
   post-launch rounds (weekend shading, sticky headers, leave-room with ownership transfer,
@@ -57,8 +56,8 @@ G-001 and G-002 (both fully built, both ACTIVE pending Owner sign-off). Conventi
 
 ## Next steps and open questions
 
-- **PENDING APPROVAL:** push `master` and redeploy 47cea71 (touch scrolling fix) to
-  meet.app.julienika.cz; then try drag-paint, tap and swipe on a real phone.
+- Try drag-paint, tap and swipe on a real phone against the live site (Chromium emulation only
+  so far).
 - Owner: sign off G-001 and G-002; register the site in Google Search Console and set
   `GOOGLE_SITE_VERIFICATION`; confirm the `info@julienika.cz` inbox is monitored.
 - Touch gestures are verified only under Chromium emulation, not on a real phone (iOS Safari
@@ -76,6 +75,7 @@ G-001 and G-002 (both fully built, both ACTIVE pending Owner sign-off). Conventi
 | 2026-08-17 | — | First deploy (port 30010) plus the same-day UX, i18n and font-fix rounds | Full flow in a real browser on the live URL; other sites 200 |
 | 2026-08-18 → 2026-08-20 | — | Security headers + slot cap, status page, mobile layout fixes, room description | curl header checks; Pixel-5 Playwright screenshots; suite green |
 | 2026-08-23 | ee4fb2d | Timezone auto-detect + collapsed picker, SEO baseline, `/about` page | Local robots/sitemap/OG check; live HTTPS check |
+| 2026-09-12 | 4f0a539 | Touch hold-to-paint + native swipe scrolling (D009); no saves for no-op strokes | Local unit 75/75 + e2e 6/6 incl. Pixel-5 touch spec; host on 4f0a539, containers rebuilt; live 200; 7 other sites 200, no other container restarted |
 
 ## Decisions
 

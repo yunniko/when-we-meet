@@ -156,9 +156,11 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
   save nothing. Verified: unit 75/75 (12 new in `tests/unit/paint.spec.ts`), e2e
   6/6 incl. new Pixel-5 touch spec driven by raw CDP touch events (one unrelated
   first-run flake on the results-page navigation passed on retry and 2/2 rerun).
-  Not yet on a real phone. **PENDING APPROVAL:** push `master` and redeploy
-  meet.app.julienika.cz (`git pull && docker compose --profile app up -d --build`)
-  — leaves the workspace — logged 2026-09-12.
+  Not yet on a real phone. Owner approved push + deploy the same day: commits
+  re-authored under the GitHub noreply email (GitHub's email-privacy rule had
+  rejected the push), deployed as 4f0a539 — live 200, other sites 200, no other
+  container restarted. Not re-exercised on the live URL (would create test rooms
+  in production).
 - 2026-08-23 — **Combined About/Terms/Privacy page**, Owner-directed
   (single page covering About, terms with a liability disclaimer, and
   personal-data/privacy info). New `/about`, content in
