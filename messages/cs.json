@@ -95,6 +95,7 @@
     "saving": "Ukládání…",
     "saved": "Uloženo",
     "saveError": "Uložení se nezdařilo — zkuste to znovu",
+    "removed": "Pod tímto jménem už v této místnosti nejste — načítám znovu…",
     "instructions": "Klikněte, nebo klikněte a táhněte, pro označení časů. Na dotykové obrazovce: klepněte na políčko, nebo podržte a pak táhněte; přejetím prstem posouváte. „Preferuji“ platí jen pro časy již označené jako Můžu."
   },
   "FinalizedBanner": {

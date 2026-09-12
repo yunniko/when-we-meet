@@ -146,7 +146,12 @@ export default async function RoomPage({
           </p>
         ) : (
           <AvailabilityGrid
+            // Keyed by identity so a server re-render for a different
+            // participant (see G-003) remounts the grid instead of keeping
+            // the previous person's client-side marks.
+            key={participant.id}
             roomId={room.id}
+            participantId={participant.id}
             dates={dates}
             hours={hours}
             initialAvailability={initialAvailability}

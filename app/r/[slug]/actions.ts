@@ -7,6 +7,8 @@ import { prisma } from "@/lib/prisma";
 import { generateCookieToken } from "@/lib/slug";
 import { setParticipantCookie, clearParticipantCookie } from "@/lib/cookies";
 import { getCurrentParticipant } from "@/lib/participant";
+import { findActiveRoom } from "@/lib/room-access";
+import { confirmationMatches, nameKeyOf } from "@/lib/roster";
 import { claimCreatorIfEligible, isRoomOwner } from "@/lib/owner";
 import { isSlotInFuture } from "@/lib/time";
 import { summarizeAvailability, type MarkSummary } from "@/lib/slots";
@@ -55,7 +57,7 @@ export async function joinRoom(
   if (!name) return { step: "form", error: "nameRequired" };
   if (name.length > 60) return { step: "form", error: "nameTooLong", name };
 
-  const nameKey = name.toLowerCase();
+  const nameKey = nameKeyOf(name);
   const existing = await prisma.participant.findUnique({
     where: { roomId_nameKey: { roomId: ctx.roomId, nameKey } },
   });
@@ -119,28 +121,88 @@ export async function leaveRoom(
 ): Promise<void> {
   const participant = await getCurrentParticipant(ctx.roomId);
   if (participant) {
-    const room = await prisma.room.findUnique({ where: { id: ctx.roomId } });
-    const wasCreator = room?.creatorParticipantId === participant.id;
+    await prisma.$transaction(async (tx) => {
+      // Ownership changes and participant deletions are serialized on the
+      // room row (see removeParticipant), so a removal racing this leave
+      // can't delete whoever is about to inherit the room.
+      await lockRoomRow(tx, ctx.roomId);
+      const room = await tx.room.findUnique({ where: { id: ctx.roomId } });
+      const wasCreator = room?.creatorParticipantId === participant.id;
 
-    await prisma.participant.delete({ where: { id: participant.id } });
+      // Best-effort: a concurrent removal may already have deleted this row.
+      await tx.participant.deleteMany({ where: { id: participant.id } });
 
-    if (wasCreator) {
-      // Hand creator permissions to whoever's been in the room longest, so
-      // someone can still finalize/clear a meeting time rather than leaving
-      // the room permanently ownerless. If nobody's left, it just has no
-      // creator — same as if the original creator had never joined (D7).
-      const next = await prisma.participant.findFirst({
-        where: { roomId: ctx.roomId },
-        orderBy: { createdAt: "asc" },
-      });
-      await prisma.room.update({
-        where: { id: ctx.roomId },
-        data: { creatorParticipantId: next?.id ?? null },
-      });
-    }
+      if (wasCreator) {
+        // Hand creator permissions to whoever's been in the room longest, so
+        // someone can still finalize/clear a meeting time rather than leaving
+        // the room permanently ownerless. If nobody's left, it just has no
+        // creator — same as if the original creator had never joined (D7).
+        const next = await tx.participant.findFirst({
+          where: { roomId: ctx.roomId },
+          orderBy: { createdAt: "asc" },
+        });
+        await tx.room.update({
+          where: { id: ctx.roomId },
+          data: { creatorParticipantId: next?.id ?? null },
+        });
+      }
+    });
   }
   await clearParticipantCookie(ctx.roomId);
   redirect(`/r/${ctx.slug}`);
+}
+
+// Takes a row lock on the room for the rest of the transaction. Every
+// write that changes who is in the room or who owns it goes through this,
+// so those writes see each other's results instead of racing (G-003 AC3).
+async function lockRoomRow(tx: Prisma.TransactionClient, roomId: string): Promise<void> {
+  await tx.$queryRaw`SELECT "id" FROM "Room" WHERE "id" = ${roomId} FOR UPDATE`;
+}
+
+export type RemoveParticipantResult =
+  | { ok: true }
+  // Keys under RoomPage.participants.errors (translated client-side).
+  | { ok: false; error: "roomGone" | "notOwner" | "notFound" | "self" | "nameMismatch" };
+
+// Owner-only removal of another participant and, via the cascade, all of
+// their marks (G-003). Every check the UI already makes is repeated here:
+// identity from the cookie, ownership re-read under the room lock, the
+// target must be in this room and not the owner, and the typed name must
+// match — a crafted request can't skip the confirmation.
+export async function removeParticipant(
+  ctx: { roomId: string; slug: string },
+  input: { participantId: string; typedName: string },
+): Promise<RemoveParticipantResult> {
+  const room = await findActiveRoom(ctx.slug);
+  if (!room || room.id !== ctx.roomId) return { ok: false, error: "roomGone" };
+
+  const current = await getCurrentParticipant(room.id);
+  if (!current) return { ok: false, error: "notOwner" };
+
+  const result = await prisma.$transaction(async (tx): Promise<RemoveParticipantResult> => {
+    await lockRoomRow(tx, room.id);
+    const locked = await tx.room.findUnique({ where: { id: room.id } });
+    if (!locked) return { ok: false, error: "roomGone" };
+    if (locked.creatorParticipantId !== current.id) return { ok: false, error: "notOwner" };
+
+    const target = await tx.participant.findFirst({
+      where: { id: input.participantId, roomId: room.id },
+    });
+    if (!target) return { ok: false, error: "notFound" };
+    if (target.id === current.id) return { ok: false, error: "self" };
+    if (!confirmationMatches(input.typedName, target.name)) {
+      return { ok: false, error: "nameMismatch" };
+    }
+
+    await tx.participant.delete({ where: { id: target.id } });
+    return { ok: true };
+  });
+
+  if (result.ok) {
+    revalidatePath(`/r/${ctx.slug}`);
+    revalidatePath(`/r/${ctx.slug}/results`);
+  }
+  return result;
 }
 
 export type { SlotUpdate };
@@ -153,23 +215,42 @@ export type { SlotUpdate };
 // oversized/duplicated array to force an expensive transaction.
 const MAX_SLOTS_PER_SAVE = 1500;
 
+export type SaveAvailabilityResult =
+  | { ok: true }
+  // "removed": the cookie no longer maps to a participant in this room (the
+  // owner removed them, or they left in another tab). "mismatch": the grid
+  // was rendered for a different participant than the cookie now names
+  // (identity switched in another tab). Both mean the page must reload;
+  // anything else is a plain save failure.
+  | { ok: false; code: "removed" | "mismatch" | "failed"; error: string };
+
 export async function saveAvailability(
   roomId: string,
+  expectedParticipantId: string,
   slots: SlotUpdate[],
-): Promise<{ ok: true } | { ok: false; error: string }> {
+): Promise<SaveAvailabilityResult> {
   if (slots.length > MAX_SLOTS_PER_SAVE) {
-    return { ok: false, error: "Too many slots in one request." };
+    return { ok: false, code: "failed", error: "Too many slots in one request." };
   }
 
   const participant = await getCurrentParticipant(roomId);
-  if (!participant) return { ok: false, error: "You're not joined in this room." };
+  if (!participant) {
+    return { ok: false, code: "removed", error: "You're not joined in this room." };
+  }
+  if (participant.id !== expectedParticipantId) {
+    return { ok: false, code: "mismatch", error: "This grid belongs to a different name." };
+  }
 
   const room = await prisma.room.findUnique({ where: { id: roomId } });
-  if (!room) return { ok: false, error: "Room not found." };
+  if (!room) return { ok: false, code: "failed", error: "Room not found." };
   if (room.selectedDate !== null) {
     // Never trust the client to have hidden the grid controls — the lock is
     // a data-integrity rule, enforced here regardless of what the UI shows.
-    return { ok: false, error: "The meeting time has been set — availability marking is closed." };
+    return {
+      ok: false,
+      code: "failed",
+      error: "The meeting time has been set — availability marking is closed.",
+    };
   }
 
   const validSlots = slots.filter((s) => {

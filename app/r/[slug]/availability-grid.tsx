@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { saveAvailability } from "@/app/r/[slug]/actions";
 import {
@@ -52,19 +53,26 @@ function cellAt(x: number, y: number): CellIndex | null {
 
 export function AvailabilityGrid({
   roomId,
+  participantId,
   dates,
   hours,
   initialAvailability,
 }: {
   roomId: string;
+  // The participant this grid was rendered for; the save refuses to write
+  // as anyone else (identity can change in another tab, see G-003).
+  participantId: string;
   dates: string[];
   hours: number[];
   initialAvailability: Record<string, CellMark>;
 }) {
   const t = useTranslations("AvailabilityGrid");
+  const router = useRouter();
   const [marks, setMarks] = useState<Marks>(initialAvailability);
   const [brush, setBrush] = useState<Brush>("CAN");
-  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error" | "removed">(
+    "idle",
+  );
   const gridRef = useRef<HTMLDivElement>(null);
   // Mirror of `marks` for event handlers, so a stroke reads its own earlier
   // cells without waiting for a render.
@@ -125,10 +133,21 @@ export function AvailabilityGrid({
     strokeChanges.current.clear();
     if (changes.length === 0) return;
     setSaveState("saving");
-    saveAvailability(roomId, changes)
-      .then((res) => setSaveState(res.ok ? "saved" : "error"))
+    saveAvailability(roomId, participantId, changes)
+      .then((res) => {
+        if (res.ok) {
+          setSaveState("saved");
+        } else if (res.code === "removed" || res.code === "mismatch") {
+          // This browser is no longer this participant: re-render from the
+          // server, which shows the join form (removed) or the right grid.
+          setSaveState("removed");
+          router.refresh();
+        } else {
+          setSaveState("error");
+        }
+      })
       .catch(() => setSaveState("error"));
-  }, [roomId]);
+  }, [roomId, participantId, router]);
 
   const cancelHold = useCallback(() => {
     if (!hold.current) return;
@@ -239,6 +258,7 @@ export function AvailabilityGrid({
           {saveState === "saving" && t("saving")}
           {saveState === "saved" && t("saved")}
           {saveState === "error" && t("saveError")}
+          {saveState === "removed" && t("removed")}
         </span>
       </div>
 
