@@ -798,7 +798,7 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
   or-reset, succession by `joinedAt`), `computeResults` on joined
   participants with the invited/joined counts, status-page split. Unit
   tests; existing e2e still green. Decision record for the data model.
-- [ ] M2 — Roster at creation + join rule: creation form fields (99-name
+- [x] M2 — Roster at creation + join rule: creation form fields (99-name
   cap, transactional create), `joinRoom` enforcing "listed only" with the
   creator bypass, join page showing invited names, results page "N of M
   joined" + missing list + badge rule, i18n. e2e for refusal, claim, bypass.
@@ -807,6 +807,26 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
   after approval.
 
 **Progress log** (newest first):
+- 2026-09-13 — **M2 reached (commit 9085ad5).** Started on the Owner's "continue".
+  The creation form takes invited names (one per line; trimmed, deduplicated, at
+  most 60 characters each and 99 names) and a join rule; a listed-only room needs
+  at least one name. Room and names are created in one statement. "Listed names
+  only" refuses unlisted names inside the locked join, except for the browser
+  that created the room, and the join page tells that browser so. Invited names
+  are tappable on the join page and claimed through "is this you?" with an "on
+  the invite list" heading; the room page, owner panel and results separate
+  joined from invited, and results show "N of M people have joined". Codex review
+  ran this time; all six points conceded and fixed: the raw length cap ran before
+  deduplication; German plural agreement in the results summary (Russian made
+  number-neutral); invited-name errors now linked to the field and the form-level
+  error announced; long unbroken names now wrap on the join and results pages;
+  e2e now checks slot totals exclude unjoined invitees and that a failed submit
+  keeps the list and the rule. Verified: unit 105/105 (13 new); integration 23/23
+  (3 new); e2e 15/15 with no retries (4 new); tsc and eslint clean; phone
+  screenshots of every new screen checked by eye; with the wrap classes removed the long-name phone test failed, and passed again once restored; the German summary formats as ist for one and sind for several, and the Russian summary and all four creator notes format correctly. Not
+  deployed: recommend deploying after M3, because until then nobody can add a
+  missing name to a listed-only room. **Stopping at the milestone boundary —
+  awaiting Owner approval to start M3.**
 - 2026-09-13 — **Correction, and M1 review fixes (commit a33a79b).** The M1 entry
   below says the Codex review did not run. That is wrong: the resumed review
   agent returned a full Codex review after that entry was written. Critique

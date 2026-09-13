@@ -1,17 +1,17 @@
 # Handover — When We Meet
-Last verified: 2026-09-13 at a33a79b
+Last verified: 2026-09-13 at 9085ad5
 
 Account-free group scheduling: a room with a date range, participants paint CAN/CANNOT/prefer
 in 1-hour slots, results rank the overlaps, the creator can finalize a time. Goals: `GOALS.md`
 G-001 and G-002 (both fully built, both ACTIVE pending Owner sign-off); G-003 (owner removes a
-participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004 (invited-names list) is ACTIVE at M1 of 3 (data model and membership logic, no UI yet). Conventions:
+participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004 (invited-names list) is ACTIVE at M2 of 3 (invited names and the join rule work; owner editing is M3). Conventions:
 `AGENTS.md`. Charter: `E:\CLAUDE\COMPANY\`.
 
 ## Current state
 
 - **Live** at https://meet.app.julienika.cz (HTTP 200 re-checked 2026-09-13). App port 30010,
-  Postgres 54321 (127.0.0.1). Live build is fc6d569 (deployed 2026-09-13, includes G-003); G-004 M1 (c89278f, a33a79b) is
-  committed and pushed, not deployed. Deploying it runs the join-rule migration.
+  Postgres 54321 (127.0.0.1). Live build is fc6d569 (deployed 2026-09-13, includes G-003); G-004 M1–M2 (up to 9085ad5) are
+  committed and pushed, not deployed. Deploying them runs the join-rule migration.
 - Done and deployed: G-001 M1–M5 (rooms, cookie identity with "is this you?", drag-painted grid,
   prefer layer, results heatmap + Best times, creator finalize/clear, 3-day expiry), the
   post-launch rounds (weekend shading, sticky headers, leave-room with ownership transfer,
@@ -24,11 +24,12 @@ participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004
 - G-003 (2026-09-13): the owner sees a Participants panel under the grid and removes others after
   typing their name; the server re-checks everything under the room lock (D010). Saves refuse a
   stale or switched identity and the grid reloads.
-- G-004 M1 (2026-09-13): rooms have a join rule and a vacant-ownership flag, participants a join
-  time (null = invited, unclaimed), all per D011. No UI creates invited names or changes the rule
-  yet, so behaviour is unchanged for users.
-- Verification on 2026-09-13: `npm run test:unit` 92/92; `npm run test:integration` 20/20;
-  `npm run test:e2e` 11/11 with no retries, both against the local dev Postgres (Docker).
+- G-004 M1–M2 (2026-09-13): a room can be created with invited names and a join rule: anyone with
+  the link, or listed names only, where the creating browser can still join under any name. Invited
+  names are tappable on the join page; the room page, owner panel and results separate joined
+  people from invited ones (D011). The owner can't yet edit the list or switch the rule (M3).
+- Verification on 2026-09-13: `npm run test:unit` 105/105; `npm run test:integration` 23/23;
+  `npm run test:e2e` 15/15 with no retries, both against the local dev Postgres (Docker).
 - Working tree: an uncommitted doc-reference edit to the previous handover (2026-09-06); the
   old handover is kept as `docs/handover-legacy-2026-09-12.md` until reviewed, then delete it.
 
@@ -62,6 +63,8 @@ participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004
   room row lock (D010). Anything that counts or lists people picks joined or invited (D011).
 - Anything done on a participant's behalf passes an actor (id plus cookie token), re-checked inside
   the write; never a bare participant id (D012).
+- The join rule is enforced only inside `joinByName`, under the room lock; the browser holding the
+  room's owner-token cookie may add any name.
 - Forms that must keep state after a failed action call the `useActionState` action manually
   from `onSubmit`, not through the native `action` prop (React 19 resets the form otherwise).
 - Env vars reach the container only if listed in `docker-compose.yml`'s `app` service
@@ -72,9 +75,9 @@ participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004
 
 ## Next steps and open questions
 
-- G-004 M2 (invited names at creation, "listed names only" enforcement, results "N of M joined")
-  awaits Owner approval. Until M2 the join page, "also in room" and the owner panel list every
-  participant row, invited or not; harmless now because nothing can create an invited row yet.
+- G-004 M3 (owner adds names, removes unclaimed names without typing, switches the rule; a
+  listed-only "leave" that explains the name stays on the list) awaits Owner approval. Deploy after
+  M3: until then a person missing from a listed-only room's list has no way in.
 - Try drag-paint, tap and swipe on a real phone against the live site (Chromium emulation only
   so far).
 - Owner: sign off G-001 and G-002; register the site in Google Search Console and set
