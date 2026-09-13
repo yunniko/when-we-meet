@@ -84,6 +84,8 @@ const initialState: CreateRoomState = {
     endDate: "",
     dayStartHour: "17",
     dayEndHour: "22",
+    invitedNames: "",
+    joinRule: "ANYONE",
   },
 };
 
@@ -144,6 +146,7 @@ export function CreateRoomForm() {
   }
 
   const [preset, setPreset] = useState<DailyPresetKey>("evening");
+  const [joinRule, setJoinRule] = useState<"ANYONE" | "LISTED_ONLY">("ANYONE");
   const showCustom = preset === "custom";
   const fieldError = (field: string) =>
     state.fieldErrors?.[field] ? t(`errors.${state.fieldErrors[field]}`) : null;
@@ -179,7 +182,7 @@ export function CreateRoomForm() {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       {state.error && (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
           {t(`errors.${state.error}`)}
         </p>
       )}
@@ -354,6 +357,55 @@ export function CreateRoomForm() {
         )}
         {fieldError("dayEndHour") && (
           <p className="text-xs text-red-600">{fieldError("dayEndHour")}</p>
+        )}
+      </fieldset>
+
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="invitedNames" className="text-sm font-medium">
+          {t("invitedLabel")} <span className="text-muted">{t("optional")}</span>
+        </label>
+        <textarea
+          id="invitedNames"
+          name="invitedNames"
+          rows={4}
+          aria-invalid={fieldError("invitedNames") ? true : undefined}
+          aria-describedby={
+            fieldError("invitedNames") ? "invitedNames-help invitedNames-error" : "invitedNames-help"
+          }
+          defaultValue={state.values.invitedNames}
+          placeholder={t("invitedPlaceholder")}
+          className={`${inputClass} resize-y`}
+        />
+        <p id="invitedNames-help" className="text-xs text-muted">
+          {t("invitedHelp")}
+        </p>
+        {fieldError("invitedNames") && (
+          <p id="invitedNames-error" className="text-xs text-red-600">
+            {fieldError("invitedNames")}
+          </p>
+        )}
+      </div>
+
+      <fieldset className="flex flex-col gap-2">
+        <legend className="mb-2 text-sm font-medium">{t("joinRuleLegend")}</legend>
+        {(["ANYONE", "LISTED_ONLY"] as const).map((rule) => (
+          <label key={rule} className="flex items-center gap-2 text-sm">
+            <input
+              type="radio"
+              name="joinRule"
+              value={rule}
+              checked={joinRule === rule}
+              onChange={() => setJoinRule(rule)}
+              aria-describedby={fieldError("joinRule") ? "joinRule-error" : undefined}
+              className="size-4 accent-accent"
+            />
+            {rule === "ANYONE" ? t("joinRuleAnyone") : t("joinRuleListedOnly")}
+          </label>
+        ))}
+        {fieldError("joinRule") && (
+          <p id="joinRule-error" className="text-xs text-red-600">
+            {fieldError("joinRule")}
+          </p>
         )}
       </fieldset>
 

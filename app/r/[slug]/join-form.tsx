@@ -16,7 +16,10 @@ export function JoinForm({
   dateRangeLabel,
   hoursLabel,
   timezone,
-  participantNames,
+  joinedNames,
+  invitedNames,
+  listedOnly,
+  canUseAnyName,
 }: {
   roomId: string;
   slug: string;
@@ -25,7 +28,13 @@ export function JoinForm({
   dateRangeLabel: string;
   hoursLabel: string;
   timezone: string;
-  participantNames: string[];
+  // Other people who have joined, and invited names nobody has claimed yet
+  // (G-004). Both are tappable "that's me" shortcuts.
+  joinedNames: string[];
+  invitedNames: string[];
+  listedOnly: boolean;
+  // This browser created the room, so "listed names only" doesn't bind it.
+  canUseAnyName: boolean;
 }) {
   const t = useTranslations("JoinForm");
   const tCommon = useTranslations("Common");
@@ -33,6 +42,25 @@ export function JoinForm({
   const [state, formAction, pending] = useActionState(boundJoin, initialState);
   const [dismissed, setDismissed] = useState(false);
   const effective: JoinState = dismissed ? initialState : state;
+
+  // Each name is its own tiny form posting just that name, which leads to the
+  // ordinary "is this you?" confirmation (for invited names too).
+  const nameButtons = (names: string[]) =>
+    names.map((name, i) => (
+      <span key={name}>
+        {i > 0 && ", "}
+        <form action={formAction} onSubmit={() => setDismissed(false)} className="inline">
+          <input type="hidden" name="name" value={name} />
+          <button
+            type="submit"
+            className="text-accent underline hover:text-accent-hover"
+            title={t("itsMeTitle", { name })}
+          >
+            {name}
+          </button>
+        </form>
+      </span>
+    ));
 
   return (
     <div className="mx-auto w-full max-w-md px-4 py-12">
@@ -46,39 +74,32 @@ export function JoinForm({
         <p className="mt-3 text-sm whitespace-pre-wrap">{roomDescription}</p>
       )}
       <p className="mt-2 text-sm text-muted">{t("intro")}</p>
-      {participantNames.length > 0 && (
-        <div className="mt-3 text-sm text-muted">
-          {t("alreadyInRoom")}{" "}
-          {participantNames.map((name, i) => (
-            <span key={name}>
-              {i > 0 && ", "}
-              <form action={formAction} onSubmit={() => setDismissed(false)} className="inline">
-                <input type="hidden" name="name" value={name} />
-                <button
-                  type="submit"
-                  className="text-accent underline hover:text-accent-hover"
-                  title={t("itsMeTitle", { name })}
-                >
-                  {name}
-                </button>
-              </form>
-            </span>
-          ))}
-          {" "}
-          {t("clickYourName")}
+      {listedOnly && (
+        <p className="mt-2 text-sm text-muted">
+          {t(canUseAnyName ? "listedOnlyCreatorNote" : "listedOnlyNote")}
+        </p>
+      )}
+      {joinedNames.length > 0 && (
+        <div className="mt-3 text-sm wrap-anywhere text-muted">
+          {t("alreadyInRoom")} {nameButtons(joinedNames)} {t("clickYourName")}
+        </div>
+      )}
+      {invitedNames.length > 0 && (
+        <div className="mt-3 text-sm wrap-anywhere text-muted">
+          {t("invitedLabel")} {nameButtons(invitedNames)} {t("clickYourName")}
         </div>
       )}
 
       <div className="mt-6 rounded-2xl border border-border bg-surface p-6 shadow-sm">
         {effective.step === "collision" ? (
           <div className="flex flex-col gap-4">
-            <p className="text-sm">
-              {t.rich("collision.hasMarks", {
+            <p className="text-sm wrap-anywhere">
+              {t.rich(effective.invited ? "collision.invited" : "collision.hasMarks", {
                 name: effective.name,
                 b: (chunks) => <span className="font-medium">{chunks}</span>,
               })}
             </p>
-            {effective.summary.byDate.length > 0 ? (
+            {effective.invited ? null : effective.summary.byDate.length > 0 ? (
               <ul className="rounded-md border border-border px-4 py-3 text-sm">
                 {effective.summary.byDate.map((d) => (
                   <li key={d.date} className="flex justify-between gap-4">

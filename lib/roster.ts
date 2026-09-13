@@ -67,6 +67,17 @@ export function shouldBecomeOwner(
   return presentedOwnerToken !== undefined && presentedOwnerToken === room.ownerToken;
 }
 
+// Whether joining may add a name that isn't in the room yet. Under "listed
+// names only" just the browser that created the room may (G-004 AC3), so
+// the creator is never locked out of their own room.
+export function mayAddNewName(
+  room: { joinRule: JoinRuleValue; ownerToken: string },
+  presentedOwnerToken: string | undefined,
+): boolean {
+  if (room.joinRule === "ANYONE") return true;
+  return presentedOwnerToken !== undefined && presentedOwnerToken === room.ownerToken;
+}
+
 // Joined participants in join order, and unclaimed invited names in the
 // order the owner added them.
 export function splitRoster<T extends Member>(members: T[]): { joined: T[]; invited: T[] } {

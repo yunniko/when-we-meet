@@ -50,8 +50,18 @@
       "dayHourInvalid": "Gib eine gültige Stunde ein",
       "dayStartHourRange": "Die Startstunde muss zwischen 0 und 23 liegen",
       "dayEndHourRange": "Die Endstunde muss zwischen 1 und 24 liegen",
-      "descriptionTooLong": "Die Beschreibung darf nicht länger als 2000 Zeichen sein"
-    }
+      "descriptionTooLong": "Die Beschreibung darf nicht länger als 2000 Zeichen sein",
+      "invitedNameTooLong": "Jeder eingeladene Name darf höchstens 60 Zeichen haben.",
+      "tooManyInvitedNames": "Du kannst höchstens 99 Namen einladen.",
+      "listedOnlyNeedsNames": "Füge mindestens einen eingeladenen Namen hinzu oder lass alle mit dem Link beitreten.",
+      "joinRuleInvalid": "Wähle aus, wer beitreten kann."
+    },
+    "invitedLabel": "Eingeladene",
+    "invitedPlaceholder": "Anna\nBoris\nChen",
+    "invitedHelp": "Ein Name pro Zeile. Alle treten bei, indem sie auf der Raumseite auf ihren Namen tippen. Bis zu 99 Namen.",
+    "joinRuleLegend": "Wer beitreten kann",
+    "joinRuleAnyone": "Alle mit dem Link können ihren Namen hinzufügen",
+    "joinRuleListedOnly": "Nur eingeladene Namen (du kannst immer beitreten)"
   },
   "JoinForm": {
     "intro": "Du bist dabei, diesem Raum beizutreten, um einzutragen, zu welchen der oben genannten Zeiten du kannst. Kein Konto nötig — nur ein Name, den die restliche Gruppe sieht. Sobald du drin bist, siehst du die gemeinsame Verfügbarkeit aller auf der Ergebnisseite.",
@@ -69,21 +79,27 @@
       "summaryLine": "{can} kann · {cannot} kann nicht",
       "isThisYou": "Bist du das?",
       "yesConfirm": "Ja, das bin ich",
-      "noDifferent": "Nein, anderen Namen verwenden"
+      "noDifferent": "Nein, anderen Namen verwenden",
+      "invited": "<b>{name}</b> steht auf der Einladungsliste dieses Raums."
     },
     "errors": {
       "nameRequired": "Gib einen Namen ein.",
       "nameTooLong": "Der Name ist zu lang.",
       "confirmFailed": "Das hat nicht funktioniert — versuche, den Namen erneut einzugeben.",
-      "roomFull": "Dieser Raum hat sein Limit von {max} Teilnehmern erreicht."
-    }
+      "roomFull": "Dieser Raum hat sein Limit von {max} Teilnehmern erreicht.",
+      "notOnList": "Dieser Raum nimmt nur eingeladene Namen an — wähle deinen aus der Liste oben."
+    },
+    "invitedLabel": "Eingeladen:",
+    "listedOnlyNote": "Diesem Raum können nur eingeladene Namen beitreten.",
+    "listedOnlyCreatorNote": "Diesem Raum können nur eingeladene Namen beitreten. Du hast ihn erstellt, darum kannst du unter jedem Namen beitreten."
   },
   "RoomPage": {
     "markingAs": "Du trägst ein als <b>{name}</b>",
     "notYou": "Nicht du? Anderen Namen verwenden",
     "alsoInRoom": "Ebenfalls in diesem Raum: {names}",
     "seeResults": "Ergebnisse ansehen →",
-    "closedMessage": "Die Besprechungszeit wurde festgelegt — das Eintragen der Verfügbarkeit ist geschlossen."
+    "closedMessage": "Die Besprechungszeit wurde festgelegt — das Eintragen der Verfügbarkeit ist geschlossen.",
+    "invitedNotJoined": "Eingeladen, noch nicht beigetreten: {names}"
   },
   "AvailabilityGrid": {
     "brushes": {
@@ -128,13 +144,16 @@
       "roomGone": "Diesen Raum gibt es nicht mehr. Lade die Seite neu.",
       "self": "Um dich selbst zu entfernen, nutze „Raum verlassen“.",
       "failed": "Entfernen fehlgeschlagen — versuch es noch einmal."
-    }
+    },
+    "notJoinedTag": "noch nicht beigetreten"
   },
   "ResultsPage": {
     "pageTitle": "{title} — Ergebnisse",
     "peopleCount": "{count, plural, one {# Person} other {# Personen}}",
     "participantsLabel": "Teilnehmer: {names}",
-    "editLink": "← Meine Verfügbarkeit bearbeiten"
+    "editLink": "← Meine Verfügbarkeit bearbeiten",
+    "joinedOfExpected": "{joined, plural, one {# von {expected} ist beigetreten.} other {# von {expected} sind beigetreten.}}",
+    "notJoinedYet": "Noch nicht beigetreten: {names}"
   },
   "ResultsBoard": {
     "legend": {

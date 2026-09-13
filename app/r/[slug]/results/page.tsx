@@ -75,9 +75,18 @@ export default async function ResultsPage({
             {formatHoursWindow(room.dayStartHour, room.dayEndHour)} · {room.timezone} ·{" "}
             {t("peopleCount", { count: totalParticipants })}
           </p>
-          <p className="mt-1 text-sm text-muted">
+          <p className="mt-1 text-sm wrap-anywhere text-muted">
             {t("participantsLabel", { names: participants.map((p) => p.name).join(", ") })}
           </p>
+          {roster.invited.length > 0 && (
+            <p className="mt-1 text-sm wrap-anywhere text-muted">
+              {t("joinedOfExpected", {
+                joined: participants.length,
+                expected: participants.length + roster.invited.length,
+              })}{" "}
+              {t("notJoinedYet", { names: roster.invited.map((p) => p.name).join(", ") })}
+            </p>
+          )}
           {room.description && (
             <p className="mt-2 text-sm whitespace-pre-wrap">{room.description}</p>
           )}

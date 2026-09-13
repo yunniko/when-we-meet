@@ -4,7 +4,9 @@ import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
 import { findActiveRoom } from "@/lib/room-access";
 import { getCurrentParticipant } from "@/lib/participant";
+import { getOwnerToken } from "@/lib/cookies";
 import { isRoomOwner } from "@/lib/owner";
+import { splitRoster } from "@/lib/roster";
 import { dateOnly, enumerateDates, enumerateHours, formatDateRange, formatHoursWindow } from "@/lib/slots";
 import type { CellMark } from "@/lib/slots";
 import { JoinForm } from "@/app/r/[slug]/join-form";
@@ -40,13 +42,17 @@ export default async function RoomPage({
   );
 
   const participant = await getCurrentParticipant(room.id);
-  const otherParticipants = await prisma.participant.findMany({
-    where: { roomId: room.id, ...(participant ? { NOT: { id: participant.id } } : {}) },
-    select: { id: true, name: true },
-    orderBy: { createdAt: "asc" },
-  });
+  // Everyone else in the room, split into people who have joined and
+  // invited names nobody has claimed yet (G-004, D011).
+  const others = splitRoster(
+    await prisma.participant.findMany({
+      where: { roomId: room.id, ...(participant ? { NOT: { id: participant.id } } : {}) },
+      select: { id: true, name: true, joinedAt: true, createdAt: true },
+    }),
+  );
 
   if (!participant) {
+    const canUseAnyName = (await getOwnerToken(room.id)) === room.ownerToken;
     return (
       <div className="mx-auto w-full max-w-md px-4 pt-12">
         <div className="flex justify-end">
@@ -61,7 +67,10 @@ export default async function RoomPage({
           dateRangeLabel={formatDateRange(room.startDate, room.endDate)}
           hoursLabel={formatHoursWindow(room.dayStartHour, room.dayEndHour)}
           timezone={room.timezone}
-          participantNames={otherParticipants.map((p) => p.name)}
+          joinedNames={others.joined.map((p) => p.name)}
+          invitedNames={others.invited.map((p) => p.name)}
+          listedOnly={room.joinRule === "LISTED_ONLY"}
+          canUseAnyName={canUseAnyName}
         />
       </div>
     );
@@ -98,7 +107,7 @@ export default async function RoomPage({
             <p className="mt-2 text-sm whitespace-pre-wrap">{room.description}</p>
           )}
         </div>
-        <div className="text-sm sm:text-right">
+        <div className="min-w-0 text-sm wrap-anywhere sm:text-right">
           <div className="mb-2">
             <NewEventButton />
           </div>
@@ -126,10 +135,15 @@ export default async function RoomPage({
 
       <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          {otherParticipants.length > 0 ? (
-            <p className="min-w-0 text-sm break-words text-muted">
-              {t("alsoInRoom", { names: otherParticipants.map((p) => p.name).join(", ") })}
-            </p>
+          {others.joined.length + others.invited.length > 0 ? (
+            <div className="min-w-0 text-sm break-words text-muted">
+              {others.joined.length > 0 && (
+                <p>{t("alsoInRoom", { names: others.joined.map((p) => p.name).join(", ") })}</p>
+              )}
+              {others.invited.length > 0 && (
+                <p>{t("invitedNotJoined", { names: others.invited.map((p) => p.name).join(", ") })}</p>
+              )}
+            </div>
           ) : (
             <span />
           )}
@@ -165,7 +179,10 @@ export default async function RoomPage({
           roomId={room.id}
           slug={room.slug}
           ownerName={participant.name}
-          others={otherParticipants}
+          others={[
+            ...others.joined.map((p) => ({ id: p.id, name: p.name, invited: false })),
+            ...others.invited.map((p) => ({ id: p.id, name: p.name, invited: true })),
+          ]}
         />
       )}
     </div>

@@ -1,26 +1,41 @@
 import type { Page } from "@playwright/test";
 
-export async function createRoom(
-  page: Page,
-  opts: { title: string; startDate: string; endDate: string },
-): Promise<string> {
+export type RoomFormOptions = {
+  title: string;
+  startDate: string;
+  endDate: string;
+  // G-004: one entry per line in the "Invited people" box.
+  invitedNames?: string[];
+  listedOnly?: boolean;
+};
+
+// Fills the landing page's create-room form without submitting it.
+export async function fillRoomForm(page: Page, opts: RoomFormOptions): Promise<void> {
   await page.goto("/");
   await page.getByLabel("Room name (optional)").fill(opts.title);
   await page.getByLabel("From", { exact: true }).fill(opts.startDate);
   await page.getByLabel("To", { exact: true }).fill(opts.endDate);
   // The timezone field defaults to a collapsed "<guessed zone> — Change"
-  // label, not the raw <select> — click through to reveal it first.
+  // label, not the raw <select>, so click through to reveal it first.
   await page.getByRole("button", { name: "Change" }).click();
-  // Not "UTC" — that alias isn't in every ICU's supportedValuesOf("timeZone")
+  // Not "UTC": that alias isn't in every ICU's supportedValuesOf("timeZone")
   // list (confirmed absent from this machine's Node build), so the <select>
   // wouldn't have an option for it. Any real IANA zone works equally well
-  // here since the app never converts stored slots through it (see D2) —
-  // it's a display label.
+  // here since the app never converts stored slots through it (see D002).
   await page.getByLabel("Timezone", { exact: true }).selectOption("Europe/London");
-  // The default preset is "Evening" (17:00-22:00); existing specs paint
-  // morning/9am-ish slots, so pick "Whole day" (07:00-22:00) explicitly to
-  // keep those hours in range.
+  // The default preset is "Evening" (17:00-22:00); specs paint morning
+  // slots, so pick "Whole day" (07:00-22:00) to keep those hours in range.
   await page.getByLabel("Whole day (07:00–22:00)").check();
+  if (opts.invitedNames) {
+    await page.getByLabel("Invited people").fill(opts.invitedNames.join("\n"));
+  }
+  if (opts.listedOnly) {
+    await page.getByLabel("Only the invited names (you can always join)").check();
+  }
+}
+
+export async function createRoom(page: Page, opts: RoomFormOptions): Promise<string> {
+  await fillRoomForm(page, opts);
   await page.getByRole("button", { name: "Create room & get link" }).click();
   await page.waitForURL(/\/r\/[a-z0-9]+$/);
   const slug = new URL(page.url()).pathname.split("/r/")[1];

@@ -26,9 +26,21 @@ export type JoinState =
   // translated client-side in join-form.tsx (same pattern as CreateRoom's
   // errors, see lib/validation.ts's header comment).
   | { step: "form"; error?: string; name?: string }
-  | { step: "collision"; participantId: string; name: string; summary: MarkSummary };
+  | {
+      step: "collision";
+      participantId: string;
+      name: string;
+      // An invited name nobody has claimed yet (G-004): shown as "on the
+      // invite list" rather than as someone's existing marks.
+      invited: boolean;
+      summary: MarkSummary;
+    };
 
-async function collisionState(participant: { id: string; name: string }): Promise<JoinState> {
+async function collisionState(participant: {
+  id: string;
+  name: string;
+  joinedAt: Date | null;
+}): Promise<JoinState> {
   const availability = await prisma.availability.findMany({
     where: { participantId: participant.id },
     orderBy: [{ slotDate: "asc" }, { slotHour: "asc" }],
@@ -37,6 +49,7 @@ async function collisionState(participant: { id: string; name: string }): Promis
     step: "collision",
     participantId: participant.id,
     name: participant.name,
+    invited: participant.joinedAt === null,
     summary: summarizeAvailability(availability),
   };
 }
@@ -70,6 +83,7 @@ export async function joinRoom(
     // Expired or deleted meanwhile; the room page shows not-found.
     redirect(`/r/${ctx.slug}`);
   }
+  if (joined.kind === "notOnList") return { step: "form", error: "notOnList", name };
   if (joined.kind === "full") return { step: "form", error: "roomFull", name };
   if (joined.kind === "exists") return collisionState(joined.participant);
 

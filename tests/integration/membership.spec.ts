@@ -3,6 +3,7 @@ import { afterAll, afterEach, describe, expect, it } from "vitest";
 import { prisma } from "@/lib/prisma";
 import {
   claimParticipant,
+  createRoomWithInvites,
   joinByName,
   leaveRoomAs,
   removeParticipantConfirmed,
@@ -10,6 +11,7 @@ import {
   saveMarks,
 } from "@/lib/membership";
 import { MAX_PARTICIPANTS_PER_ROOM } from "@/lib/validation";
+import { splitRoster } from "@/lib/roster";
 
 // lib/membership.ts against the local dev Postgres. Every test builds its
 // own rooms and deletes them afterwards (participants and marks cascade).
@@ -107,7 +109,7 @@ describe("joinByName", () => {
     const ivy = await addMember(room.id, "Invited Ivy", null);
     expect(await joinByName(room.id, "INVITED IVY", undefined)).toEqual({
       kind: "exists",
-      participant: { id: ivy.id, name: "Invited Ivy" },
+      participant: { id: ivy.id, name: "Invited Ivy", joinedAt: null },
     });
     expect(await prisma.participant.count({ where: { roomId: room.id } })).toBe(1);
   });
@@ -378,5 +380,49 @@ describe("saveMarks", () => {
       expect(["saved", "removed"]).toContain(saved);
       expect(await prisma.availability.count({ where: { participantId: ann.id } })).toBe(0);
     }
+  });
+});
+
+describe("createRoomWithInvites", () => {
+  const roomData = () => ({
+    slug: `it-${randomUUID()}`,
+    timezone: "Europe/London",
+    startDate: new Date("2027-10-01T00:00:00Z"),
+    endDate: new Date("2027-10-03T00:00:00Z"),
+    ownerToken: randomUUID(),
+    joinRule: "LISTED_ONLY" as const,
+  });
+
+  it("creates the room with its invited names, unclaimed and in the order typed", async () => {
+    const room = await createRoomWithInvites(roomData(), ["Zoe", "Adam", "Mia"]);
+    createdRooms.push(room.id);
+    const rows = await prisma.participant.findMany({
+      where: { roomId: room.id },
+      select: { id: true, name: true, joinedAt: true, createdAt: true, cookieToken: true },
+    });
+    const { joined, invited } = splitRoster(rows);
+    expect(joined).toHaveLength(0);
+    expect(invited.map((r) => r.name)).toEqual(["Zoe", "Adam", "Mia"]);
+    expect(new Set(rows.map((r) => r.cookieToken)).size).toBe(3);
+  });
+
+  it("creates neither the room nor any name when one name breaks a constraint", async () => {
+    const data = roomData();
+    await expect(createRoomWithInvites(data, ["Same", "same"])).rejects.toThrow();
+    expect(await prisma.room.findUnique({ where: { slug: data.slug } })).toBeNull();
+  });
+});
+
+describe("join rule", () => {
+  it("under 'listed names only' refuses new names except from the creating browser", async () => {
+    const room = await makeRoom("LISTED_ONLY");
+    await addMember(room.id, "Ivy", null);
+
+    expect(await joinByName(room.id, "Mallory", undefined)).toEqual({ kind: "notOnList" });
+    expect(await joinByName(room.id, "Mallory", "wrong-token")).toEqual({ kind: "notOnList" });
+    expect((await joinByName(room.id, "ivy", undefined)).kind).toBe("exists");
+    expect((await joinByName(room.id, "Organizer", room.ownerToken)).kind).toBe("joined");
+    expect(await prisma.participant.count({ where: { roomId: room.id } })).toBe(2);
+    expect((await roomState(room.id)).creatorParticipantId).not.toBeNull();
   });
 });

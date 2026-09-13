@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { nameKeyOf } from "@/lib/roster";
 
 // Every error message below is an i18n KEY (looked up as
 // `CreateRoom.errors.<key>` client-side via useTranslations), not an English
@@ -35,6 +36,27 @@ export const createRoomSchema = z
       .int("dayHourInvalid")
       .min(1, "dayEndHourRange")
       .max(24, "dayEndHourRange"),
+    // One name per line (G-004), parsed, trimmed and deduplicated here so
+    // the action only ever sees a clean list. See parseInvitedNames below.
+    // The raw ceiling only bounds parsing work: the real limits (60
+    // characters, 99 distinct names) apply after deduplication, so a list
+    // pasted twice still passes.
+    invitedNames: z
+      .string()
+      .max(25_000, "tooManyInvitedNames")
+      .optional()
+      .transform((value, ctx) => {
+        const parsed = parseInvitedNames(value ?? "");
+        if (!parsed.ok) {
+          ctx.addIssue({ code: "custom", message: parsed.error });
+          return z.NEVER;
+        }
+        return parsed.names;
+      }),
+    joinRule: z
+      .enum(["ANYONE", "LISTED_ONLY"], "joinRuleInvalid")
+      .optional()
+      .transform((value) => value ?? "ANYONE"),
   })
   .refine((v) => v.endDate >= v.startDate, {
     message: "endBeforeStart",
@@ -43,6 +65,11 @@ export const createRoomSchema = z
   .refine((v) => v.dayEndHour > v.dayStartHour, {
     message: "dayEndBeforeStart",
     path: ["dayEndHour"],
+  })
+  // A listed-only room with nobody listed would admit only its creator.
+  .refine((v) => v.joinRule === "ANYONE" || v.invitedNames.length > 0, {
+    message: "listedOnlyNeedsNames",
+    path: ["joinRule"],
   })
   .refine(
     (v) => {
@@ -63,3 +90,34 @@ export type CreateRoomInput = z.infer<typeof createRoomSchema>;
 // with a room link from creating unlimited throwaway participants. Not a
 // limit real group usage would ever approach.
 export const MAX_PARTICIPANTS_PER_ROOM = 100;
+
+// Longest display name, for joining and for invited names alike.
+export const MAX_NAME_LENGTH = 60;
+
+// Invited names leave one place under the cap, so the creator can always
+// join their own room (G-004 AC1).
+export const MAX_INVITED_NAMES = MAX_PARTICIPANTS_PER_ROOM - 1;
+
+export type InvitedNamesResult =
+  | { ok: true; names: string[] }
+  | { ok: false; error: "invitedNameTooLong" | "tooManyInvitedNames" };
+
+// Parses the creation form's "Invited people" box: one name per line,
+// trimmed, blank lines skipped, duplicates dropped (case-insensitive, the
+// same rule as joining) keeping the first spelling. Error values are i18n
+// keys under CreateRoom.errors.
+export function parseInvitedNames(text: string): InvitedNamesResult {
+  const names: string[] = [];
+  const seen = new Set<string>();
+  for (const line of text.split(/\r?\n/)) {
+    const name = line.trim();
+    if (!name) continue;
+    if (name.length > MAX_NAME_LENGTH) return { ok: false, error: "invitedNameTooLong" };
+    const key = nameKeyOf(name);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    names.push(name);
+  }
+  if (names.length > MAX_INVITED_NAMES) return { ok: false, error: "tooManyInvitedNames" };
+  return { ok: true, names };
+}

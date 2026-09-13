@@ -6,6 +6,7 @@ import { MAX_PARTICIPANTS_PER_ROOM } from "@/lib/validation";
 import {
   confirmationMatches,
   leaveEffect,
+  mayAddNewName,
   nameKeyOf,
   pickSuccessor,
   shouldBecomeOwner,
@@ -79,7 +80,9 @@ export type JoinByNameResult =
   | { kind: "joined"; cookieToken: string }
   // The name is taken, by someone who joined or by an invited name: the
   // caller shows the "is this you?" step, which claims it.
-  | { kind: "exists"; participant: { id: string; name: string } }
+  | { kind: "exists"; participant: { id: string; name: string; joinedAt: Date | null } }
+  // "Listed names only", and this browser didn't create the room.
+  | { kind: "notOnList" }
   | { kind: "full" }
   | { kind: "roomGone" };
 
@@ -95,9 +98,12 @@ export async function joinByName(
 
     const existing = await tx.participant.findUnique({
       where: { roomId_nameKey: { roomId, nameKey } },
-      select: { id: true, name: true },
+      select: { id: true, name: true, joinedAt: true },
     });
     if (existing) return { kind: "exists", participant: existing };
+
+    const room = await tx.room.findUniqueOrThrow({ where: { id: roomId } });
+    if (!mayAddNewName(room, presentedOwnerToken)) return { kind: "notOnList" };
 
     // Invited names hold places too, so the cap covers both.
     const count = await tx.participant.count({ where: { roomId } });
@@ -285,5 +291,31 @@ export async function saveMarks(
       });
     }
     return "saved";
+  });
+}
+
+// Creates a room together with its invited names (G-004) in one statement,
+// so either both exist or neither does. Nobody else can see the room before
+// it commits, so no room lock is needed. Names must already be parsed and
+// deduplicated (parseInvitedNames); createdAt is spaced 1 ms apart so the
+// invited list keeps the order the names were typed in (splitRoster).
+export async function createRoomWithInvites(
+  data: Omit<Prisma.RoomCreateInput, "participants" | "creator">,
+  invitedNames: string[],
+) {
+  const base = Date.now();
+  return prisma.room.create({
+    data: {
+      ...data,
+      participants: {
+        create: invitedNames.map((name, i) => ({
+          name,
+          nameKey: nameKeyOf(name),
+          cookieToken: generateCookieToken(),
+          joinedAt: null,
+          createdAt: new Date(base + i),
+        })),
+      },
+    },
   });
 }

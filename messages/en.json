@@ -50,8 +50,18 @@
       "dayHourInvalid": "Enter a valid hour",
       "dayStartHourRange": "Daily start hour must be between 0 and 23",
       "dayEndHourRange": "Daily end hour must be between 1 and 24",
-      "descriptionTooLong": "Description can't be longer than 2000 characters"
-    }
+      "descriptionTooLong": "Description can't be longer than 2000 characters",
+      "invitedNameTooLong": "Each invited name can be at most 60 characters.",
+      "tooManyInvitedNames": "You can invite at most 99 names.",
+      "listedOnlyNeedsNames": "Add at least one invited name, or let anyone with the link join.",
+      "joinRuleInvalid": "Pick who can join."
+    },
+    "invitedLabel": "Invited people",
+    "invitedPlaceholder": "Anna\nBoris\nChen",
+    "invitedHelp": "One name per line. Each person taps their name on the room page to join. Up to 99 names.",
+    "joinRuleLegend": "Who can join",
+    "joinRuleAnyone": "Anyone with the link can add their name",
+    "joinRuleListedOnly": "Only the invited names (you can always join)"
   },
   "JoinForm": {
     "intro": "You're about to join this room to mark which of the times above you're free. No account needed — just a name the rest of the group will see. Once you're in, you can see everyone's combined availability on the results page.",
@@ -69,21 +79,27 @@
       "summaryLine": "{can} can · {cannot} can't",
       "isThisYou": "Is this you?",
       "yesConfirm": "Yes, that's me",
-      "noDifferent": "No, use a different name"
+      "noDifferent": "No, use a different name",
+      "invited": "<b>{name}</b> is on this room's invite list."
     },
     "errors": {
       "nameRequired": "Enter a name.",
       "nameTooLong": "Name is too long.",
       "confirmFailed": "That didn't work — try entering your name again.",
-      "roomFull": "This room has reached its limit of {max} participants."
-    }
+      "roomFull": "This room has reached its limit of {max} participants.",
+      "notOnList": "This room only accepts invited names — pick yours from the list above."
+    },
+    "invitedLabel": "Invited:",
+    "listedOnlyNote": "Only invited names can join this room.",
+    "listedOnlyCreatorNote": "Only invited names can join this room. You created it, so you can join under any name."
   },
   "RoomPage": {
     "markingAs": "Marking as <b>{name}</b>",
     "notYou": "Not you? Use a different name",
     "alsoInRoom": "Also in this room: {names}",
     "seeResults": "See results →",
-    "closedMessage": "The meeting time has been set — availability marking is closed."
+    "closedMessage": "The meeting time has been set — availability marking is closed.",
+    "invitedNotJoined": "Invited, not joined yet: {names}"
   },
   "AvailabilityGrid": {
     "brushes": {
@@ -128,13 +144,16 @@
       "roomGone": "This room no longer exists. Reload the page.",
       "self": "Use “Leave the room” to remove yourself.",
       "failed": "Couldn't remove — try again."
-    }
+    },
+    "notJoinedTag": "not joined yet"
   },
   "ResultsPage": {
     "pageTitle": "{title} — results",
     "peopleCount": "{count, plural, one {# person} other {# people}}",
     "participantsLabel": "Participants: {names}",
-    "editLink": "← Edit my availability"
+    "editLink": "← Edit my availability",
+    "joinedOfExpected": "{joined} of {expected} people have joined.",
+    "notJoinedYet": "Not joined yet: {names}"
   },
   "ResultsBoard": {
     "legend": {

@@ -21,7 +21,8 @@ export function ParticipantsPanel({
   roomId: string;
   slug: string;
   ownerName: string;
-  others: { id: string; name: string }[];
+  // `invited`: a name nobody has claimed yet (G-004).
+  others: { id: string; name: string; invited: boolean }[];
 }) {
   const t = useTranslations("ParticipantsPanel");
   const router = useRouter();
@@ -110,7 +111,14 @@ export function ParticipantsPanel({
           return (
             <li key={p.id} className="py-2 text-sm">
               <div className="flex items-center justify-between gap-3">
-                <span className="min-w-0 break-words">{p.name}</span>
+                <div className="flex min-w-0 flex-wrap items-center gap-x-2">
+                  <span className="min-w-0 break-words">{p.name}</span>
+                  {p.invited && (
+                    <span className="rounded-full bg-foreground/5 px-1.5 py-0.5 text-[11px] text-muted">
+                      {t("notJoinedTag")}
+                    </span>
+                  )}
+                </div>
                 {!isOpen && (
                   <button
                     id={`remove-open-${p.id}`}

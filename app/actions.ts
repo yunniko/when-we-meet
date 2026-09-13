@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { generateRoomSlug, generateCookieToken } from "@/lib/slug";
 import { createRoomSchema } from "@/lib/validation";
 import { setOwnerCookie } from "@/lib/cookies";
+import { createRoomWithInvites } from "@/lib/membership";
 import { DAILY_PRESETS, isPresetKey } from "@/lib/room-presets";
 
 export type CreateRoomState = {
@@ -20,6 +21,8 @@ export type CreateRoomState = {
     endDate: string;
     dayStartHour: string;
     dayEndHour: string;
+    invitedNames: string;
+    joinRule: string;
   };
 };
 
@@ -39,6 +42,8 @@ export async function createRoom(
     endDate: String(formData.get("endDate") ?? ""),
     dayStartHour: fromPreset ? String(fromPreset.start) : String(formData.get("dayStartHour") ?? "0"),
     dayEndHour: fromPreset ? String(fromPreset.end) : String(formData.get("dayEndHour") ?? "24"),
+    invitedNames: String(formData.get("invitedNames") ?? ""),
+    joinRule: String(formData.get("joinRule") ?? "ANYONE"),
   };
 
   const values = raw;
@@ -67,8 +72,8 @@ export async function createRoom(
   }
 
   const ownerToken = generateCookieToken();
-  const room = await prisma.room.create({
-    data: {
+  const room = await createRoomWithInvites(
+    {
       slug,
       title: data.title,
       description: data.description,
@@ -78,8 +83,10 @@ export async function createRoom(
       dayStartHour: data.dayStartHour,
       dayEndHour: data.dayEndHour,
       ownerToken,
+      joinRule: data.joinRule,
     },
-  });
+    data.invitedNames,
+  );
   await setOwnerCookie(room.id, ownerToken);
 
   redirect(`/r/${room.slug}`);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createRoomSchema } from "@/lib/validation";
+import { createRoomSchema, MAX_INVITED_NAMES, parseInvitedNames } from "@/lib/validation";
 
 const base = {
   title: "Camping trip",
@@ -75,5 +75,82 @@ describe("createRoomSchema", () => {
   it("rejects an hour outside 0-23/1-24 bounds", () => {
     expect(createRoomSchema.safeParse({ ...base, dayStartHour: -1 }).success).toBe(false);
     expect(createRoomSchema.safeParse({ ...base, dayEndHour: 25 }).success).toBe(false);
+  });
+});
+
+describe("parseInvitedNames", () => {
+  it("trims, skips blank lines and handles Windows line endings", () => {
+    expect(parseInvitedNames("  Anna \r\n\r\n Boris\n\n")).toEqual({ ok: true, names: ["Anna", "Boris"] });
+  });
+
+  it("drops case-insensitive duplicates, keeping the first spelling", () => {
+    expect(parseInvitedNames("Anna K\nanna k\nANNA K\nBoris")).toEqual({
+      ok: true,
+      names: ["Anna K", "Boris"],
+    });
+  });
+
+  it("returns an empty list for an empty box", () => {
+    expect(parseInvitedNames("")).toEqual({ ok: true, names: [] });
+  });
+
+  it("accepts a 60-character name and rejects a 61-character one", () => {
+    expect(parseInvitedNames("x".repeat(60))).toEqual({ ok: true, names: ["x".repeat(60)] });
+    expect(parseInvitedNames(`Ok\n${"x".repeat(61)}`)).toEqual({ ok: false, error: "invitedNameTooLong" });
+  });
+
+  it("allows up to 99 distinct names, leaving the creator a place", () => {
+    const names = (n: number) => Array.from({ length: n }, (_, i) => `Person ${i}`).join("\n");
+    expect(MAX_INVITED_NAMES).toBe(99);
+    const ok = parseInvitedNames(names(99));
+    expect(ok.ok && ok.names.length).toBe(99);
+    expect(parseInvitedNames(names(100))).toEqual({ ok: false, error: "tooManyInvitedNames" });
+    // Duplicates don't count towards the limit.
+    expect(parseInvitedNames(`${names(99)}\nperson 0`).ok).toBe(true);
+  });
+});
+
+describe("createRoomSchema invited names and join rule", () => {
+  it("defaults to 'anyone can join' with no invited names", () => {
+    const result = createRoomSchema.safeParse(base);
+    expect(result.success && result.data.joinRule).toBe("ANYONE");
+    expect(result.success && result.data.invitedNames).toEqual([]);
+  });
+
+  it("parses the invited box into a clean list", () => {
+    const result = createRoomSchema.safeParse({
+      ...base,
+      invitedNames: "Anna\nanna\n Boris ",
+      joinRule: "LISTED_ONLY",
+    });
+    expect(result.success && result.data.invitedNames).toEqual(["Anna", "Boris"]);
+  });
+
+  it("reports invited-name errors on the invitedNames field", () => {
+    const result = createRoomSchema.safeParse({ ...base, invitedNames: "x".repeat(61) });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0]).toMatchObject({ path: ["invitedNames"], message: "invitedNameTooLong" });
+    }
+  });
+
+  it("requires at least one invited name for a listed-only room", () => {
+    const result = createRoomSchema.safeParse({ ...base, joinRule: "LISTED_ONLY", invitedNames: "\n \n" });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0]).toMatchObject({ path: ["joinRule"], message: "listedOnlyNeedsNames" });
+    }
+  });
+
+  it("rejects an unknown join rule", () => {
+    expect(createRoomSchema.safeParse({ ...base, joinRule: "EVERYONE" }).success).toBe(false);
+  });
+});
+
+describe("createRoomSchema invited box size", () => {
+  it("accepts a full list of 60-character names pasted twice, since limits apply after deduplication", () => {
+    const list = Array.from({ length: 99 }, (_, i) => `${String(i).padStart(2, "0")}${"n".repeat(58)}`).join("\n");
+    const result = createRoomSchema.safeParse({ ...base, invitedNames: `${list}\n${list}` });
+    expect(result.success && result.data.invitedNames.length).toBe(99);
   });
 });

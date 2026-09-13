@@ -50,8 +50,18 @@
       "dayHourInvalid": "Zadejte platnou hodinu",
       "dayStartHourRange": "Hodina začátku dne musí být mezi 0 a 23",
       "dayEndHourRange": "Hodina konce dne musí být mezi 1 a 24",
-      "descriptionTooLong": "Popis nesmí být delší než 2000 znaků"
-    }
+      "descriptionTooLong": "Popis nesmí být delší než 2000 znaků",
+      "invitedNameTooLong": "Každé pozvané jméno může mít nejvýš 60 znaků.",
+      "tooManyInvitedNames": "Pozvat lze nejvýš 99 jmen.",
+      "listedOnlyNeedsNames": "Přidejte aspoň jedno pozvané jméno, nebo nechte připojit kohokoli s odkazem.",
+      "joinRuleInvalid": "Vyberte, kdo se může připojit."
+    },
+    "invitedLabel": "Pozvaní",
+    "invitedPlaceholder": "Anna\nBoris\nChen",
+    "invitedHelp": "Jedno jméno na řádek. Každý se připojí klepnutím na své jméno na stránce místnosti. Nejvýš 99 jmen.",
+    "joinRuleLegend": "Kdo se může připojit",
+    "joinRuleAnyone": "Kdokoli s odkazem může přidat své jméno",
+    "joinRuleListedOnly": "Jen pozvaná jména (vy vždy můžete)"
   },
   "JoinForm": {
     "intro": "Chystáte se připojit k této místnosti a označit, kdy z uvedených časů máte volno. Registrace není potřeba — stačí jméno, které uvidí ostatní účastníci. Po přihlášení uvidíte společnou dostupnost všech na stránce s výsledky.",
@@ -69,21 +79,27 @@
       "summaryLine": "{can} může · {cannot} nemůže",
       "isThisYou": "Jste to vy?",
       "yesConfirm": "Ano, to jsem já",
-      "noDifferent": "Ne, zvolit jiné jméno"
+      "noDifferent": "Ne, zvolit jiné jméno",
+      "invited": "<b>{name}</b> je na seznamu pozvaných do této místnosti."
     },
     "errors": {
       "nameRequired": "Zadejte jméno.",
       "nameTooLong": "Jméno je příliš dlouhé.",
       "confirmFailed": "Nepovedlo se — zkuste zadat jméno znovu.",
-      "roomFull": "Tato místnost dosáhla limitu {max} účastníků."
-    }
+      "roomFull": "Tato místnost dosáhla limitu {max} účastníků.",
+      "notOnList": "Tato místnost přijímá jen pozvaná jména — vyberte své ze seznamu výše."
+    },
+    "invitedLabel": "Pozvaní:",
+    "listedOnlyNote": "Do této místnosti se mohou připojit jen pozvaná jména.",
+    "listedOnlyCreatorNote": "Do této místnosti se mohou připojit jen pozvaná jména. Vy jste ji vytvořili, takže se můžete připojit pod jakýmkoli jménem."
   },
   "RoomPage": {
     "markingAs": "Označujete jako <b>{name}</b>",
     "notYou": "Nejste to vy? Použít jiné jméno",
     "alsoInRoom": "Také v této místnosti: {names}",
     "seeResults": "Zobrazit výsledky →",
-    "closedMessage": "Čas schůzky byl nastaven — označování dostupnosti je uzavřeno."
+    "closedMessage": "Čas schůzky byl nastaven — označování dostupnosti je uzavřeno.",
+    "invitedNotJoined": "Pozvaní, kteří ještě nejsou v místnosti: {names}"
   },
   "AvailabilityGrid": {
     "brushes": {
@@ -128,13 +144,16 @@
       "roomGone": "Tato místnost už neexistuje. Načtěte stránku znovu.",
       "self": "Sebe odeberete přes „Opustit místnost“.",
       "failed": "Odebrání se nepovedlo — zkuste to znovu."
-    }
+    },
+    "notJoinedTag": "ještě není v místnosti"
   },
   "ResultsPage": {
     "pageTitle": "{title} — výsledky",
     "peopleCount": "{count, plural, one {# osoba} few {# osoby} other {# osob}}",
     "participantsLabel": "Účastníci: {names}",
-    "editLink": "← Upravit moji dostupnost"
+    "editLink": "← Upravit moji dostupnost",
+    "joinedOfExpected": "Připojeno {joined} z {expected}.",
+    "notJoinedYet": "Ještě nejsou v místnosti: {names}"
   },
   "ResultsBoard": {
     "legend": {

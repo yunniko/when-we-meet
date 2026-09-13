@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   confirmationMatches,
   leaveEffect,
+  mayAddNewName,
   nameKeyOf,
   pickSuccessor,
   shouldBecomeOwner,
@@ -114,5 +115,19 @@ describe("splitRoster", () => {
     ]);
     expect(joined.map((m) => m.id)).toEqual(["j1", "j2"]);
     expect(invited.map((m) => m.id)).toEqual(["i1", "i2"]);
+  });
+});
+
+describe("mayAddNewName", () => {
+  const room = (joinRule: "ANYONE" | "LISTED_ONLY") => ({ joinRule, ownerToken: "tok" });
+
+  it("lets anyone add a name when anyone with the link can join", () => {
+    expect(mayAddNewName(room("ANYONE"), undefined)).toBe(true);
+  });
+
+  it("under 'listed names only' lets only the creating browser add a name", () => {
+    expect(mayAddNewName(room("LISTED_ONLY"), "tok")).toBe(true);
+    expect(mayAddNewName(room("LISTED_ONLY"), "other")).toBe(false);
+    expect(mayAddNewName(room("LISTED_ONLY"), undefined)).toBe(false);
   });
 });
