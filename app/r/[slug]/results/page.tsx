@@ -7,6 +7,7 @@ import { getCurrentParticipant } from "@/lib/participant";
 import { isRoomOwner } from "@/lib/owner";
 import { dateOnly, enumerateDates, enumerateHours, formatDateRange, formatHoursWindow } from "@/lib/slots";
 import { computeResults } from "@/lib/results";
+import { splitRoster } from "@/lib/roster";
 import { FinalizedBanner } from "@/app/r/[slug]/finalized-banner";
 import { ResultsBoard } from "@/app/r/[slug]/results-board";
 import { NewEventButton } from "@/app/new-event-button";
@@ -31,14 +32,18 @@ export default async function ResultsPage({
 
   const dates = enumerateDates(room.startDate, room.endDate);
   const hours = enumerateHours(room.dayStartHour, room.dayEndHour);
-  const participants = await prisma.participant.findMany({
-    where: { roomId: room.id },
-    select: { name: true },
-    orderBy: { createdAt: "asc" },
-  });
+  // Only people who have joined count towards the results; invited names
+  // nobody has claimed yet (G-004) are pending, which keeps "everyone" honest.
+  const roster = splitRoster(
+    await prisma.participant.findMany({
+      where: { roomId: room.id },
+      select: { id: true, name: true, joinedAt: true, createdAt: true },
+    }),
+  );
+  const participants = roster.joined;
   const totalParticipants = participants.length;
   const rows = await prisma.availability.findMany({
-    where: { participant: { roomId: room.id } },
+    where: { participant: { roomId: room.id, joinedAt: { not: null } } },
     select: {
       slotDate: true,
       slotHour: true,
@@ -54,6 +59,7 @@ export default async function ResultsPage({
     hours,
     participants.map((p) => p.name),
     namedRows,
+    { pendingInvites: roster.invited.length },
   );
   const topResults = results.filter((r) => r.canCount > 0).slice(0, 10);
 

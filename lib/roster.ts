@@ -1,6 +1,11 @@
-// Pure name rules shared by joining, removal and (later) the invited-names
-// list. One definition of "the same name" so the join-time uniqueness key
-// and the owner's type-to-confirm check can never drift apart.
+// Pure participant rules shared by joining, claiming, leaving, removal and
+// the invited-names list (G-003, G-004). No database access here:
+// lib/membership.ts applies these under the room lock (D010), and
+// tests/unit/roster.spec.ts pins them.
+
+export type JoinRuleValue = "ANYONE" | "LISTED_ONLY";
+
+type Member = { id: string; joinedAt: Date | null; createdAt: Date };
 
 // The per-room uniqueness key for a display name: trimmed and lowercased.
 // Matches Participant.nameKey in the schema.
@@ -14,4 +19,59 @@ export function nameKeyOf(name: string): string {
 export function confirmationMatches(typed: string, targetName: string): boolean {
   const key = nameKeyOf(typed);
   return key.length > 0 && key === nameKeyOf(targetName);
+}
+
+// Leaving under "anyone can join" deletes the participant. Under "listed
+// names only" the name stays on the list as unclaimed (marks deleted,
+// cookie token rotated), so the leaver can claim it again rather than being
+// locked out of a room that refuses new names (G-004 AC6).
+export function leaveEffect(rule: JoinRuleValue): "delete" | "reset" {
+  return rule === "LISTED_ONLY" ? "reset" : "delete";
+}
+
+function compareJoinOrder(a: Member, b: Member): number {
+  return (
+    (a.joinedAt?.getTime() ?? 0) - (b.joinedAt?.getTime() ?? 0) ||
+    compareCreationOrder(a, b)
+  );
+}
+
+function compareCreationOrder(a: Member, b: Member): number {
+  return a.createdAt.getTime() - b.createdAt.getTime() || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+}
+
+// Who inherits ownership when the owner leaves: the participant who joined
+// earliest, never an unclaimed invited name and never the person leaving.
+// Equal join times fall back to creation order, then id, so the choice is
+// deterministic.
+export function pickSuccessor<T extends Member>(members: T[], leavingId: string): T | null {
+  let best: T | null = null;
+  for (const m of members) {
+    if (m.id === leavingId || m.joinedAt === null) continue;
+    if (!best || compareJoinOrder(m, best) < 0) best = m;
+  }
+  return best;
+}
+
+// Whether a participant who has just joined or claimed a name becomes the
+// room's owner (D007, D011). A room with an owner never changes hands this
+// way. A vacant room (its owner left with nobody joined to inherit) goes to
+// whoever joins next. Otherwise only the browser that created the room,
+// proven by its owner-token cookie, is tagged.
+export function shouldBecomeOwner(
+  room: { creatorParticipantId: string | null; ownershipVacant: boolean; ownerToken: string },
+  presentedOwnerToken: string | undefined,
+): boolean {
+  if (room.creatorParticipantId !== null) return false;
+  if (room.ownershipVacant) return true;
+  return presentedOwnerToken !== undefined && presentedOwnerToken === room.ownerToken;
+}
+
+// Joined participants in join order, and unclaimed invited names in the
+// order the owner added them.
+export function splitRoster<T extends Member>(members: T[]): { joined: T[]; invited: T[] } {
+  return {
+    joined: members.filter((m) => m.joinedAt !== null).sort(compareJoinOrder),
+    invited: members.filter((m) => m.joinedAt === null).sort(compareCreationOrder),
+  };
 }

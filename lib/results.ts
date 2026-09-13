@@ -16,7 +16,7 @@ export type SlotResult = {
 
 type NamedAvailabilityRow = AvailabilityRow & { participantName: string };
 
-// Pure aggregation: given every participant's name, every Availability row
+// Pure aggregation: given every joined participant's name, every Availability row
 // in a room, and the full slot grid, count CAN/CANNOT/preferred per slot
 // and rank slots by availability first, fewest explicit CANNOTs second
 // (two equally-CAN slots aren't equal if one has people who said they
@@ -28,12 +28,20 @@ export function computeResults(
   hours: number[],
   participantNames: string[],
   rows: NamedAvailabilityRow[],
+  // Invited names nobody has claimed yet (G-004). They don't count towards
+  // the totals, but while any are pending no slot is "everyone".
+  options: { pendingInvites?: number } = {},
 ): SlotResult[] {
+  const pendingInvites = options.pendingInvites ?? 0;
   const totalParticipants = participantNames.length;
+  const counted = new Set(participantNames);
   const counts = new Map<string, { can: number; cannot: number; preferred: number }>();
   const canNamesBySlot = new Map<string, Set<string>>();
 
   for (const row of rows) {
+    // Only people in the list count: a row can outlive its participant's
+    // place in it (removed between two reads).
+    if (!counted.has(row.participantName)) continue;
     const key = slotKey(dateOnly(row.slotDate), row.slotHour);
     const entry = counts.get(key) ?? { can: 0, cannot: 0, preferred: 0 };
     if (row.status === "CAN") {
@@ -61,7 +69,7 @@ export function computeResults(
         cannotCount: c.cannot,
         preferredCount: c.preferred,
         totalParticipants,
-        isFullGroup: totalParticipants > 0 && c.can === totalParticipants,
+        isFullGroup: pendingInvites === 0 && totalParticipants > 0 && c.can === totalParticipants,
         missingNames: participantNames.filter((name) => !canNames?.has(name)),
       });
     }

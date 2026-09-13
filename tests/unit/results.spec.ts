@@ -110,4 +110,20 @@ describe("computeResults", () => {
       "2026-08-21T9", // 1 can
     ]);
   });
+  it("ignores rows from anyone not in the participant list", () => {
+    const rows = [row("2026-08-21", 9, "Alice", "CAN"), row("2026-08-21", 9, "Gone", "CAN")];
+    const results = computeResults(dates, hours, ["Alice"], rows);
+    const slot = results.find((r) => r.date === "2026-08-21" && r.hour === 9)!;
+    expect(slot.canCount).toBe(1);
+    expect(slot.isFullGroup).toBe(true);
+  });
+
+  it("never marks full-group while invited people haven't joined yet", () => {
+    const rows = [row("2026-08-21", 9, "Alice", "CAN")];
+    const results = computeResults(dates, hours, ["Alice"], rows, { pendingInvites: 2 });
+    const slot = results.find((r) => r.date === "2026-08-21" && r.hour === 9)!;
+    expect(slot.totalParticipants).toBe(1);
+    expect(slot.canCount).toBe(1);
+    expect(slot.isFullGroup).toBe(false);
+  });
 });

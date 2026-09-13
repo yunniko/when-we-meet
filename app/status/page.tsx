@@ -25,9 +25,12 @@ export default async function StatusPage({
 
   const page = Math.max(1, Number.parseInt(pageParam ?? "1", 10) || 1);
 
-  const [totalRooms, totalParticipants, rooms] = await Promise.all([
+  // Joined and invited-but-unclaimed participants are counted apart
+  // (G-004, D011), so invites don't inflate apparent participation.
+  const [totalRooms, joinedParticipants, invitedParticipants, rooms] = await Promise.all([
     prisma.room.count(),
-    prisma.participant.count(),
+    prisma.participant.count({ where: { joinedAt: { not: null } } }),
+    prisma.participant.count({ where: { joinedAt: null } }),
     prisma.room.findMany({
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * PAGE_SIZE,
@@ -38,7 +41,7 @@ export default async function StatusPage({
         createdAt: true,
         endDate: true,
         selectedDate: true,
-        _count: { select: { participants: true } },
+        participants: { select: { joinedAt: true } },
       },
     }),
   ]);
@@ -51,7 +54,7 @@ export default async function StatusPage({
       <h1 className="text-2xl font-semibold tracking-tight">Status</h1>
       <p className="mt-1 text-sm text-muted">
         {totalRooms} {totalRooms === 1 ? "room" : "rooms"} ·{" "}
-        {totalParticipants} {totalParticipants === 1 ? "participant" : "participants"}
+        {joinedParticipants} joined · {invitedParticipants} invited, not yet joined
       </p>
 
       <div className="mt-6 overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
@@ -67,6 +70,8 @@ export default async function StatusPage({
           <tbody>
             {rooms.map((room) => {
               const expired = isRoomExpired(room);
+              const joined = room.participants.filter((p) => p.joinedAt !== null).length;
+              const invited = room.participants.length - joined;
               return (
                 <tr key={room.id} className="border-b border-border last:border-0">
                   <td className="px-4 py-2">{room.title || "Untitled room"}</td>
@@ -82,7 +87,10 @@ export default async function StatusPage({
                       {expired ? "expired" : "active"}
                     </span>
                   </td>
-                  <td className="px-4 py-2 text-muted">{room._count.participants}</td>
+                  <td className="px-4 py-2 text-muted">
+                    {joined}
+                    {invited > 0 && <> (+{invited} invited)</>}
+                  </td>
                 </tr>
               );
             })}
