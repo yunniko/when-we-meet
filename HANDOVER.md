@@ -1,16 +1,16 @@
 # Handover — When We Meet
-Last verified: 2026-09-13 at 3619a36
+Last verified: 2026-09-13 at bda591c
 
 Account-free group scheduling: a room with a date range, participants paint CAN/CANNOT/prefer
 in 1-hour slots, results rank the overlaps, the creator can finalize a time. Goals: `GOALS.md`
 G-001 and G-002 (both fully built, both ACTIVE pending Owner sign-off); G-003 (owner removes a
-participant) is ACTIVE at M1 of 2; G-004 (invited-names list) is planned, DRAFT. Conventions:
+participant) is built (M1–M2), ACTIVE pending deploy and sign-off; G-004 (invited-names list) is planned, DRAFT. Conventions:
 `AGENTS.md`. Charter: `E:\CLAUDE\COMPANY\`.
 
 ## Current state
 
 - **Live** at https://meet.app.julienika.cz (HTTP 200 re-checked 2026-09-12). App port 30010,
-  Postgres 54321 (127.0.0.1). Live build is 4f0a539 (deployed 2026-09-12); 3619a36 (G-003 M1)
+  Postgres 54321 (127.0.0.1). Live build is 4f0a539 (deployed 2026-09-12); G-003 (3619a36, bda591c)
   is committed and pushed, not deployed.
 - Done and deployed: G-001 M1–M5 (rooms, cookie identity with "is this you?", drag-painted grid,
   prefer layer, results heatmap + Best times, creator finalize/clear, 3-day expiry), the
@@ -21,10 +21,11 @@ participant) is ACTIVE at M1 of 2; G-004 (invited-names list) is planned, DRAFT.
   (robots, sitemap, OG, a dormant `GOOGLE_SITE_VERIFICATION` seam), timezone auto-detect with
   fallbacks and a collapsed picker, optional room description, touch hold-to-paint with native
   swipe scrolling and no saves for strokes that change nothing (D009).
-- G-003 M1 (2026-09-13): `removeParticipant` server action exists with all checks (D010) but no
-  UI calls it yet; saves refuse a stale or switched identity and the grid reloads.
-- Verification on 2026-09-13: `npm run test:unit` 82/82; `npm run test:e2e` 8/8 against the
-  local dev Postgres (Docker), including a Pixel-5 touch spec and two stale-identity specs.
+- G-003 (2026-09-13): the owner sees a Participants panel under the grid and removes others after
+  typing their name; the server re-checks everything under the room lock (D010). Saves refuse a
+  stale or switched identity and the grid reloads.
+- Verification on 2026-09-13: `npm run test:unit` 82/82; `npm run test:e2e` 11/11 with no retries
+  against the local dev Postgres (Docker), including touch, stale-identity and owner-removal specs.
 - Working tree: an uncommitted doc-reference edit to the previous handover (2026-09-06); the
   old handover is kept as `docs/handover-legacy-2026-09-12.md` until reviewed, then delete it.
 
@@ -39,7 +40,7 @@ participant) is ACTIVE at M1 of 2; G-004 (invited-names list) is planned, DRAFT.
   Name rules shared by join and removal: `lib/roster.ts`.
 - `app/r/[slug]/`: join form, availability grid (pointer events; brush rules and stroke
   interpolation in `lib/paint.ts`; touch gestures per D009),
-  results board, finalized banner. `app/status/page.tsx` needs `?key=STATUS_PAGE_TOKEN`.
+  owner participants panel, results board, finalized banner. `app/status/page.tsx` needs `?key=STATUS_PAGE_TOKEN`.
 - i18n: `i18n/request.ts`, `lib/ui-locales.ts`, `messages/{en,ru,cs,de}.json` (97 keys, parity
   checked). Legal text: `docs/legal/about-terms-privacy.md` via `marked`, copied into the image.
 - Tests: Vitest in `tests/unit/`; Playwright in `tests/e2e/` on port 30099 (own dev server),
@@ -63,8 +64,8 @@ participant) is ACTIVE at M1 of 2; G-004 (invited-names list) is planned, DRAFT.
 
 ## Next steps and open questions
 
-- G-003 M2 (owner Participants panel with type-to-confirm removal) awaits Owner approval; then
-  G-004 per its plan in `GOALS.md`.
+- **PENDING APPROVAL:** deploy G-003 (owner removes a participant) to meet.app.julienika.cz; then
+  Owner sign-off on G-003, and approval to start G-004 M1 per `GOALS.md`.
 - Try drag-paint, tap and swipe on a real phone against the live site (Chromium emulation only
   so far).
 - Owner: sign off G-001 and G-002; register the site in Google Search Console and set

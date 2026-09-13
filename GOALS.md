@@ -785,11 +785,24 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
   transaction, `saveAvailability` returning a distinguishable removed/
   mismatch result and taking the expected participant id. Verified by unit
   tests and a Playwright spec exercising the refusals through the UI.
-- [ ] M2 — Owner panel on the room page (participant list + type-to-confirm
+- [x] M2 — Owner panel on the room page (participant list + type-to-confirm
   removal), removed-session handling in the grid, i18n in four languages,
   full-flow e2e, handover + decision record, deploy after approval.
 
 **Progress log** (newest first):
+- 2026-09-13 — **M2 reached (commit bda591c).** Owner-only Participants panel under
+  the grid with type-to-confirm removal; the server stays the authority (the form
+  doesn't re-check the name). EN/RU/CS/DE. Own review found and fixed two issues
+  before commit: the English label didn't show where the name ends (now quoted,
+  like the other three languages), and Cancel dropped keyboard focus (now returns
+  to the row's Remove button). Verified: unit 82/82; e2e 11/11 with no retries,
+  3 new (full removal flow incl. results and the removed browser's next save;
+  server refusals for a wrong name, a target who already left, and a browser that
+  stopped being owner; phone width with a long name, by tap); tsc and eslint
+  clean; phone and desktop screenshots checked by eye. Codex review attempted,
+  did not run (usage limit). Not covered by any test: the `self` and `roomGone`
+  refusals, which no UI path can trigger. **PENDING APPROVAL:** deploy to
+  meet.app.julienika.cz — leaves the workspace — logged 2026-09-13.
 - 2026-09-13 — **M1 reached (commit 3619a36).** `removeParticipant` action
   with every AC 1–3 check inside a room-row-locked transaction (D010);
   `leaveRoom` moved under the same lock. `saveAvailability` takes the expected
