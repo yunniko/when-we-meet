@@ -1,5 +1,5 @@
 # Handover — When We Meet
-Last verified: 2026-09-13 at c89278f
+Last verified: 2026-09-13 at a33a79b
 
 Account-free group scheduling: a room with a date range, participants paint CAN/CANNOT/prefer
 in 1-hour slots, results rank the overlaps, the creator can finalize a time. Goals: `GOALS.md`
@@ -10,7 +10,7 @@ participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004
 ## Current state
 
 - **Live** at https://meet.app.julienika.cz (HTTP 200 re-checked 2026-09-13). App port 30010,
-  Postgres 54321 (127.0.0.1). Live build is fc6d569 (deployed 2026-09-13, includes G-003); G-004 M1 (c89278f) is
+  Postgres 54321 (127.0.0.1). Live build is fc6d569 (deployed 2026-09-13, includes G-003); G-004 M1 (c89278f, a33a79b) is
   committed and pushed, not deployed. Deploying it runs the join-rule migration.
 - Done and deployed: G-001 M1–M5 (rooms, cookie identity with "is this you?", drag-painted grid,
   prefer layer, results heatmap + Best times, creator finalize/clear, 3-day expiry), the
@@ -27,7 +27,7 @@ participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004
 - G-004 M1 (2026-09-13): rooms have a join rule and a vacant-ownership flag, participants a join
   time (null = invited, unclaimed), all per D011. No UI creates invited names or changes the rule
   yet, so behaviour is unchanged for users.
-- Verification on 2026-09-13: `npm run test:unit` 92/92; `npm run test:integration` 15/15;
+- Verification on 2026-09-13: `npm run test:unit` 92/92; `npm run test:integration` 20/20;
   `npm run test:e2e` 11/11 with no retries, both against the local dev Postgres (Docker).
 - Working tree: an uncommitted doc-reference edit to the previous handover (2026-09-06); the
   old handover is kept as `docs/handover-legacy-2026-09-12.md` until reviewed, then delete it.
@@ -60,6 +60,8 @@ participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004
   listing-studio D057.
 - Any write that changes a room's members or owner goes through `lib/membership.ts`, under the
   room row lock (D010). Anything that counts or lists people picks joined or invited (D011).
+- Anything done on a participant's behalf passes an actor (id plus cookie token), re-checked inside
+  the write; never a bare participant id (D012).
 - Forms that must keep state after a failed action call the `useActionState` action manually
   from `onSubmit`, not through the native `action` prop (React 19 resets the form otherwise).
 - Env vars reach the container only if listed in `docker-compose.yml`'s `app` service
@@ -97,4 +99,4 @@ participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004
 
 ## Decisions
 
-`docs/decisions/README.md` (D001–D011).
+`docs/decisions/README.md` (D001–D012).

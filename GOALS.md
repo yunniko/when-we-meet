@@ -807,6 +807,26 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
   after approval.
 
 **Progress log** (newest first):
+- 2026-09-13 — **Correction, and M1 review fixes (commit a33a79b).** The M1 entry
+  below says the Codex review did not run. That is wrong: the resumed review
+  agent returned a full Codex review after that entry was written. Critique
+  exchange outcome. Conceded: (1) a save that resolved its identity just before a
+  listed-only reset could write marks onto the reset name, for the next claimant
+  to inherit; (2) a leave or removal resolved before a reset could act as whoever
+  reclaimed the name. Both fixed by matching the acting participant on id and
+  cookie token inside every write, holding the participant row FOR SHARE while
+  saving marks, and rotating the token before deleting marks (D012). (3) Setting
+  or clearing the meeting time checked ownership before the write, not at it
+  (older than G-004); now a conditional update. (4) The confirmed-removal test
+  didn't check that the person and their marks were gone; now it does. Partly
+  conceded: the race tests can't force an interleaving, so the lock-removal runs
+  are evidence, not proof. Rebutted: old code writing during the migration (the
+  rebuild recreates the app container before the migration runs, per the
+  2026-09-13 deploy output); marking pre-migration ownerless rooms vacant (they
+  look exactly like a new room whose creator hasn't joined, so strangers could
+  take new rooms). Verified: unit 92/92; integration 20/20 (5 new); e2e 11/11 with no retries; tsc
+  and eslint clean; with the participant row hold removed the staggered race test failed 5 of 5 runs, and with the reset deleting marks before rotating the token it failed 3 of 3, while the real code passed every run. Not deployed. **Still stopped at the M1
+  boundary — awaiting Owner approval to start M2.**
 - 2026-09-13 — **M1 reached (commit c89278f).** Started on the Owner's "continue"
   after G-003 sign-off. Migration adds the room's join rule and vacant-ownership
   flag and each participant's join time, backfilled from createdAt (all 311 local
