@@ -1,16 +1,17 @@
 # Handover — When We Meet
-Last verified: 2026-09-13 at fc6d569
+Last verified: 2026-09-13 at c89278f
 
 Account-free group scheduling: a room with a date range, participants paint CAN/CANNOT/prefer
 in 1-hour slots, results rank the overlaps, the creator can finalize a time. Goals: `GOALS.md`
 G-001 and G-002 (both fully built, both ACTIVE pending Owner sign-off); G-003 (owner removes a
-participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004 (invited-names list) is planned, DRAFT. Conventions:
+participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004 (invited-names list) is ACTIVE at M1 of 3 (data model and membership logic, no UI yet). Conventions:
 `AGENTS.md`. Charter: `E:\CLAUDE\COMPANY\`.
 
 ## Current state
 
 - **Live** at https://meet.app.julienika.cz (HTTP 200 re-checked 2026-09-13). App port 30010,
-  Postgres 54321 (127.0.0.1). Live build is fc6d569 (deployed 2026-09-13, includes G-003).
+  Postgres 54321 (127.0.0.1). Live build is fc6d569 (deployed 2026-09-13, includes G-003); G-004 M1 (c89278f) is
+  committed and pushed, not deployed. Deploying it runs the join-rule migration.
 - Done and deployed: G-001 M1–M5 (rooms, cookie identity with "is this you?", drag-painted grid,
   prefer layer, results heatmap + Best times, creator finalize/clear, 3-day expiry), the
   post-launch rounds (weekend shading, sticky headers, leave-room with ownership transfer,
@@ -23,8 +24,11 @@ participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004
 - G-003 (2026-09-13): the owner sees a Participants panel under the grid and removes others after
   typing their name; the server re-checks everything under the room lock (D010). Saves refuse a
   stale or switched identity and the grid reloads.
-- Verification on 2026-09-13: `npm run test:unit` 82/82; `npm run test:e2e` 11/11 with no retries
-  against the local dev Postgres (Docker), including touch, stale-identity and owner-removal specs.
+- G-004 M1 (2026-09-13): rooms have a join rule and a vacant-ownership flag, participants a join
+  time (null = invited, unclaimed), all per D011. No UI creates invited names or changes the rule
+  yet, so behaviour is unchanged for users.
+- Verification on 2026-09-13: `npm run test:unit` 92/92; `npm run test:integration` 15/15;
+  `npm run test:e2e` 11/11 with no retries, both against the local dev Postgres (Docker).
 - Working tree: an uncommitted doc-reference edit to the previous handover (2026-09-06); the
   old handover is kept as `docs/handover-legacy-2026-09-12.md` until reviewed, then delete it.
 
@@ -36,13 +40,15 @@ participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004
   server-only `cookies.ts`, `participant.ts`, `owner.ts`, `room-access.ts`, `legal.ts`.
 - `app/actions.ts` (createRoom) and `app/r/[slug]/actions.ts` (joinRoom, leave, saveAvailability,
   removeParticipant, select/deselectFinalSlot) re-derive identity from the cookie every call.
-  Name rules shared by join and removal: `lib/roster.ts`.
+  Every membership write (join, claim, leave, removals, ownership) is in `lib/membership.ts`
+  under the room lock; its rules are pure functions in `lib/roster.ts` (D010, D011).
 - `app/r/[slug]/`: join form, availability grid (pointer events; brush rules and stroke
   interpolation in `lib/paint.ts`; touch gestures per D009),
   owner participants panel, results board, finalized banner. `app/status/page.tsx` needs `?key=STATUS_PAGE_TOKEN`.
 - i18n: `i18n/request.ts`, `lib/ui-locales.ts`, `messages/{en,ru,cs,de}.json` (97 keys, parity
   checked). Legal text: `docs/legal/about-terms-privacy.md` via `marked`, copied into the image.
-- Tests: Vitest in `tests/unit/`; Playwright in `tests/e2e/` on port 30099 (own dev server),
+- Tests: Vitest in `tests/unit/` (no database) and in `tests/integration/` against the dev Postgres
+  (`vitest.integration.config.ts`); Playwright in `tests/e2e/` on port 30099 (own dev server),
   asserting through the UI (Prisma's ESM client can't load under Playwright's transform).
 
 ## Rules in force
@@ -52,7 +58,8 @@ participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004
 - Any element whose `defaultValue` or client state must refresh on a server-driven change needs
   a `key` (the locale select; the availability grid keyed by participant id) — same bug class as
   listing-studio D057.
-- Any write that changes a room's members or owner runs under the room row lock (D010).
+- Any write that changes a room's members or owner goes through `lib/membership.ts`, under the
+  room row lock (D010). Anything that counts or lists people picks joined or invited (D011).
 - Forms that must keep state after a failed action call the `useActionState` action manually
   from `onSubmit`, not through the native `action` prop (React 19 resets the form otherwise).
 - Env vars reach the container only if listed in `docker-compose.yml`'s `app` service
@@ -63,7 +70,9 @@ participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004
 
 ## Next steps and open questions
 
-- Owner: approve starting G-004 M1 (invited-names list) per `GOALS.md`.
+- G-004 M2 (invited names at creation, "listed names only" enforcement, results "N of M joined")
+  awaits Owner approval. Until M2 the join page, "also in room" and the owner panel list every
+  participant row, invited or not; harmless now because nothing can create an invited row yet.
 - Try drag-paint, tap and swipe on a real phone against the live site (Chromium emulation only
   so far).
 - Owner: sign off G-001 and G-002; register the site in Google Search Console and set
@@ -88,4 +97,4 @@ participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004
 
 ## Decisions
 
-`docs/decisions/README.md` (D001–D010).
+`docs/decisions/README.md` (D001–D011).

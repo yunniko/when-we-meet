@@ -741,7 +741,7 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
   no-account app" reasoning is why locale stays cookie-based here too, not
   a login preference. Not started yet — M1 is next.
 
-### G-004 · Invited-names list with "anyone" / "listed only" joining — DRAFT
+### G-004 · Invited-names list with "anyone" / "listed only" joining — ACTIVE
 - **What:** The owner can predefine who is expected in the room — at
   creation (an optional "invited names" box, one per line) and later from
   the Participants panel (add a name; remove a name nobody has claimed yet).
@@ -792,7 +792,7 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
   EN/RU/CS/DE shipped with each visible piece, not as a final pass.
 
 **Milestones** (planned 2026-09-13, awaiting Owner approval):
-- [ ] M1 — Schema + lifecycle: migration with backfill (`Room.joinRule`,
+- [x] M1 — Schema + lifecycle: migration with backfill (`Room.joinRule`,
   `Participant.joinedAt`), participant lifecycle in one server module
   (create, claim, remove-unclaimed conditionally, remove-confirmed, leave-
   or-reset, succession by `joinedAt`), `computeResults` on joined
@@ -807,6 +807,24 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
   after approval.
 
 **Progress log** (newest first):
+- 2026-09-13 — **M1 reached (commit c89278f).** Started on the Owner's "continue"
+  after G-003 sign-off. Migration adds the room's join rule and vacant-ownership
+  flag and each participant's join time, backfilled from createdAt (all 311 local
+  rows joined afterwards; migrate diff against the database is empty). Every
+  membership write now lives in `lib/membership.ts` under the D010 lock, with the
+  rules as pure functions in `lib/roster.ts`. Beyond the plan: the vacant-ownership
+  flag, because otherwise a room whose owner left with only invites remaining
+  could never regain an owner, while treating every ownerless room as vacant
+  would hand a new room to whoever opened the link before its creator (D011).
+  Results count joined people only and suppress "everyone" while invites are
+  pending; the status page splits joined from invited. New integration test layer
+  (Vitest against the dev Postgres). Verified: unit 92/92 (10 new); integration
+  15/15 (new); e2e 11/11 with no retries; tsc and eslint clean. With the lock
+  removed, both race tests failed in 3 of 3 runs (file then restored
+  byte-identical). A dev-server check of the status and results pages with a real
+  listed-only room passed 8/8, including a control showing the "everyone" badge
+  returns once no invite is pending. Codex review attempted twice and did not run (usage limit); a self-review of the diff against the same checklist (regressions, locks and deadlocks, ownership, migration, participant queries, test strength) found no defects. Not deployed. **Stopping at the
+  milestone boundary — awaiting Owner approval to start M2.**
 - 2026-09-13 — goal created and planned with the Owner. **Codex critique
   exchange** on the proposed design (invited names as participant rows
   with `joinedAt`, versus a separate table): conceded and adopted —
