@@ -4,7 +4,7 @@ Last verified: 2026-09-13 at fc6d569
 Account-free group scheduling: a room with a date range, participants paint CAN/CANNOT/prefer
 in 1-hour slots, results rank the overlaps, the creator can finalize a time. Goals: `GOALS.md`
 G-001 and G-002 (both fully built, both ACTIVE pending Owner sign-off); G-003 (owner removes a
-participant) is built and deployed, ACTIVE pending Owner sign-off; G-004 (invited-names list) is planned, DRAFT. Conventions:
+participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004 (invited-names list) is planned, DRAFT. Conventions:
 `AGENTS.md`. Charter: `E:\CLAUDE\COMPANY\`.
 
 ## Current state
@@ -63,7 +63,7 @@ participant) is built and deployed, ACTIVE pending Owner sign-off; G-004 (invite
 
 ## Next steps and open questions
 
-- Owner: sign off G-003 after trying it on the live site; approve starting G-004 M1 per `GOALS.md`.
+- Owner: approve starting G-004 M1 (invited-names list) per `GOALS.md`.
 - Try drag-paint, tap and swipe on a real phone against the live site (Chromium emulation only
   so far).
 - Owner: sign off G-001 and G-002; register the site in Google Search Console and set
