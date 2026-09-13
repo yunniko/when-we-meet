@@ -11,6 +11,7 @@ import {
   joinByName,
   leaveRoomAs,
   removeParticipantConfirmed,
+  saveMarks,
   type RemoveParticipantResult,
 } from "@/lib/membership";
 import { isRoomOwner } from "@/lib/owner";
@@ -97,7 +98,10 @@ export async function leaveRoom(
 ): Promise<void> {
   const participant = await getCurrentParticipant(ctx.roomId);
   if (participant) {
-    await leaveRoomAs(ctx.roomId, participant.id);
+    await leaveRoomAs(ctx.roomId, {
+      participantId: participant.id,
+      cookieToken: participant.cookieToken,
+    });
   }
   await clearParticipantCookie(ctx.roomId);
   redirect(`/r/${ctx.slug}`);
@@ -119,7 +123,7 @@ export async function removeParticipant(
 
   const result = await removeParticipantConfirmed(
     room.id,
-    current.id,
+    { participantId: current.id, cookieToken: current.cookieToken },
     input.participantId,
     input.typedName,
   );
@@ -185,39 +189,43 @@ export async function saveAvailability(
     return day >= room.startDate && day <= room.endDate;
   });
 
-  await prisma.$transaction(
-    validSlots.map((s) => {
-      const slotDate = new Date(`${s.date}T00:00:00Z`);
-      if (s.status === null) {
-        return prisma.availability.deleteMany({
-          where: { participantId: participant.id, slotDate, slotHour: s.hour },
-        });
-      }
-      // "Preferred" is only meaningful on CAN slots — enforce that
-      // server-side too, not just in the client brush logic (defense in
-      // depth: never trust the client for a data-integrity rule).
-      const preferred = s.status === "CAN" ? s.preferred : false;
-      return prisma.availability.upsert({
-        where: {
-          participantId_slotDate_slotHour: {
-            participantId: participant.id,
-            slotDate,
-            slotHour: s.hour,
-          },
-        },
-        create: {
-          participantId: participant.id,
-          slotDate,
-          slotHour: s.hour,
-          status: s.status,
-          preferred,
-        },
-        update: { status: s.status, preferred },
-      });
-    }),
+  // Identity is re-checked inside the write by cookie token (D012), so a
+  // reset or removal landing after the lookup above makes this refuse
+  // instead of writing marks onto a name someone else will claim.
+  const saved = await saveMarks(
+    roomId,
+    { participantId: participant.id, cookieToken: participant.cookieToken },
+    validSlots.map((s) => ({
+      slotDate: new Date(`${s.date}T00:00:00Z`),
+      slotHour: s.hour,
+      status: s.status,
+      preferred: s.preferred,
+    })),
   );
-
+  if (saved === "removed") {
+    return { ok: false, code: "removed", error: "You're not joined in this room." };
+  }
   return { ok: true };
+}
+
+// Sets or clears the meeting time only while the current browser still owns
+// the room at the moment of writing (same id and cookie token, D012). An
+// ownership change after the isRoomOwner check makes this match nothing.
+async function updateRoomAsOwner(
+  roomId: string,
+  data: { selectedDate: Date | null; selectedHour: number | null },
+): Promise<boolean> {
+  const current = await getCurrentParticipant(roomId);
+  if (!current) return false;
+  const { count } = await prisma.room.updateMany({
+    where: {
+      id: roomId,
+      creatorParticipantId: current.id,
+      creator: { is: { cookieToken: current.cookieToken } },
+    },
+    data,
+  });
+  return count === 1;
 }
 
 // Both the creator-only checks below are re-verified here even though the
@@ -249,10 +257,9 @@ export async function selectFinalSlot(
     return { ok: false, error: "notFuture" };
   }
 
-  await prisma.room.update({
-    where: { id: ctx.roomId },
-    data: { selectedDate: slotDate, selectedHour: hour },
-  });
+  if (!(await updateRoomAsOwner(ctx.roomId, { selectedDate: slotDate, selectedHour: hour }))) {
+    return { ok: false, error: "notOwner" };
+  }
   revalidatePath(`/r/${ctx.slug}`);
   revalidatePath(`/r/${ctx.slug}/results`);
   return { ok: true };
@@ -267,10 +274,9 @@ export async function deselectFinalSlot(
     return { ok: false, error: "Only the room's creator can clear the meeting time." };
   }
 
-  await prisma.room.update({
-    where: { id: ctx.roomId },
-    data: { selectedDate: null, selectedHour: null },
-  });
+  if (!(await updateRoomAsOwner(ctx.roomId, { selectedDate: null, selectedHour: null }))) {
+    return { ok: false, error: "Only the room's creator can clear the meeting time." };
+  }
   revalidatePath(`/r/${ctx.slug}`);
   revalidatePath(`/r/${ctx.slug}/results`);
   return { ok: true };
