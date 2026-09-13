@@ -11,6 +11,7 @@ import { JoinForm } from "@/app/r/[slug]/join-form";
 import { AvailabilityGrid } from "@/app/r/[slug]/availability-grid";
 import { FinalizedBanner } from "@/app/r/[slug]/finalized-banner";
 import { LeaveRoomButton } from "@/app/r/[slug]/leave-room-button";
+import { ParticipantsPanel } from "@/app/r/[slug]/participants-panel";
 import { leaveIdentity } from "@/app/r/[slug]/actions";
 import { NewEventButton } from "@/app/new-event-button";
 
@@ -41,7 +42,7 @@ export default async function RoomPage({
   const participant = await getCurrentParticipant(room.id);
   const otherParticipants = await prisma.participant.findMany({
     where: { roomId: room.id, ...(participant ? { NOT: { id: participant.id } } : {}) },
-    select: { name: true },
+    select: { id: true, name: true },
     orderBy: { createdAt: "asc" },
   });
 
@@ -126,7 +127,7 @@ export default async function RoomPage({
       <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           {otherParticipants.length > 0 ? (
-            <p className="text-sm text-muted">
+            <p className="min-w-0 text-sm break-words text-muted">
               {t("alsoInRoom", { names: otherParticipants.map((p) => p.name).join(", ") })}
             </p>
           ) : (
@@ -158,6 +159,15 @@ export default async function RoomPage({
           />
         )}
       </div>
+
+      {isOwner && (
+        <ParticipantsPanel
+          roomId={room.id}
+          slug={room.slug}
+          ownerName={participant.name}
+          others={otherParticipants}
+        />
+      )}
     </div>
   );
 }

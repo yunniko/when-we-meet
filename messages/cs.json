@@ -109,6 +109,27 @@
     "confirm": "Ano, smazat moje data",
     "cancel": "Zrušit"
   },
+  "ParticipantsPanel": {
+    "heading": "Účastníci",
+    "ownerHint": "Vidíte to jen vy, protože tuto místnost organizujete.",
+    "you": "{name} (vy)",
+    "nobodyElse": "Zatím se nikdo další nepřipojil.",
+    "remove": "Odebrat",
+    "removeLabel": "Odebrat {name}",
+    "warning": "Tímto se z místnosti smaže účastník {name} a všechny jeho záznamy. Nelze vrátit zpět.",
+    "typeToConfirm": "Pro potvrzení napište „{name}“",
+    "confirm": "Ano, odebrat {name}",
+    "removing": "Odebírám…",
+    "cancel": "Zrušit",
+    "errors": {
+      "nameMismatch": "Napsané jméno nesouhlasí.",
+      "notFound": "{name} už v této místnosti není.",
+      "notOwner": "Už nejste organizátor této místnosti. Načtěte stránku znovu.",
+      "roomGone": "Tato místnost už neexistuje. Načtěte stránku znovu.",
+      "self": "Sebe odeberete přes „Opustit místnost“.",
+      "failed": "Odebrání se nepovedlo — zkuste to znovu."
+    }
+  },
   "ResultsPage": {
     "pageTitle": "{title} — výsledky",
     "peopleCount": "{count, plural, one {# osoba} few {# osoby} other {# osob}}",

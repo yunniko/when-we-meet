@@ -109,6 +109,27 @@
     "confirm": "Yes, delete my data",
     "cancel": "Cancel"
   },
+  "ParticipantsPanel": {
+    "heading": "Participants",
+    "ownerHint": "Only you see this, because you organize this room.",
+    "you": "{name} (you)",
+    "nobodyElse": "Nobody else has joined yet.",
+    "remove": "Remove",
+    "removeLabel": "Remove {name}",
+    "warning": "This deletes {name} and all their marks from this room. It can't be undone.",
+    "typeToConfirm": "Type “{name}” to confirm",
+    "confirm": "Yes, remove {name}",
+    "removing": "Removing…",
+    "cancel": "Cancel",
+    "errors": {
+      "nameMismatch": "The name you typed doesn't match.",
+      "notFound": "{name} is no longer in this room.",
+      "notOwner": "You're no longer this room's organizer. Reload the page.",
+      "roomGone": "This room no longer exists. Reload the page.",
+      "self": "Use “Leave the room” to remove yourself.",
+      "failed": "Couldn't remove — try again."
+    }
+  },
   "ResultsPage": {
     "pageTitle": "{title} — results",
     "peopleCount": "{count, plural, one {# person} other {# people}}",

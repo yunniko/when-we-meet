@@ -109,6 +109,27 @@
     "confirm": "Ja, meine Daten löschen",
     "cancel": "Abbrechen"
   },
+  "ParticipantsPanel": {
+    "heading": "Teilnehmende",
+    "ownerHint": "Nur du siehst das, weil du diesen Raum organisierst.",
+    "you": "{name} (du)",
+    "nobodyElse": "Bisher ist sonst niemand beigetreten.",
+    "remove": "Entfernen",
+    "removeLabel": "{name} entfernen",
+    "warning": "Dadurch werden {name} und alle zugehörigen Einträge aus diesem Raum gelöscht. Das kann nicht rückgängig gemacht werden.",
+    "typeToConfirm": "Gib „{name}“ zur Bestätigung ein",
+    "confirm": "Ja, {name} entfernen",
+    "removing": "Wird entfernt …",
+    "cancel": "Abbrechen",
+    "errors": {
+      "nameMismatch": "Der eingegebene Name stimmt nicht überein.",
+      "notFound": "{name} ist nicht mehr in diesem Raum.",
+      "notOwner": "Du organisierst diesen Raum nicht mehr. Lade die Seite neu.",
+      "roomGone": "Diesen Raum gibt es nicht mehr. Lade die Seite neu.",
+      "self": "Um dich selbst zu entfernen, nutze „Raum verlassen“.",
+      "failed": "Entfernen fehlgeschlagen — versuch es noch einmal."
+    }
+  },
   "ResultsPage": {
     "pageTitle": "{title} — Ergebnisse",
     "peopleCount": "{count, plural, one {# Person} other {# Personen}}",
