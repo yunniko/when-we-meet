@@ -790,6 +790,12 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
   full-flow e2e, handover + decision record, deploy after approval.
 
 **Progress log** (newest first):
+- 2026-09-13 — **Deployed on Owner approval (host at fc6d569).** Migrate exited 0,
+  app log clean; live site 200 and serving the new panel and removed-session
+  strings (checked in the served page, no rooms created in production); 7 other
+  sites 200; only the when-we-meet app and cleanup containers restarted (uptime
+  diff against a pre-deploy snapshot). Stays ACTIVE pending Owner sign-off after
+  trying it live.
 - 2026-09-13 — **M2 reached (commit bda591c).** Owner-only Participants panel under
   the grid with type-to-confirm removal; the server stays the authority (the form
   doesn't re-check the name). EN/RU/CS/DE. Own review found and fixed two issues
@@ -802,7 +808,8 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
   clean; phone and desktop screenshots checked by eye. Codex review attempted,
   did not run (usage limit). Not covered by any test: the `self` and `roomGone`
   refusals, which no UI path can trigger. **PENDING APPROVAL:** deploy to
-  meet.app.julienika.cz — leaves the workspace — logged 2026-09-13.
+  meet.app.julienika.cz — leaves the workspace — logged 2026-09-13. Approved
+  and done 2026-09-13, see the entry above.
 - 2026-09-13 — **M1 reached (commit 3619a36).** `removeParticipant` action
   with every AC 1–3 check inside a room-row-locked transaction (D010);
   `leaveRoom` moved under the same lock. `saveAvailability` takes the expected
