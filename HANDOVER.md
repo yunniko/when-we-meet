@@ -1,17 +1,16 @@
 # Handover — When We Meet
-Last verified: 2026-09-15 at 013e0aa
+Last verified: 2026-09-15 at 741913d
 
 Account-free group scheduling: a room with a date range, participants paint CAN/CANNOT/prefer
 in 1-hour slots, results rank the overlaps, the creator can finalize a time. Goals: `GOALS.md`
 G-001 and G-002 (both fully built, both ACTIVE pending Owner sign-off); G-003 (owner removes a
-participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004 (invited-names list) is built (M1–M3), ACTIVE pending deploy and Owner sign-off. Conventions:
+participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004 (invited-names list) is built and deployed, ACTIVE pending Owner sign-off. Conventions:
 `AGENTS.md`. Charter: `E:\CLAUDE\COMPANY\`.
 
 ## Current state
 
-- **Live** at https://meet.app.julienika.cz (HTTP 200 re-checked 2026-09-13). App port 30010,
-  Postgres 54321 (127.0.0.1). Live build is fc6d569 (deployed 2026-09-13, includes G-003); G-004 M1–M3 (up to 013e0aa) are
-  committed and pushed, not deployed. Deploying them runs two migrations (join rule, left time).
+- **Live** at https://meet.app.julienika.cz (HTTP 200 re-checked 2026-09-15). App port 30010,
+  Postgres 54321 (127.0.0.1). Live build is 741913d (deployed 2026-09-15, includes G-003 and G-004).
 - Done and deployed: G-001 M1–M5 (rooms, cookie identity with "is this you?", drag-painted grid,
   prefer layer, results heatmap + Best times, creator finalize/clear, 3-day expiry), the
   post-launch rounds (weekend shading, sticky headers, leave-room with ownership transfer,
@@ -78,7 +77,8 @@ participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004
 
 ## Next steps and open questions
 
-- Deploy G-004 (approved 2026-09-15), then Owner sign-off on G-004.
+- Owner: sign off G-004 after trying it on the live site. Then delete the pre-G-004 database
+  backup in the host's backups folder (it holds participant names).
 - Try drag-paint, tap and swipe on a real phone against the live site (Chromium emulation only
   so far).
 - Owner: sign off G-001 and G-002; register the site in Google Search Console and set
@@ -100,6 +100,7 @@ participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004
 | 2026-08-23 | ee4fb2d | Timezone auto-detect + collapsed picker, SEO baseline, `/about` page | Local robots/sitemap/OG check; live HTTPS check |
 | 2026-09-12 | 4f0a539 | Touch hold-to-paint + native swipe scrolling (D009); no saves for no-op strokes | Local unit 75/75 + e2e 6/6 incl. Pixel-5 touch spec; host on 4f0a539, containers rebuilt; live 200; 7 other sites 200, no other container restarted |
 | 2026-09-13 | fc6d569 | G-003: owner Participants panel with type-to-confirm removal; stale-identity save handling | Local unit 82/82 + e2e 11/11 no retries; host on fc6d569, migrate exit 0, app log clean; live 200 serving the new strings; 7 other sites 200; uptime diff shows only when-we-meet app + cleanup restarted |
+| 2026-09-15 | 741913d | G-004: invited names, join rule, owner list editing, left marker; migrations for join rule (with backfill) and left time | Local unit 107/107, integration 29/29, e2e 19/19; DB backup first (gzip ok, 4 tables); migrate exit 0, both migrations finished, 10/10 participants joined after backfill; live 200 serving new strings; 7 other sites 200; only when-we-meet app and cleanup restarted |
 
 ## Decisions
 

@@ -807,6 +807,14 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
   after approval.
 
 **Progress log** (newest first):
+- 2026-09-15 — **Deployed (host at 741913d).** Database backup taken on the host
+  first (gzip intact, 4 tables, 10 participant rows). Migrate exited 0; both new
+  migrations recorded as finished; new columns present; all 10 existing
+  participants read as joined after the backfill, none marked as left. Live site
+  200 and serving the new strings; 7 other sites 200; uptime diff against a
+  pre-deploy snapshot shows only the when-we-meet app and cleanup containers
+  restarted. Not exercised on the live URL (would create rooms in production).
+  **Awaiting Owner sign-off on G-004.**
 - 2026-09-15 — **M3 reached (commit 013e0aa).** Started on the Owner's "approve and
   proceed", read as approving M3 and the recommended deploy after it. The owner
   panel adds invited names (names already in the room are skipped and reported in
