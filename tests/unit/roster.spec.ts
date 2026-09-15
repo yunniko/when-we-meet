@@ -5,6 +5,7 @@ import {
   mayAddNewName,
   nameKeyOf,
   pickSuccessor,
+  planInvitedAdditions,
   shouldBecomeOwner,
   splitRoster,
 } from "@/lib/roster";
@@ -129,5 +130,20 @@ describe("mayAddNewName", () => {
     expect(mayAddNewName(room("LISTED_ONLY"), "tok")).toBe(true);
     expect(mayAddNewName(room("LISTED_ONLY"), "other")).toBe(false);
     expect(mayAddNewName(room("LISTED_ONLY"), undefined)).toBe(false);
+  });
+});
+
+describe("planInvitedAdditions", () => {
+  it("skips names already in the room and repeats within the list, case-insensitively", () => {
+    expect(planInvitedAdditions(["anna", "boris"], ["Anna", "Cy", "cy", "Dee"], 100)).toEqual({
+      add: ["Cy", "Dee"],
+      skipped: ["Anna", "cy"],
+      overBy: 0,
+    });
+  });
+
+  it("reports how far the additions would take the room past its cap", () => {
+    expect(planInvitedAdditions(["a", "b", "c"], ["D", "E"], 4)).toEqual({ add: ["D", "E"], skipped: [], overBy: 1 });
+    expect(planInvitedAdditions(["a", "b", "c"], ["A"], 3)).toEqual({ add: [], skipped: ["A"], overBy: 0 });
   });
 });

@@ -47,7 +47,7 @@ export default async function RoomPage({
   const others = splitRoster(
     await prisma.participant.findMany({
       where: { roomId: room.id, ...(participant ? { NOT: { id: participant.id } } : {}) },
-      select: { id: true, name: true, joinedAt: true, createdAt: true },
+      select: { id: true, name: true, joinedAt: true, createdAt: true, leftAt: true },
     }),
   );
 
@@ -126,7 +126,11 @@ export default async function RoomPage({
             </button>
           </form>
           <div className="mt-1">
-            <LeaveRoomButton roomId={room.id} slug={room.slug} />
+            <LeaveRoomButton
+              roomId={room.id}
+              slug={room.slug}
+              joinRule={room.joinRule}
+            />
           </div>
         </div>
       </div>
@@ -179,9 +183,15 @@ export default async function RoomPage({
           roomId={room.id}
           slug={room.slug}
           ownerName={participant.name}
+          joinRule={room.joinRule}
           others={[
-            ...others.joined.map((p) => ({ id: p.id, name: p.name, invited: false })),
-            ...others.invited.map((p) => ({ id: p.id, name: p.name, invited: true })),
+            ...others.joined.map((p) => ({ id: p.id, name: p.name, invited: false, left: false })),
+            ...others.invited.map((p) => ({
+              id: p.id,
+              name: p.name,
+              invited: true,
+              left: p.leftAt !== null,
+            })),
           ]}
         />
       )}

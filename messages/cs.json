@@ -123,7 +123,10 @@
     "link": "Opustit místnost",
     "warning": "Tímto se smaže vaše jméno a všechny vaše záznamy z této místnosti. Nelze vrátit zpět.",
     "confirm": "Ano, smazat moje data",
-    "cancel": "Zrušit"
+    "cancel": "Zrušit",
+    "warningKeepsName": "Tímto se smažou všechny vaše záznamy a odhlásíte se. Vaše jméno zůstane na seznamu pozvaných, takže ho můžete později znovu použít.",
+    "confirmKeepsName": "Ano, smazat moje záznamy",
+    "ruleChanged": "Nastavení místnosti se právě změnilo. Než potvrdíte, přečtěte si to prosím znovu."
   },
   "ParticipantsPanel": {
     "heading": "Účastníci",
@@ -143,9 +146,27 @@
       "notOwner": "Už nejste organizátor této místnosti. Načtěte stránku znovu.",
       "roomGone": "Tato místnost už neexistuje. Načtěte stránku znovu.",
       "self": "Sebe odeberete přes „Opustit místnost“.",
-      "failed": "Odebrání se nepovedlo — zkuste to znovu."
+      "failed": "Odebrání se nepovedlo — zkuste to znovu.",
+      "full": "Místnost pojme nejvýš 100 lidí včetně pozvaných.",
+      "invitedNameTooLong": "Každé jméno může mít nejvýš 60 znaků.",
+      "tooManyInvitedNames": "Najednou lze přidat nejvýš 99 jmen.",
+      "nothingToAdd": "Napište aspoň jedno jméno.",
+      "claimed": "{name} už je v místnosti. Pro odebrání napište jméno níže.",
+      "invalidRule": "Vyberte, kdo se může připojit.",
+      "addFailed": "Jména se nepodařilo přidat — zkuste to znovu.",
+      "ruleFailed": "Nepodařilo se změnit, kdo se může připojit — zkuste to znovu."
     },
-    "notJoinedTag": "ještě není v místnosti"
+    "notJoinedTag": "ještě není v místnosti",
+    "leftTag": "už není v místnosti",
+    "addLabel": "Přidat pozvaná jména",
+    "addHelp": "Jedno jméno na řádek. Jména, která už v místnosti jsou, se přeskočí.",
+    "addButton": "Přidat",
+    "adding": "Přidávám…",
+    "addedResult": "{count, plural, =0 {Žádná nová jména nepřibyla.} one {Přidáno # jméno.} few {Přidána # jména.} other {Přidáno # jmen.}}",
+    "skippedResult": "Už v místnosti: {names}",
+    "joinRuleLegend": "Kdo se může připojit",
+    "joinRuleAnyone": "Kdokoli s odkazem může přidat své jméno",
+    "joinRuleListedOnly": "Jen jména z tohoto seznamu"
   },
   "ResultsPage": {
     "pageTitle": "{title} — výsledky",

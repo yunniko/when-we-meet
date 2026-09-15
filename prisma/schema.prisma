@@ -77,6 +77,10 @@ model Participant {
   // a name the owner pre-added that nobody has claimed yet (G-004, D011);
   // such a row's cookieToken is held by no browser.
   joinedAt    DateTime?
+  // Set when a participant leaves a "listed names only" room and the name
+  // goes back to unclaimed; cleared when it is claimed again. Lets the owner
+  // tell "left" from "never joined" (D013).
+  leftAt      DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 

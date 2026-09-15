@@ -7,13 +7,22 @@ import { getOwnerToken, setParticipantCookie, clearParticipantCookie } from "@/l
 import { getCurrentParticipant } from "@/lib/participant";
 import { findActiveRoom } from "@/lib/room-access";
 import {
+  addInvitedParticipants,
   claimParticipant,
   joinByName,
   leaveRoomAs,
   removeParticipantConfirmed,
+  removeUnclaimedParticipant,
   saveMarks,
+  setJoinRule,
+  type Actor,
+  type AddInvitedResult,
   type RemoveParticipantResult,
+  type RemoveUnclaimedResult,
+  type SetJoinRuleResult,
 } from "@/lib/membership";
+import type { JoinRuleValue } from "@/lib/roster";
+import { MAX_INVITED_TEXT_LENGTH, parseInvitedNames } from "@/lib/validation";
 import { isRoomOwner } from "@/lib/owner";
 import { isSlotInFuture } from "@/lib/time";
 import { summarizeAvailability, type MarkSummary } from "@/lib/slots";
@@ -106,16 +115,20 @@ export async function leaveIdentity(
 // the name to unclaimed; a leaving owner's room passes on (lib/membership.ts).
 // Irreversible, so the UI gates it behind a confirmation step; identity comes
 // from the cookie, never from a client-supplied id.
-export async function leaveRoom(
-  ctx: { roomId: string; slug: string },
-  _formData: FormData,
-): Promise<void> {
+export async function leaveRoom(ctx: {
+  roomId: string;
+  slug: string;
+  // The join rule the confirmation described (G-004, see leaveRoomAs).
+  expectedRule: JoinRuleValue;
+}): Promise<{ ok: false; error: "ruleChanged" }> {
   const participant = await getCurrentParticipant(ctx.roomId);
   if (participant) {
-    await leaveRoomAs(ctx.roomId, {
-      participantId: participant.id,
-      cookieToken: participant.cookieToken,
-    });
+    const outcome = await leaveRoomAs(
+      ctx.roomId,
+      { participantId: participant.id, cookieToken: participant.cookieToken },
+      ctx.expectedRule,
+    );
+    if (outcome === "ruleChanged") return { ok: false, error: "ruleChanged" };
   }
   await clearParticipantCookie(ctx.roomId);
   redirect(`/r/${ctx.slug}`);
@@ -145,6 +158,78 @@ export async function removeParticipant(
     revalidatePath(`/r/${ctx.slug}`);
     revalidatePath(`/r/${ctx.slug}/results`);
   }
+  return result;
+}
+
+// Owner-only editing of the invited list and the join rule (G-004 M3). The
+// room comes from findActiveRoom and identity from the cookie; ownership is
+// re-checked under the room lock in lib/membership.ts (D010, D012).
+async function ownerRequest(
+  ctx: { roomId: string; slug: string },
+): Promise<{ ok: true; roomId: string; actor: Actor } | { ok: false; error: "roomGone" | "notOwner" }> {
+  const room = await findActiveRoom(ctx.slug);
+  if (!room || room.id !== ctx.roomId) return { ok: false, error: "roomGone" };
+  const current = await getCurrentParticipant(room.id);
+  if (!current) return { ok: false, error: "notOwner" };
+  return {
+    ok: true,
+    roomId: room.id,
+    actor: { participantId: current.id, cookieToken: current.cookieToken },
+  };
+}
+
+async function revalidateRoom(slug: string): Promise<void> {
+  revalidatePath(`/r/${slug}`);
+  revalidatePath(`/r/${slug}/results`);
+}
+
+export type AddInvitedNamesResult =
+  | AddInvitedResult
+  // Keys under ParticipantsPanel.errors (translated client-side).
+  | { ok: false; error: "invitedNameTooLong" | "tooManyInvitedNames" | "nothingToAdd" };
+
+export async function addInvitedNames(
+  ctx: { roomId: string; slug: string },
+  text: string,
+): Promise<AddInvitedNamesResult> {
+  if (typeof text !== "string" || text.length > MAX_INVITED_TEXT_LENGTH) {
+    return { ok: false, error: "tooManyInvitedNames" };
+  }
+  const parsed = parseInvitedNames(text);
+  if (!parsed.ok) return { ok: false, error: parsed.error };
+  if (parsed.names.length === 0) return { ok: false, error: "nothingToAdd" };
+
+  const owner = await ownerRequest(ctx);
+  if (!owner.ok) return owner;
+  const result = await addInvitedParticipants(owner.roomId, owner.actor, parsed.names);
+  if (result.ok) await revalidateRoom(ctx.slug);
+  return result;
+}
+
+export type RemoveInvitedNameResult = RemoveUnclaimedResult;
+
+export async function removeInvitedName(
+  ctx: { roomId: string; slug: string },
+  participantId: string,
+): Promise<RemoveInvitedNameResult> {
+  const owner = await ownerRequest(ctx);
+  if (!owner.ok) return owner;
+  const result = await removeUnclaimedParticipant(owner.roomId, owner.actor, participantId);
+  if (result.ok) await revalidateRoom(ctx.slug);
+  return result;
+}
+
+export type ChangeJoinRuleResult = SetJoinRuleResult | { ok: false; error: "invalidRule" };
+
+export async function changeJoinRule(
+  ctx: { roomId: string; slug: string },
+  rule: JoinRuleValue,
+): Promise<ChangeJoinRuleResult> {
+  if (rule !== "ANYONE" && rule !== "LISTED_ONLY") return { ok: false, error: "invalidRule" };
+  const owner = await ownerRequest(ctx);
+  if (!owner.ok) return owner;
+  const result = await setJoinRule(owner.roomId, owner.actor, rule);
+  if (result.ok) await revalidateRoom(ctx.slug);
   return result;
 }
 

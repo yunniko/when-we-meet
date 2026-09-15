@@ -1,6 +1,9 @@
 import { z } from "zod";
 import { nameKeyOf } from "@/lib/roster";
 
+// Raw size of an invited-names box, before parsing (see invitedNames below).
+export const MAX_INVITED_TEXT_LENGTH = 25_000;
+
 // Every error message below is an i18n KEY (looked up as
 // `CreateRoom.errors.<key>` client-side via useTranslations), not an English
 // sentence — this schema runs at module scope, outside any request/locale
@@ -43,7 +46,7 @@ export const createRoomSchema = z
     // pasted twice still passes.
     invitedNames: z
       .string()
-      .max(25_000, "tooManyInvitedNames")
+      .max(MAX_INVITED_TEXT_LENGTH, "tooManyInvitedNames")
       .optional()
       .transform((value, ctx) => {
         const parsed = parseInvitedNames(value ?? "");

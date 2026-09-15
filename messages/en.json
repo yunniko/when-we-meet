@@ -123,7 +123,10 @@
     "link": "Leave the room",
     "warning": "This deletes your name and all your marks from this room. It can't be undone.",
     "confirm": "Yes, delete my data",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "warningKeepsName": "This deletes all your marks and signs you out. Your name stays on the invite list, so you can claim it again later.",
+    "confirmKeepsName": "Yes, delete my marks",
+    "ruleChanged": "The room's settings just changed. Please read this again before confirming."
   },
   "ParticipantsPanel": {
     "heading": "Participants",
@@ -143,9 +146,27 @@
       "notOwner": "You're no longer this room's organizer. Reload the page.",
       "roomGone": "This room no longer exists. Reload the page.",
       "self": "Use “Leave the room” to remove yourself.",
-      "failed": "Couldn't remove — try again."
+      "failed": "Couldn't remove — try again.",
+      "full": "A room can hold at most 100 people, invited names included.",
+      "invitedNameTooLong": "Each name can be at most 60 characters.",
+      "tooManyInvitedNames": "Add at most 99 names at a time.",
+      "nothingToAdd": "Type at least one name.",
+      "claimed": "{name} has just joined. Type their name below to remove them.",
+      "invalidRule": "Pick who can join.",
+      "addFailed": "Couldn't add the names — try again.",
+      "ruleFailed": "Couldn't change who can join — try again."
     },
-    "notJoinedTag": "not joined yet"
+    "notJoinedTag": "not joined yet",
+    "leftTag": "left the room",
+    "addLabel": "Add invited names",
+    "addHelp": "One name per line. Names already in the room are skipped.",
+    "addButton": "Add",
+    "adding": "Adding…",
+    "addedResult": "{count, plural, =0 {No new names added.} one {Added # name.} other {Added # names.}}",
+    "skippedResult": "Already in the room: {names}",
+    "joinRuleLegend": "Who can join",
+    "joinRuleAnyone": "Anyone with the link can add their name",
+    "joinRuleListedOnly": "Only names on this list"
   },
   "ResultsPage": {
     "pageTitle": "{title} — results",

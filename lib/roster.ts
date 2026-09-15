@@ -78,6 +78,30 @@ export function mayAddNewName(
   return presentedOwnerToken !== undefined && presentedOwnerToken === room.ownerToken;
 }
 
+// Which of the owner's new invited names to add (G-004 M3): names already in
+// the room, joined or invited, are skipped (case-insensitively, as are
+// repeats within the list), and overBy says how far the rest would take the
+// room past its cap.
+export function planInvitedAdditions(
+  existingNameKeys: string[],
+  names: string[],
+  max: number,
+): { add: string[]; skipped: string[]; overBy: number } {
+  const taken = new Set(existingNameKeys);
+  const add: string[] = [];
+  const skipped: string[] = [];
+  for (const name of names) {
+    const key = nameKeyOf(name);
+    if (taken.has(key)) {
+      skipped.push(name);
+      continue;
+    }
+    taken.add(key);
+    add.push(name);
+  }
+  return { add, skipped, overBy: Math.max(0, existingNameKeys.length + add.length - max) };
+}
+
 // Joined participants in join order, and unclaimed invited names in the
 // order the owner added them.
 export function splitRoster<T extends Member>(members: T[]): { joined: T[]; invited: T[] } {

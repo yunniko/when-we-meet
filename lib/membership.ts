@@ -9,7 +9,9 @@ import {
   mayAddNewName,
   nameKeyOf,
   pickSuccessor,
+  planInvitedAdditions,
   shouldBecomeOwner,
+  type JoinRuleValue,
 } from "@/lib/roster";
 
 // Every write that changes who is in a room or who owns it lives here, and
@@ -132,24 +134,35 @@ export async function claimParticipant(
     const participant = await tx.participant.findFirst({ where: { id: participantId, roomId } });
     if (!participant) return { kind: "notFound" };
     if (participant.joinedAt === null) {
-      await tx.participant.update({ where: { id: participant.id }, data: { joinedAt: new Date() } });
+      await tx.participant.update({
+        where: { id: participant.id },
+        data: { joinedAt: new Date(), leftAt: null },
+      });
     }
     await assignOwnerIfEligible(tx, roomId, participant.id, presentedOwnerToken);
     return { kind: "claimed", cookieToken: participant.cookieToken };
   });
 }
 
-export type LeaveOutcome = "deleted" | "reset" | "notFound";
+export type LeaveOutcome = "deleted" | "reset" | "notFound" | "ruleChanged";
 
 // "Leave the room": deletes the participant, or under "listed names only"
 // resets the name to unclaimed (leaveEffect). A leaving owner's room passes
 // to the earliest joined participant, or becomes vacant.
-export async function leaveRoomAs(roomId: string, actor: Actor): Promise<LeaveOutcome> {
+export async function leaveRoomAs(
+  roomId: string,
+  actor: Actor,
+  // The join rule the leaver's confirmation described. If the owner has
+  // switched it since, nothing happens, so nobody gets an outcome they
+  // weren't told about.
+  expectedRule?: JoinRuleValue,
+): Promise<LeaveOutcome> {
   return prisma.$transaction(async (tx): Promise<LeaveOutcome> => {
     if (!(await lockRoomRow(tx, roomId))) return "notFound";
     const room = await tx.room.findUniqueOrThrow({ where: { id: roomId } });
     const participant = await findActor(tx, roomId, actor);
     if (!participant) return "notFound";
+    if (expectedRule !== undefined && expectedRule !== room.joinRule) return "ruleChanged";
 
     const effect = leaveEffect(room.joinRule);
     if (effect === "delete") {
@@ -161,7 +174,7 @@ export async function leaveRoomAs(roomId: string, actor: Actor): Promise<LeaveOu
       // leaver's cookie no longer identifies anyone.
       await tx.participant.update({
         where: { id: participant.id },
-        data: { joinedAt: null, cookieToken: generateCookieToken() },
+        data: { joinedAt: null, leftAt: new Date(), cookieToken: generateCookieToken() },
       });
       await tx.availability.deleteMany({ where: { participantId: participant.id } });
     }
@@ -317,5 +330,77 @@ export async function createRoomWithInvites(
         })),
       },
     },
+  });
+}
+
+export type AddInvitedResult =
+  | { ok: true; added: string[]; skipped: string[] }
+  | { ok: false; error: "roomGone" | "notOwner" | "full" };
+
+// Owner adds invited names after creation (G-004 M3). Names already in the
+// room, joined or invited, are skipped rather than refused; if the rest would
+// take the room past its cap, nothing is added. `names` must already be
+// parsed (parseInvitedNames).
+export async function addInvitedParticipants(
+  roomId: string,
+  actor: Actor,
+  names: string[],
+): Promise<AddInvitedResult> {
+  return prisma.$transaction(async (tx): Promise<AddInvitedResult> => {
+    if (!(await lockRoomRow(tx, roomId))) return { ok: false, error: "roomGone" };
+    const room = await tx.room.findUniqueOrThrow({ where: { id: roomId } });
+    const acting = await findActor(tx, roomId, actor);
+    if (!acting || room.creatorParticipantId !== acting.id) return { ok: false, error: "notOwner" };
+
+    const existing = await tx.participant.findMany({
+      where: { roomId },
+      select: { name: true, nameKey: true },
+    });
+    const plan = planInvitedAdditions(
+      existing.map((p) => p.nameKey),
+      names,
+      MAX_PARTICIPANTS_PER_ROOM,
+    );
+    if (plan.overBy > 0) return { ok: false, error: "full" };
+
+    const base = Date.now();
+    if (plan.add.length > 0) {
+      await tx.participant.createMany({
+        data: plan.add.map((name, i) => ({
+          roomId,
+          name,
+          nameKey: nameKeyOf(name),
+          cookieToken: generateCookieToken(),
+          joinedAt: null,
+          createdAt: new Date(base + i),
+        })),
+      });
+    }
+    // Skipped names are reported as the room spells them, not as typed.
+    const spelled = new Map(existing.map((p) => [p.nameKey, p.name]));
+    return {
+      ok: true,
+      added: plan.add,
+      skipped: plan.skipped.map((name) => spelled.get(nameKeyOf(name)) ?? name),
+    };
+  });
+}
+
+export type SetJoinRuleResult = { ok: true } | { ok: false; error: "roomGone" | "notOwner" };
+
+// Owner switches who may join. Under the room lock, so a join already inside
+// its transaction finishes under the old rule and the next one sees the new.
+export async function setJoinRule(
+  roomId: string,
+  actor: Actor,
+  rule: JoinRuleValue,
+): Promise<SetJoinRuleResult> {
+  return prisma.$transaction(async (tx): Promise<SetJoinRuleResult> => {
+    if (!(await lockRoomRow(tx, roomId))) return { ok: false, error: "roomGone" };
+    const room = await tx.room.findUniqueOrThrow({ where: { id: roomId } });
+    const acting = await findActor(tx, roomId, actor);
+    if (!acting || room.creatorParticipantId !== acting.id) return { ok: false, error: "notOwner" };
+    await tx.room.update({ where: { id: roomId }, data: { joinRule: rule } });
+    return { ok: true };
   });
 }

@@ -123,7 +123,10 @@
     "link": "Raum verlassen",
     "warning": "Dadurch werden dein Name und alle deine Einträge aus diesem Raum gelöscht. Das kann nicht rückgängig gemacht werden.",
     "confirm": "Ja, meine Daten löschen",
-    "cancel": "Abbrechen"
+    "cancel": "Abbrechen",
+    "warningKeepsName": "Dadurch werden alle deine Einträge gelöscht und du wirst abgemeldet. Dein Name bleibt auf der Einladungsliste, sodass du ihn später wieder wählen kannst.",
+    "confirmKeepsName": "Ja, meine Einträge löschen",
+    "ruleChanged": "Die Einstellungen des Raums haben sich gerade geändert. Bitte lies das noch einmal, bevor du bestätigst."
   },
   "ParticipantsPanel": {
     "heading": "Teilnehmende",
@@ -143,9 +146,27 @@
       "notOwner": "Du organisierst diesen Raum nicht mehr. Lade die Seite neu.",
       "roomGone": "Diesen Raum gibt es nicht mehr. Lade die Seite neu.",
       "self": "Um dich selbst zu entfernen, nutze „Raum verlassen“.",
-      "failed": "Entfernen fehlgeschlagen — versuch es noch einmal."
+      "failed": "Entfernen fehlgeschlagen — versuch es noch einmal.",
+      "full": "Ein Raum fasst höchstens 100 Personen, eingeladene Namen eingeschlossen.",
+      "invitedNameTooLong": "Jeder Name darf höchstens 60 Zeichen haben.",
+      "tooManyInvitedNames": "Du kannst höchstens 99 Namen auf einmal hinzufügen.",
+      "nothingToAdd": "Gib mindestens einen Namen ein.",
+      "claimed": "{name} ist schon im Raum. Zum Entfernen gib den Namen unten ein.",
+      "invalidRule": "Wähle aus, wer beitreten kann.",
+      "addFailed": "Die Namen konnten nicht hinzugefügt werden — versuch es noch einmal.",
+      "ruleFailed": "Konnte nicht ändern, wer beitreten kann — versuch es noch einmal."
     },
-    "notJoinedTag": "noch nicht beigetreten"
+    "notJoinedTag": "noch nicht beigetreten",
+    "leftTag": "hat den Raum verlassen",
+    "addLabel": "Eingeladene Namen hinzufügen",
+    "addHelp": "Ein Name pro Zeile. Namen, die schon im Raum sind, werden übersprungen.",
+    "addButton": "Hinzufügen",
+    "adding": "Wird hinzugefügt …",
+    "addedResult": "{count, plural, =0 {Keine neuen Namen hinzugefügt.} one {# Name hinzugefügt.} other {# Namen hinzugefügt.}}",
+    "skippedResult": "Schon im Raum: {names}",
+    "joinRuleLegend": "Wer beitreten kann",
+    "joinRuleAnyone": "Alle mit dem Link können ihren Namen hinzufügen",
+    "joinRuleListedOnly": "Nur Namen auf dieser Liste"
   },
   "ResultsPage": {
     "pageTitle": "{title} — Ergebnisse",

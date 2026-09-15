@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { afterAll, afterEach, describe, expect, it } from "vitest";
 import { prisma } from "@/lib/prisma";
 import {
+  addInvitedParticipants,
   claimParticipant,
   createRoomWithInvites,
   joinByName,
@@ -9,6 +10,7 @@ import {
   removeParticipantConfirmed,
   removeUnclaimedParticipant,
   saveMarks,
+  setJoinRule,
 } from "@/lib/membership";
 import { MAX_PARTICIPANTS_PER_ROOM } from "@/lib/validation";
 import { splitRoster } from "@/lib/roster";
@@ -424,5 +426,93 @@ describe("join rule", () => {
     expect((await joinByName(room.id, "Organizer", room.ownerToken)).kind).toBe("joined");
     expect(await prisma.participant.count({ where: { roomId: room.id } })).toBe(2);
     expect((await roomState(room.id)).creatorParticipantId).not.toBeNull();
+  });
+});
+
+describe("owner list editing (G-004 M3)", () => {
+  it("adds new names as unclaimed, skipping names already in the room", async () => {
+    const room = await makeRoom();
+    const owner = await addMember(room.id, "Owner", at(0));
+    await addMember(room.id, "Bea", at(1));
+    await setOwner(room.id, owner.id);
+
+    expect(await addInvitedParticipants(room.id, actor(owner), ["Cy", "bea", "Dee"])).toEqual({
+      ok: true,
+      added: ["Cy", "Dee"],
+      skipped: ["Bea"],
+    });
+    const rows = await prisma.participant.findMany({
+      where: { roomId: room.id },
+      select: { id: true, name: true, joinedAt: true, createdAt: true },
+    });
+    expect(splitRoster(rows).invited.map((r) => r.name)).toEqual(["Cy", "Dee"]);
+  });
+
+  it("adds nothing when the new names would take the room past its cap", async () => {
+    const room = await makeRoom();
+    const owner = await addMember(room.id, "Owner", at(0));
+    await setOwner(room.id, owner.id);
+    await fillRoom(room.id, MAX_PARTICIPANTS_PER_ROOM - 2); // 99 with the owner
+
+    expect(await addInvitedParticipants(room.id, actor(owner), ["A", "B"])).toEqual({ ok: false, error: "full" });
+    expect(await prisma.participant.count({ where: { roomId: room.id } })).toBe(MAX_PARTICIPANTS_PER_ROOM - 1);
+    expect(await addInvitedParticipants(room.id, actor(owner), ["A"])).toMatchObject({ ok: true, added: ["A"] });
+  });
+
+  it("refuses a non-owner and an owner whose cookie token is stale", async () => {
+    const room = await makeRoom();
+    const owner = await addMember(room.id, "Owner", at(0));
+    const joe = await addMember(room.id, "Joe", at(1));
+    await setOwner(room.id, owner.id);
+    const stale = { participantId: owner.id, cookieToken: "old-token" };
+
+    expect(await addInvitedParticipants(room.id, actor(joe), ["X"])).toEqual({ ok: false, error: "notOwner" });
+    expect(await addInvitedParticipants(room.id, stale, ["X"])).toEqual({ ok: false, error: "notOwner" });
+    expect(await setJoinRule(room.id, actor(joe), "LISTED_ONLY")).toEqual({ ok: false, error: "notOwner" });
+    expect(await setJoinRule(room.id, stale, "LISTED_ONLY")).toEqual({ ok: false, error: "notOwner" });
+    expect((await roomState(room.id)).joinRule).toBe("ANYONE");
+    expect(await prisma.participant.count({ where: { roomId: room.id } })).toBe(2);
+  });
+
+  it("switches the join rule for the owner, and joining follows it", async () => {
+    const room = await makeRoom();
+    const owner = await addMember(room.id, "Owner", at(0));
+    await setOwner(room.id, owner.id);
+
+    expect(await setJoinRule(room.id, actor(owner), "LISTED_ONLY")).toEqual({ ok: true });
+    expect((await roomState(room.id)).joinRule).toBe("LISTED_ONLY");
+    expect(await joinByName(room.id, "Stranger", undefined)).toEqual({ kind: "notOnList" });
+  });
+
+  it("marks a listed-only leave as left, and clears it when the name is claimed again (D013)", async () => {
+    const room = await makeRoom("LISTED_ONLY");
+    const ann = await addMember(room.id, "Ann", at(0));
+    const never = await addMember(room.id, "Never", null);
+
+    await leaveRoomAs(room.id, actor(ann));
+    expect((await prisma.participant.findUniqueOrThrow({ where: { id: ann.id } })).leftAt).not.toBeNull();
+    expect((await prisma.participant.findUniqueOrThrow({ where: { id: never.id } })).leftAt).toBeNull();
+
+    await claimParticipant(room.id, ann.id, undefined);
+    const again = await prisma.participant.findUniqueOrThrow({ where: { id: ann.id } });
+    expect(again.leftAt).toBeNull();
+    expect(again.joinedAt).not.toBeNull();
+  });
+});
+
+describe("leave with a changed join rule (G-004 M3)", () => {
+  it("refuses a leave whose confirmation described a rule the owner has since changed", async () => {
+    const room = await makeRoom("ANYONE");
+    const owner = await addMember(room.id, "Owner", at(0));
+    const ann = await addMember(room.id, "Ann", at(1));
+    await setOwner(room.id, owner.id);
+    await setJoinRule(room.id, actor(owner), "LISTED_ONLY");
+
+    expect(await leaveRoomAs(room.id, actor(ann), "ANYONE")).toBe("ruleChanged");
+    const untouched = await prisma.participant.findUniqueOrThrow({ where: { id: ann.id } });
+    expect(untouched.cookieToken).toBe(ann.cookieToken);
+    expect(untouched.joinedAt).not.toBeNull();
+
+    expect(await leaveRoomAs(room.id, actor(ann), "LISTED_ONLY")).toBe("reset");
   });
 });
