@@ -14,3 +14,4 @@ Numbers match the former `HANDOVER.md` `Dn` entries (referenced from `AGENTS.md`
 - D010 — Membership and ownership writes serialize on a room row lock — active
 - D011 — Invited names are participant rows with an empty join time — active
 - D012 — A request acts as a participant only while its cookie token still matches — active
+- D013 — Only a listed-only leave is marked as "left" for the owner — active

@@ -802,11 +802,30 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
   cap, transactional create), `joinRoom` enforcing "listed only" with the
   creator bypass, join page showing invited names, results page "N of M
   joined" + missing list + badge rule, i18n. e2e for refusal, claim, bypass.
-- [ ] M3 — Owner panel roster editing (add, conditional remove, switch
+- [x] M3 — Owner panel roster editing (add, conditional remove, switch
   rule), listed-only "leave" resetting the seat, i18n, handover, deploy
   after approval.
 
 **Progress log** (newest first):
+- 2026-09-15 — **M3 reached (commit 013e0aa).** Started on the Owner's "approve and
+  proceed", read as approving M3 and the recommended deploy after it. The owner
+  panel adds invited names (names already in the room are skipped and reported in
+  the room's spelling; a batch past the 100 cap adds nothing), removes an
+  unclaimed name in one click (a name claimed meanwhile is refused and the typed
+  confirmation opens), and switches the join rule. A listed-only leave warns that
+  marks go but the name stays. Owner request mid-milestone ("mark that person is
+  left for owner"): a listed-only leave now records a left time, cleared on the
+  next claim, and the owner panel tags the name "left the room" (D013); not done
+  for rooms open to anyone, where leaving promises to delete the name. Codex
+  review: all six points conceded and fixed (text typed during a pending add was
+  wiped; a rule change remounted the panel and could close an open confirmation;
+  Cancel left the claimed instruction behind; a leave confirmed after the owner
+  changed the rule got an outcome it wasn't warned about, now refused and shown
+  again; add and rule failures said "Couldn't remove"; the claimed test didn't
+  prove marks survive). Verified: unit 107/107 (2 new); integration 29/29 (6 new);
+  e2e 19/19 with no retries (4 new); tsc and eslint clean; migrate diff against the
+  dev database empty; phone screenshots of the panel and the leave warning checked
+  by eye. All G-004 acceptance criteria are now met; deploy follows.
 - 2026-09-13 — **M2 reached (commit 9085ad5).** Started on the Owner's "continue".
   The creation form takes invited names (one per line; trimmed, deduplicated, at
   most 60 characters each and 99 names) and a join rule; a listed-only room needs
