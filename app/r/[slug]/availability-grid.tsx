@@ -149,6 +149,23 @@ export function AvailabilityGrid({
       .catch(() => setSaveState("error"));
   }, [roomId, participantId, router]);
 
+  // Double-click/double-tap on a date header fills that whole day with the
+  // current brush in one stroke, instead of dragging through every hour.
+  const fillDateColumn = useCallback(
+    (dateIdx: number) => {
+      if (painting.current) return;
+      painting.current = true;
+      lastPainted.current = null;
+      if (brush === "PREFER") {
+        const first = marksRef.current[slotKey(dates[dateIdx], hours[0])];
+        preferSets.current = preferStrokeSets(first);
+      }
+      paintCells(hours.map((_, hourIdx) => ({ dateIdx, hourIdx })));
+      endStroke();
+    },
+    [brush, dates, hours, paintCells, endStroke],
+  );
+
   const cancelHold = useCallback(() => {
     if (!hold.current) return;
     window.clearTimeout(hold.current.timer);
@@ -286,10 +303,13 @@ export function AvailabilityGrid({
           }}
         >
           <div className="sticky left-0 top-0 z-20 border-b border-r border-border bg-surface" />
-          {dates.map((date) => (
+          {dates.map((date, dateIdx) => (
             <div
               key={date}
-              className={`sticky top-0 z-10 border-b border-l border-border px-1 py-2 text-center text-xs font-medium ${
+              data-testid={`date-header-${date}`}
+              title={t("fillDayTitle")}
+              onDoubleClick={() => fillDateColumn(dateIdx)}
+              className={`sticky top-0 z-10 cursor-pointer select-none border-b border-l border-border px-1 py-2 text-center text-xs font-medium ${
                 isWeekend(date) ? "bg-weekend" : "bg-surface"
               }`}
             >
