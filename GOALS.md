@@ -148,6 +148,26 @@ live in `E:\CLAUDE\COMPANY\GOALS.md`.
       tsc/eslint clean throughout.
 
 **Progress log** (newest first; The Company appends at every stopping point):
+- 2026-09-28 — **Grid bulk-fill shortcuts + undo/redo (commits e304af2, f9dd100,
+  ee8e689), deployed:** double-click/tap a day header, hour label, or the
+  top-left corner now fills that day, hour, or the whole grid with the
+  current brush (`lib/paint.ts::fillCells` and friends). First shipped the
+  corner (whole-grid) fill with a >3-already-marked confirmation prompt;
+  Owner asked for it to be replaced with Undo/Redo buttons instead, backed
+  by a stroke-level history persisted per room+participant in
+  `localStorage`, capped at 20 entries each way (D014). Persisting the
+  history surfaced a real bug: an "empty slot" history entry used
+  `undefined`, which `JSON.stringify` silently drops, corrupting the entry
+  across a reload — fixed by using `null` instead (see D014, caught by a
+  JSON round-trip unit test). Verified: unit 113/113, e2e 25/25 (new specs
+  `fill-day`, `fill-hour-and-all`, `undo-redo`, incl. repeated runs under
+  6-worker parallel load to rule out a false "flaky" read — one genuine
+  race was found and fixed along the way: history must be persisted
+  synchronously at its call sites, not from a reactive effect, or a reload
+  right after an action can lose the write). Live-browser-verified on the
+  deployed site each round: filled a day/hour/grid, undo/redo round-tripped
+  and persisted across a reload; `docker ps` showed only the when-we-meet
+  containers restarted each deploy.
 - 2026-09-12 — **Owner-reported bugs fixed (commit 47cea71):** (1) on a phone the
   grid could not be scrolled to later days (`touch-action: none` made every touch
   a stroke); now tap paints one cell, hold 250 ms then drag paints a run, swipe

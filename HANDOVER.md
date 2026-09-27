@@ -1,5 +1,5 @@
 # Handover — When We Meet
-Last verified: 2026-09-15 at 741913d
+Last verified: 2026-09-28 at ee8e689
 
 Account-free group scheduling: a room with a date range, participants paint CAN/CANNOT/prefer
 in 1-hour slots, results rank the overlaps, the creator can finalize a time. Goals: `GOALS.md`
@@ -9,8 +9,8 @@ participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004
 
 ## Current state
 
-- **Live** at https://meet.app.julienika.cz (HTTP 200 re-checked 2026-09-15). App port 30010,
-  Postgres 54321 (127.0.0.1). Live build is 741913d (deployed 2026-09-15, includes G-003 and G-004).
+- **Live** at https://meet.app.julienika.cz (HTTP 200 re-checked 2026-09-28). App port 30010,
+  Postgres 54321 (127.0.0.1). Live build is ee8e689 (deployed 2026-09-28).
 - Done and deployed: G-001 M1–M5 (rooms, cookie identity with "is this you?", drag-painted grid,
   prefer layer, results heatmap + Best times, creator finalize/clear, 3-day expiry), the
   post-launch rounds (weekend shading, sticky headers, leave-room with ownership transfer,
@@ -29,10 +29,14 @@ participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004
   people from invited ones (D011). The owner adds names, removes unclaimed ones in one click and
   switches the rule from the panel; a listed-only leave keeps the name and tags it "left the room"
   for the owner (D013).
-- Verification on 2026-09-15: `npm run test:unit` 107/107; `npm run test:integration` 29/29;
-  `npm run test:e2e` 19/19 with no retries, both against the local dev Postgres (Docker).
-- Working tree: an uncommitted doc-reference edit to the previous handover (2026-09-06); the
-  old handover is kept as `docs/handover-legacy-2026-09-12.md` until reviewed, then delete it.
+- Post-launch (2026-09-28): the availability grid gained bulk-fill shortcuts — double-click/tap a
+  day's header, an hour's label, or the top-left corner fills that day, hour, or the whole grid
+  with the current brush. The corner (whole-grid) fill has no confirmation prompt; instead the
+  grid has Undo/Redo buttons backed by a stroke-level history, persisted per room+participant in
+  `localStorage`, capped at 20 entries each way (D014).
+- Verification on 2026-09-28: `npm run test:unit` 113/113, `npm run test:e2e` 25/25 (incl. under
+  parallel-worker load) against the local dev Postgres; live browser check on the deployed site —
+  filled a day/hour/grid, undo/redo round-tripped and persisted across a reload.
 
 ## How things fit together
 
@@ -67,6 +71,9 @@ participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004
 - The join rule is enforced only inside `joinByName`, under the room lock; the browser holding the
   room's owner-token cookie may add any name.
 - Any code that resets a name must set its left time, and any claim must clear it (D013).
+- `HistoryEntry.before`/`after` (grid undo/redo, `lib/paint.ts`) use `null` for "empty", never
+  `undefined` — `JSON.stringify` silently drops an `undefined`-valued property, corrupting the
+  persisted history across a reload (D014).
 - Forms that must keep state after a failed action call the `useActionState` action manually
   from `onSubmit`, not through the native `action` prop (React 19 resets the form otherwise).
 - Env vars reach the container only if listed in `docker-compose.yml`'s `app` service
@@ -101,7 +108,10 @@ participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004
 | 2026-09-12 | 4f0a539 | Touch hold-to-paint + native swipe scrolling (D009); no saves for no-op strokes | Local unit 75/75 + e2e 6/6 incl. Pixel-5 touch spec; host on 4f0a539, containers rebuilt; live 200; 7 other sites 200, no other container restarted |
 | 2026-09-13 | fc6d569 | G-003: owner Participants panel with type-to-confirm removal; stale-identity save handling | Local unit 82/82 + e2e 11/11 no retries; host on fc6d569, migrate exit 0, app log clean; live 200 serving the new strings; 7 other sites 200; uptime diff shows only when-we-meet app + cleanup restarted |
 | 2026-09-15 | 741913d | G-004: invited names, join rule, owner list editing, left marker; migrations for join rule (with backfill) and left time | Local unit 107/107, integration 29/29, e2e 19/19; DB backup first (gzip ok, 4 tables); migrate exit 0, both migrations finished, 10/10 participants joined after backfill; live 200 serving new strings; 7 other sites 200; only when-we-meet app and cleanup restarted |
+| 2026-09-28 | e304af2 | Double-click/double-tap a day header fills that day with the current brush | Local unit 107/107, e2e incl. new fill-day spec under parallel load; no migration; migrate exit 0; live 200, feature exercised live; only when-we-meet app+cleanup restarted |
+| 2026-09-28 | f9dd100 | Adds hour-label and corner (whole-grid) fill shortcuts | Local unit 107/107, e2e incl. new fill-hour/all specs; no migration; migrate exit 0; live 200; only when-we-meet app+cleanup restarted |
+| 2026-09-28 | ee8e689 | Owner feedback: replaces the corner-fill confirmation with Undo/Redo (D014); fixes an `undefined`-in-JSON history bug the new persistence surfaced | Local unit 113/113, e2e 25/25 incl. under parallel-worker load; no migration; migrate exit 0; live 200, undo/redo exercised live incl. persistence across a reload; only when-we-meet app+cleanup restarted |
 
 ## Decisions
 
-`docs/decisions/README.md` (D001–D013).
+`docs/decisions/README.md` (D001–D014).
