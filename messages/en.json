@@ -112,8 +112,13 @@
     "saved": "Saved",
     "saveError": "Couldn't save — try again",
     "removed": "You're no longer in this room as this name — reloading…",
-    "instructions": "Click, or click and drag, to paint slots. On a touch screen: tap a slot, or press and hold, then drag; swipe to scroll. Double-click or double-tap a day's header to fill the whole day. \"Prefer\" only applies to slots already marked Can.",
-    "fillDayTitle": "Double-click or double-tap to fill this whole day"
+    "instructions": "Click, or click and drag, to paint slots. On a touch screen: tap a slot, or press and hold, then drag; swipe to scroll. Double-click or double-tap a day's header, an hour's label, or the top-left corner to fill that day, that hour, or the whole grid. \"Prefer\" only applies to slots already marked Can.",
+    "fillDayTitle": "Double-click or double-tap to fill this whole day",
+    "fillHourTitle": "Double-click or double-tap to fill this whole hour across every day",
+    "fillAllTitle": "Double-click or double-tap to fill the entire grid",
+    "fillAllConfirmMessage": "This will overwrite {count, plural, one {# already-marked slot} other {# already-marked slots}} across the whole grid — fill everything with the current brush anyway?",
+    "fillAllConfirmButton": "Fill everything",
+    "fillAllCancel": "Cancel"
   },
   "FinalizedBanner": {
     "title": "📌 Meeting time set: {when}",

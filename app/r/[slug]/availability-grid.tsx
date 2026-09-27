@@ -37,6 +37,10 @@ const BRUSH_LABEL_KEYS: Record<Brush, string> = {
 const TOUCH_HOLD_MS = 250;
 const TOUCH_SLOP_PX = 8;
 
+// Filling the whole grid from the corner cell past this many already-marked
+// slots asks for confirmation first, instead of silently overwriting them.
+const FILL_ALL_CONFIRM_THRESHOLD = 3;
+
 function cellClass(mark: CellMark | undefined, weekend: boolean): string {
   if (mark?.status === "CAN") return "bg-emerald-500/80 hover:bg-emerald-500";
   if (mark?.status === "CANNOT") return "bg-rose-500/70 hover:bg-rose-500/90";
@@ -149,22 +153,58 @@ export function AvailabilityGrid({
       .catch(() => setSaveState("error"));
   }, [roomId, participantId, router]);
 
-  // Double-click/double-tap on a date header fills that whole day with the
-  // current brush in one stroke, instead of dragging through every hour.
-  const fillDateColumn = useCallback(
-    (dateIdx: number) => {
-      if (painting.current) return;
+  // Double-click/double-tap on a date header or an hour label fills that
+  // whole day or hour row with the current brush in one stroke, instead of
+  // dragging through every cell.
+  const fillCells = useCallback(
+    (cells: CellIndex[]) => {
+      if (painting.current || cells.length === 0) return;
       painting.current = true;
       lastPainted.current = null;
       if (brush === "PREFER") {
-        const first = marksRef.current[slotKey(dates[dateIdx], hours[0])];
+        const { dateIdx, hourIdx } = cells[0];
+        const first = marksRef.current[slotKey(dates[dateIdx], hours[hourIdx])];
         preferSets.current = preferStrokeSets(first);
       }
-      paintCells(hours.map((_, hourIdx) => ({ dateIdx, hourIdx })));
+      paintCells(cells);
       endStroke();
     },
     [brush, dates, hours, paintCells, endStroke],
   );
+
+  const fillDateColumn = useCallback(
+    (dateIdx: number) => fillCells(hours.map((_, hourIdx) => ({ dateIdx, hourIdx }))),
+    [fillCells, hours],
+  );
+
+  const fillHourRow = useCallback(
+    (hourIdx: number) => fillCells(dates.map((_, dateIdx) => ({ dateIdx, hourIdx }))),
+    [fillCells, dates],
+  );
+
+  // Double-click/double-tap on the corner cell fills the entire grid. A
+  // careless double-tap there can overwrite a lot of already-entered marks
+  // at once, so anything past a handful asks for confirmation first instead
+  // of silently wiping it out.
+  const [pendingFillAll, setPendingFillAll] = useState(false);
+
+  const fillAll = useCallback(
+    () => fillCells(dates.flatMap((_, dateIdx) => hours.map((_, hourIdx) => ({ dateIdx, hourIdx })))),
+    [fillCells, dates, hours],
+  );
+
+  const onCornerDoubleClick = useCallback(() => {
+    if (painting.current) return;
+    if (Object.keys(marksRef.current).length > FILL_ALL_CONFIRM_THRESHOLD) {
+      setPendingFillAll(true);
+      return;
+    }
+    fillAll();
+  }, [fillAll]);
+
+  // A brush switch changes what confirming would do, so it also drops any
+  // pending confirmation — done in the button's own click handler below
+  // (setBrush), not an effect, since it's a direct response to that click.
 
   const cancelHold = useCallback(() => {
     if (!hold.current) return;
@@ -258,7 +298,10 @@ export function AvailabilityGrid({
             <button
               key={b.value}
               type="button"
-              onClick={() => setBrush(b.value)}
+              onClick={() => {
+                setBrush(b.value);
+                setPendingFillAll(false);
+              }}
               aria-pressed={brush === b.value}
               className={`flex items-center gap-1.5 rounded-md border px-3 py-2 text-xs font-medium transition-colors ${
                 brush === b.value
@@ -281,6 +324,35 @@ export function AvailabilityGrid({
 
       <p className="text-xs text-muted">{t("instructions")}</p>
 
+      {pendingFillAll && (
+        <div
+          data-testid="fill-all-confirm"
+          className="flex flex-wrap items-center gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900"
+        >
+          <span>{t("fillAllConfirmMessage", { count: Object.keys(marks).length })}</span>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              data-testid="fill-all-confirm-button"
+              onClick={() => {
+                fillAll();
+                setPendingFillAll(false);
+              }}
+              className="rounded-md bg-amber-600 px-2.5 py-1 font-medium text-white hover:bg-amber-700"
+            >
+              {t("fillAllConfirmButton")}
+            </button>
+            <button
+              type="button"
+              onClick={() => setPendingFillAll(false)}
+              className="rounded-md border border-border bg-surface px-2.5 py-1 font-medium hover:bg-foreground/5"
+            >
+              {t("fillAllCancel")}
+            </button>
+          </div>
+        </div>
+      )}
+
       <div
         data-testid="grid-scroll"
         className="max-h-[70vh] overflow-auto rounded-md border border-border"
@@ -302,7 +374,12 @@ export function AvailabilityGrid({
             if (hold.current || painting.current) e.preventDefault();
           }}
         >
-          <div className="sticky left-0 top-0 z-20 border-b border-r border-border bg-surface" />
+          <div
+            data-testid="grid-corner"
+            title={t("fillAllTitle")}
+            onDoubleClick={onCornerDoubleClick}
+            className="sticky left-0 top-0 z-20 cursor-pointer border-b border-r border-border bg-surface"
+          />
           {dates.map((date, dateIdx) => (
             <div
               key={date}
@@ -319,7 +396,12 @@ export function AvailabilityGrid({
 
           {hours.map((hour, hourIdx) => (
             <Fragment key={`h-${hour}`}>
-              <div className="sticky left-0 z-10 border-r border-t border-border bg-surface px-2 py-1.5 text-right text-xs text-muted">
+              <div
+                data-testid={`hour-header-${hour}`}
+                title={t("fillHourTitle")}
+                onDoubleClick={() => fillHourRow(hourIdx)}
+                className="sticky left-0 z-10 cursor-pointer select-none border-r border-t border-border bg-surface px-2 py-1.5 text-right text-xs text-muted"
+              >
                 {formatHour(hour)}
               </div>
               {dates.map((date, dateIdx) => {

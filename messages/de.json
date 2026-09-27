@@ -112,8 +112,13 @@
     "saved": "Gespeichert",
     "saveError": "Speichern fehlgeschlagen — versuche es erneut",
     "removed": "Du bist unter diesem Namen nicht mehr in diesem Raum – wird neu geladen …",
-    "instructions": "Klicke oder klicke und ziehe, um Zeiten einzutragen. Auf dem Touchscreen: Tippe auf ein Feld oder halte gedrückt und ziehe dann; Wischen scrollt. Doppelklick oder Doppeltipp auf die Kopfzeile eines Tages füllt den ganzen Tag. „Bevorzugt“ gilt nur für bereits mit „Kann“ markierte Zeiten.",
-    "fillDayTitle": "Doppelklick oder Doppeltipp füllt diesen ganzen Tag"
+    "instructions": "Klicke oder klicke und ziehe, um Zeiten einzutragen. Auf dem Touchscreen: Tippe auf ein Feld oder halte gedrückt und ziehe dann; Wischen scrollt. Doppelklick oder Doppeltipp auf die Kopfzeile eines Tages, die Beschriftung einer Stunde oder die obere linke Ecke füllt diesen Tag, diese Stunde oder das gesamte Raster. „Bevorzugt“ gilt nur für bereits mit „Kann“ markierte Zeiten.",
+    "fillDayTitle": "Doppelklick oder Doppeltipp füllt diesen ganzen Tag",
+    "fillHourTitle": "Doppelklick oder Doppeltipp füllt diese ganze Stunde an jedem Tag",
+    "fillAllTitle": "Doppelklick oder Doppeltipp füllt das gesamte Raster",
+    "fillAllConfirmMessage": "Dadurch werden {count, plural, one {# bereits markierte Zeit} other {# bereits markierte Zeiten}} im gesamten Raster überschrieben — trotzdem alles mit dem aktuellen Pinsel füllen?",
+    "fillAllConfirmButton": "Alles füllen",
+    "fillAllCancel": "Abbrechen"
   },
   "FinalizedBanner": {
     "title": "📌 Besprechungszeit festgelegt: {when}",
