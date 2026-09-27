@@ -1,15 +1,19 @@
 "use client";
 
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { saveAvailability } from "@/app/r/[slug]/actions";
 import {
   applyBrush,
+  applyHistorySide,
   cellsBetween,
+  historySideToUpdates,
   preferStrokeSets,
+  pushHistory,
   type Brush,
   type CellIndex,
+  type HistoryEntry,
   type Marks,
   type SlotUpdate,
 } from "@/lib/paint";
@@ -37,9 +41,17 @@ const BRUSH_LABEL_KEYS: Record<Brush, string> = {
 const TOUCH_HOLD_MS = 250;
 const TOUCH_SLOP_PX = 8;
 
-// Filling the whole grid from the corner cell past this many already-marked
-// slots asks for confirmation first, instead of silently overwriting them.
-const FILL_ALL_CONFIRM_THRESHOLD = 3;
+// See create-room-form.tsx's identical const for why: a client component
+// still renders once on the server, where useLayoutEffect would warn, so
+// this only becomes the real (synchronous, pre-paint) layout effect once
+// mounted in a browser.
+const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
+
+// Where a room's undo/redo history is persisted, so it survives a reload —
+// scoped to this room and this identity, matching wwm_last_timezone's naming.
+function historyStorageKey(roomId: string, participantId: string): string {
+  return `wwm_history:${roomId}:${participantId}`;
+}
 
 function cellClass(mark: CellMark | undefined, weekend: boolean): string {
   if (mark?.status === "CAN") return "bg-emerald-500/80 hover:bg-emerald-500";
@@ -83,6 +95,10 @@ export function AvailabilityGrid({
   const marksRef = useRef<Marks>(initialAvailability);
   const painting = useRef(false);
   const strokeChanges = useRef<Map<string, SlotUpdate>>(new Map());
+  // What each touched slot held right before the current stroke — the first
+  // value seen for a key wins, so repainting the same cell twice mid-drag
+  // doesn't lose the true "before" state undo needs to restore.
+  const strokePrev = useRef<Map<string, CellMark | undefined>>(new Map());
   const lastPainted = useRef<CellIndex | null>(null);
   const preferSets = useRef(true);
   // A touch that has landed but not yet decided between scroll and paint.
@@ -95,10 +111,13 @@ export function AvailabilityGrid({
         const date = dates[dateIdx];
         const hour = hours[hourIdx];
         if (date === undefined || hour === undefined) continue;
+        const key = slotKey(date, hour);
+        const before = next[key];
         const res = applyBrush(next, date, hour, brush, preferSets.current);
         if (!res.change) continue;
         next = res.marks;
-        strokeChanges.current.set(slotKey(date, hour), res.change);
+        strokeChanges.current.set(key, res.change);
+        if (!strokePrev.current.has(key)) strokePrev.current.set(key, before);
       }
       if (next !== marksRef.current) {
         marksRef.current = next;
@@ -129,29 +148,71 @@ export function AvailabilityGrid({
     [brush, dates, hours, extendStroke],
   );
 
+  const saveChanges = useCallback(
+    (changes: SlotUpdate[]) => {
+      if (changes.length === 0) return;
+      setSaveState("saving");
+      saveAvailability(roomId, participantId, changes)
+        .then((res) => {
+          if (res.ok) {
+            setSaveState("saved");
+          } else if (res.code === "removed" || res.code === "mismatch") {
+            // This browser is no longer this participant: re-render from the
+            // server, which shows the join form (removed) or the right grid.
+            setSaveState("removed");
+            router.refresh();
+          } else {
+            setSaveState("error");
+          }
+        })
+        .catch(() => setSaveState("error"));
+    },
+    [roomId, participantId, router],
+  );
+
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [redoStack, setRedoStack] = useState<HistoryEntry[]>([]);
+  const historyKey = historyStorageKey(roomId, participantId);
+
+  // Written synchronously at each of the three call sites that change the
+  // history (below), not from a reactive effect: an effect only runs after
+  // React re-renders and commits, which is late enough that a `page.reload()`
+  // fired right after an action can race ahead of it and lose the write —
+  // this way, by the time the triggering click handler returns, it's saved.
+  const persistHistory = useCallback(
+    (nextUndo: HistoryEntry[], nextRedo: HistoryEntry[]) => {
+      try {
+        localStorage.setItem(historyKey, JSON.stringify({ undo: nextUndo, redo: nextRedo }));
+      } catch {
+        // Storage unavailable (private mode, quota, disabled) — undo/redo
+        // still works this session, it just won't survive a reload.
+      }
+    },
+    [historyKey],
+  );
+
   const endStroke = useCallback(() => {
     if (!painting.current) return;
     painting.current = false;
     lastPainted.current = null;
     const changes = [...strokeChanges.current.values()];
+    const prev = strokePrev.current;
     strokeChanges.current.clear();
+    strokePrev.current = new Map();
     if (changes.length === 0) return;
-    setSaveState("saving");
-    saveAvailability(roomId, participantId, changes)
-      .then((res) => {
-        if (res.ok) {
-          setSaveState("saved");
-        } else if (res.code === "removed" || res.code === "mismatch") {
-          // This browser is no longer this participant: re-render from the
-          // server, which shows the join form (removed) or the right grid.
-          setSaveState("removed");
-          router.refresh();
-        } else {
-          setSaveState("error");
-        }
-      })
-      .catch(() => setSaveState("error"));
-  }, [roomId, participantId, router]);
+    const before: HistoryEntry["before"] = {};
+    const after: HistoryEntry["after"] = {};
+    for (const change of changes) {
+      const key = slotKey(change.date, change.hour);
+      before[key] = prev.get(key) ?? null;
+      after[key] = change.status ? { status: change.status, preferred: change.preferred } : null;
+    }
+    const nextHistory = pushHistory(history, { before, after });
+    setHistory(nextHistory);
+    setRedoStack([]);
+    persistHistory(nextHistory, []);
+    saveChanges(changes);
+  }, [history, persistHistory, saveChanges]);
 
   // Double-click/double-tap on a date header or an hour label fills that
   // whole day or hour row with the current brush in one stroke, instead of
@@ -182,29 +243,63 @@ export function AvailabilityGrid({
     [fillCells, dates],
   );
 
-  // Double-click/double-tap on the corner cell fills the entire grid. A
-  // careless double-tap there can overwrite a lot of already-entered marks
-  // at once, so anything past a handful asks for confirmation first instead
-  // of silently wiping it out.
-  const [pendingFillAll, setPendingFillAll] = useState(false);
-
+  // Double-click/double-tap on the corner cell fills the entire grid.
+  // Undo (below) is the safety net for a careless double-tap here, rather
+  // than a confirmation prompt in front of every use.
   const fillAll = useCallback(
     () => fillCells(dates.flatMap((_, dateIdx) => hours.map((_, hourIdx) => ({ dateIdx, hourIdx })))),
     [fillCells, dates, hours],
   );
 
-  const onCornerDoubleClick = useCallback(() => {
-    if (painting.current) return;
-    if (Object.keys(marksRef.current).length > FILL_ALL_CONFIRM_THRESHOLD) {
-      setPendingFillAll(true);
-      return;
-    }
-    fillAll();
-  }, [fillAll]);
+  // Undo/redo, one entry per completed stroke (including a day/hour/grid
+  // fill). Persisted per room+identity (see historyStorageKey) so it
+  // survives a reload; capped at HISTORY_LIMIT entries each, oldest first
+  // out (lib/paint.ts's pushHistory).
+  const undo = useCallback(() => {
+    const entry = history[history.length - 1];
+    if (!entry) return;
+    const next = applyHistorySide(marksRef.current, entry.before);
+    marksRef.current = next;
+    setMarks(next);
+    const nextHistory = history.slice(0, -1);
+    const nextRedo = pushHistory(redoStack, entry);
+    setHistory(nextHistory);
+    setRedoStack(nextRedo);
+    persistHistory(nextHistory, nextRedo);
+    saveChanges(historySideToUpdates(entry.before));
+  }, [history, redoStack, persistHistory, saveChanges]);
 
-  // A brush switch changes what confirming would do, so it also drops any
-  // pending confirmation — done in the button's own click handler below
-  // (setBrush), not an effect, since it's a direct response to that click.
+  const redo = useCallback(() => {
+    const entry = redoStack[redoStack.length - 1];
+    if (!entry) return;
+    const next = applyHistorySide(marksRef.current, entry.after);
+    marksRef.current = next;
+    setMarks(next);
+    const nextRedo = redoStack.slice(0, -1);
+    const nextHistory = pushHistory(history, entry);
+    setRedoStack(nextRedo);
+    setHistory(nextHistory);
+    persistHistory(nextHistory, nextRedo);
+    saveChanges(historySideToUpdates(entry.after));
+  }, [redoStack, history, persistHistory, saveChanges]);
+
+  useIsomorphicLayoutEffect(() => {
+    // Read only after mount: this is a client component but still renders
+    // once on the server (see create-room-form.tsx's identical guard for
+    // why touching localStorage in the render body itself would break SSR).
+    // Runs before paint so the Undo/Redo buttons don't flash disabled.
+    try {
+      const raw = localStorage.getItem(historyKey);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as { undo?: HistoryEntry[]; redo?: HistoryEntry[] };
+      if (Array.isArray(parsed.undo)) setHistory(parsed.undo);
+      if (Array.isArray(parsed.redo)) setRedoStack(parsed.redo);
+    } catch {
+      // Corrupt or inaccessible storage — start with empty history.
+    }
+    // Deliberately mount-only: this grid instance is keyed by participant
+    // id (page.tsx), so historyKey never changes without a remount.
+  }, []);
 
   const cancelHold = useCallback(() => {
     if (!hold.current) return;
@@ -298,10 +393,7 @@ export function AvailabilityGrid({
             <button
               key={b.value}
               type="button"
-              onClick={() => {
-                setBrush(b.value);
-                setPendingFillAll(false);
-              }}
+              onClick={() => setBrush(b.value)}
               aria-pressed={brush === b.value}
               className={`flex items-center gap-1.5 rounded-md border px-3 py-2 text-xs font-medium transition-colors ${
                 brush === b.value
@@ -314,6 +406,26 @@ export function AvailabilityGrid({
             </button>
           ))}
         </div>
+        <div className="flex gap-1.5">
+          <button
+            type="button"
+            data-testid="undo-button"
+            onClick={undo}
+            disabled={history.length === 0}
+            className="rounded-md border border-border px-3 py-2 text-xs font-medium disabled:opacity-40"
+          >
+            {t("undo")}
+          </button>
+          <button
+            type="button"
+            data-testid="redo-button"
+            onClick={redo}
+            disabled={redoStack.length === 0}
+            className="rounded-md border border-border px-3 py-2 text-xs font-medium disabled:opacity-40"
+          >
+            {t("redo")}
+          </button>
+        </div>
         <span className="text-xs text-muted">
           {saveState === "saving" && t("saving")}
           {saveState === "saved" && t("saved")}
@@ -323,35 +435,6 @@ export function AvailabilityGrid({
       </div>
 
       <p className="text-xs text-muted">{t("instructions")}</p>
-
-      {pendingFillAll && (
-        <div
-          data-testid="fill-all-confirm"
-          className="flex flex-wrap items-center gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900"
-        >
-          <span>{t("fillAllConfirmMessage", { count: Object.keys(marks).length })}</span>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              data-testid="fill-all-confirm-button"
-              onClick={() => {
-                fillAll();
-                setPendingFillAll(false);
-              }}
-              className="rounded-md bg-amber-600 px-2.5 py-1 font-medium text-white hover:bg-amber-700"
-            >
-              {t("fillAllConfirmButton")}
-            </button>
-            <button
-              type="button"
-              onClick={() => setPendingFillAll(false)}
-              className="rounded-md border border-border bg-surface px-2.5 py-1 font-medium hover:bg-foreground/5"
-            >
-              {t("fillAllCancel")}
-            </button>
-          </div>
-        </div>
-      )}
 
       <div
         data-testid="grid-scroll"
@@ -377,7 +460,7 @@ export function AvailabilityGrid({
           <div
             data-testid="grid-corner"
             title={t("fillAllTitle")}
-            onDoubleClick={onCornerDoubleClick}
+            onDoubleClick={fillAll}
             className="sticky left-0 top-0 z-20 cursor-pointer border-b border-r border-border bg-surface"
           />
           {dates.map((date, dateIdx) => (

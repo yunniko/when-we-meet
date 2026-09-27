@@ -116,9 +116,8 @@
     "fillDayTitle": "Double-click or double-tap to fill this whole day",
     "fillHourTitle": "Double-click or double-tap to fill this whole hour across every day",
     "fillAllTitle": "Double-click or double-tap to fill the entire grid",
-    "fillAllConfirmMessage": "This will overwrite {count, plural, one {# already-marked slot} other {# already-marked slots}} across the whole grid — fill everything with the current brush anyway?",
-    "fillAllConfirmButton": "Fill everything",
-    "fillAllCancel": "Cancel"
+    "undo": "Undo",
+    "redo": "Redo"
   },
   "FinalizedBanner": {
     "title": "📌 Meeting time set: {when}",

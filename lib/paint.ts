@@ -87,3 +87,58 @@ export function cellsBetween(from: CellIndex | null, to: CellIndex): CellIndex[]
   }
   return cells;
 }
+
+// Undo/redo history for the grid. One entry per completed stroke (drag,
+// tap, or a day/hour/grid fill): `before` is what each touched slot held
+// right before the stroke, `after` is what it holds now — both keyed by
+// slotKey(), `null` meaning empty. `null`, not `undefined`: an entry is
+// persisted to localStorage via JSON.stringify, which silently *drops* any
+// object property whose value is `undefined` — losing exactly the "this
+// slot was empty" case and corrupting the entry on reload. Undo re-applies
+// `before`; redo re-applies `after`.
+export type HistoryEntry = {
+  before: Partial<Record<string, CellMark | null>>;
+  after: Partial<Record<string, CellMark | null>>;
+};
+
+// Caps the undo stack (and, separately, the redo stack) so a long editing
+// session's localStorage entry can't grow without bound. 20 is generous for
+// "undo my last few mistakes" while keeping the worst case bounded: a room
+// can span at most 60 days x 24 hours (rangeTooLong caps it), so even 20
+// consecutive whole-grid fills — an unrealistic worst case, since a fill
+// only produces one entry regardless of how many slots it touches — stay
+// well under a browser's localStorage quota (~5-10MB/origin).
+export const HISTORY_LIMIT = 20;
+
+export function pushHistory(stack: HistoryEntry[], entry: HistoryEntry): HistoryEntry[] {
+  const next = [...stack, entry];
+  return next.length > HISTORY_LIMIT ? next.slice(next.length - HISTORY_LIMIT) : next;
+}
+
+// Applies one side of a history entry (`before` for undo, `after` for redo)
+// to `marks`, returning a new marks object.
+export function applyHistorySide(marks: Marks, side: Partial<Record<string, CellMark | null>>): Marks {
+  const next = { ...marks };
+  for (const key of Object.keys(side)) {
+    const mark = side[key];
+    if (mark) next[key] = mark;
+    else delete next[key];
+  }
+  return next;
+}
+
+// slotKey() is `${date}T${hour}`; date is always "YYYY-MM-DD" (10 chars),
+// so it splits back out without needing a regex.
+export function parseSlotKey(key: string): { date: string; hour: number } {
+  return { date: key.slice(0, 10), hour: Number(key.slice(11)) };
+}
+
+// Converts one side of a history entry into the SlotUpdate[] batch
+// saveAvailability expects, so undo/redo persist the same way a stroke does.
+export function historySideToUpdates(side: Partial<Record<string, CellMark | null>>): SlotUpdate[] {
+  return Object.keys(side).map((key) => {
+    const { date, hour } = parseSlotKey(key);
+    const mark = side[key];
+    return { date, hour, status: mark?.status ?? null, preferred: mark?.preferred ?? false };
+  });
+}

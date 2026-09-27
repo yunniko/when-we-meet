@@ -116,9 +116,8 @@
     "fillDayTitle": "Dvojklikem nebo dvojitým klepnutím vyplníte celý tento den",
     "fillHourTitle": "Dvojklikem nebo dvojitým klepnutím vyplníte celou tuto hodinu ve všech dnech",
     "fillAllTitle": "Dvojklikem nebo dvojitým klepnutím vyplníte celou mřížku",
-    "fillAllConfirmMessage": "Tím přepíšete {count, plural, one {# už označený čas} few {# už označené časy} other {# už označených časů}} v celé mřížce — opravdu vyplnit vše aktuálním štětcem?",
-    "fillAllConfirmButton": "Vyplnit vše",
-    "fillAllCancel": "Zrušit"
+    "undo": "Zpět",
+    "redo": "Znovu"
   },
   "FinalizedBanner": {
     "title": "📌 Čas schůzky nastaven: {when}",

@@ -116,9 +116,8 @@
     "fillDayTitle": "Doppelklick oder Doppeltipp füllt diesen ganzen Tag",
     "fillHourTitle": "Doppelklick oder Doppeltipp füllt diese ganze Stunde an jedem Tag",
     "fillAllTitle": "Doppelklick oder Doppeltipp füllt das gesamte Raster",
-    "fillAllConfirmMessage": "Dadurch werden {count, plural, one {# bereits markierte Zeit} other {# bereits markierte Zeiten}} im gesamten Raster überschrieben — trotzdem alles mit dem aktuellen Pinsel füllen?",
-    "fillAllConfirmButton": "Alles füllen",
-    "fillAllCancel": "Abbrechen"
+    "undo": "Rückgängig",
+    "redo": "Wiederholen"
   },
   "FinalizedBanner": {
     "title": "📌 Besprechungszeit festgelegt: {when}",
