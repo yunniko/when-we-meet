@@ -1,5 +1,5 @@
 # Handover — When We Meet
-Last verified: 2026-11-22 at 6701ac3
+Last verified: 2026-11-22 at 2046ba4
 
 Account-free group scheduling: a room with a date range, participants paint CAN/CANNOT/prefer
 in 1-hour slots, results rank the overlaps, the creator can finalize a time. Goals: `GOALS.md`
@@ -11,7 +11,7 @@ is the pilot of the Company ui-kit (G-001 in `E:\CLAUDE\projects\ui-kit\GOALS.md
 ## Current state
 
 - **Live** at https://meet.app.julienika.cz (HTTP 200 re-checked 2026-11-22). App port 30010,
-  Postgres 54321 (127.0.0.1). Live build is 6272b32 (deployed 2026-11-22), which includes the ui-kit
+  Postgres 54321 (127.0.0.1). Live build is 2046ba4 (deployed 2026-11-22), which includes the ui-kit
   pilot below.
 - Done and deployed: G-001 M1–M5 (rooms, cookie identity with "is this you?", drag-painted grid,
   prefer layer, results heatmap + Best times, creator finalize/clear, 3-day expiry), the
@@ -42,9 +42,9 @@ is the pilot of the Company ui-kit (G-001 in `E:\CLAUDE\projects\ui-kit\GOALS.md
   the accent was darkened for contrast (D016); Prettier added (D017). The kit's kitchen sink is
   at `/dev/ui-kit` under `npm run dev` only (D018). Each message slot is sized for the longest
   message it can show, listed in `lib/message-slots.ts`, and every such message fits one line at
-  360px in all four locales (D021).
-- Verification on 2026-11-22 (branch, 6701ac3): unit 122/122, integration 29/29, e2e 36/36 with
-  no retries (2 workers), `ui-check` clean (4 static sections), `format:check` and `tsc` clean,
+  360px in all four locales with 6% of the line to spare (D021, ui-kit D009).
+- Verification on 2026-11-22 (2046ba4): GitHub CI green (run 45060186882); locally unit 122/122,
+  e2e 36/36 with no retries (1 worker), `ui-check` clean (4 static sections), `format:check` and `tsc` clean,
   lint 1 old warning (`_formData` in `app/r/[slug]/actions.ts`), `build:check` reports no kitchen
   sink in `.next`.
 - CI: `.github/workflows/ci.yml` runs format, lint, route types (`next typegen`), types, the ui-kit
@@ -139,6 +139,7 @@ is the pilot of the Company ui-kit (G-001 in `E:\CLAUDE\projects\ui-kit\GOALS.md
 | 2026-09-28 | f9dd100 | Adds hour-label and corner (whole-grid) fill shortcuts | Local unit 107/107, e2e incl. new fill-hour/all specs; no migration; migrate exit 0; live 200; only when-we-meet app+cleanup restarted |
 | 2026-09-28 | ee8e689 | Owner feedback: replaces the corner-fill confirmation with Undo/Redo (D014); fixes an `undefined`-in-JSON history bug the new persistence surfaced | Local unit 113/113, e2e 25/25 incl. under parallel-worker load; no migration; migrate exit 0; live 200, undo/redo exercised live incl. persistence across a reload; only when-we-meet app+cleanup restarted |
 | 2026-11-22 | 6272b32 | ui-kit pilot: tokens, kit components, message slots sized for their messages, shorter copy (D015–D021) | Local unit 122/122, integration 29/29, e2e 36/36; live create form at 360px in en/ru/cs/de: error moves nothing, axe 0 serious, no console error; 16 sites 200, no other container restarted |
+| 2026-11-22 | 2046ba4 | CI route types; 27 messages shortened to fit one line with headroom on Linux (ui-kit D009) | GitHub CI green incl. e2e; no migration; live check repeated, same results; 16 sites 200, only app+cleanup restarted |
 
 ## Decisions
 
