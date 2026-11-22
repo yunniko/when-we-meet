@@ -6,14 +6,18 @@ import type { Locator } from "@playwright/test";
 /** The messages among `messages` that take more than `maxLines` lines in a copy of `slot`, with their line count. */
 export async function measureMessageLines(slot: Locator, messages: string[], maxLines = 1): Promise<string[]> {
   return slot.evaluate(
-    (el, { messages, maxLines }) => {
+    async (el, { messages, maxLines }) => {
       const probe = el.cloneNode(false) as HTMLElement;
       probe.removeAttribute("id");
       probe.removeAttribute("role");
       probe.setAttribute("aria-hidden", "true");
       probe.style.visibility = "hidden";
       el.parentElement!.insertBefore(probe, el.nextSibling);
-      const lineHeight = parseFloat(getComputedStyle(probe).lineHeight);
+      const style = getComputedStyle(probe);
+      const lineHeight = parseFloat(style.lineHeight);
+      // A web font's subsets (Cyrillic, Latin Extended) load only when text needs them; measuring before that
+      // measures the fallback font, which wraps differently on each OS.
+      await Promise.all(messages.map((message) => document.fonts.load(style.font, message)));
       const over: string[] = [];
       for (const message of messages) {
         probe.textContent = message;
