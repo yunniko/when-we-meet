@@ -13,11 +13,18 @@ export async function measureMessageLines(slot: Locator, messages: string[], max
       probe.setAttribute("aria-hidden", "true");
       probe.style.visibility = "hidden";
       el.parentElement!.insertBefore(probe, el.nextSibling);
-      const style = getComputedStyle(probe);
-      const lineHeight = parseFloat(style.lineHeight);
-      // A web font's subsets (Cyrillic, Latin Extended) load only when text needs them; measuring before that
-      // measures the fallback font, which wraps differently on each OS.
-      await Promise.all(messages.map((message) => document.fonts.load(style.font, message)));
+      const lineHeight = parseFloat(getComputedStyle(probe).lineHeight);
+      // A web font's subsets (Cyrillic, Latin Extended) load only once text needs them. Rendering every message
+      // first makes the browser request them; fonts.ready waits for that and, unlike fonts.load, never rejects.
+      probe.textContent = messages.join(" ");
+      probe.getBoundingClientRect();
+      await document.fonts.ready;
+      // A face that failed to load would mean measuring the fallback font, which wraps differently on each OS.
+      const failed = [...document.fonts].filter((face) => face.status === "error");
+      if (failed.length > 0) {
+        probe.remove();
+        throw new Error(`web font failed to load, cannot measure: ${failed.map((f) => f.family).join(", ")}`);
+      }
       const over: string[] = [];
       for (const message of messages) {
         probe.textContent = message;
