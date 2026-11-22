@@ -1,0 +1,57 @@
+name: ci
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      db:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: wwm
+          POSTGRES_PASSWORD: wwm
+          POSTGRES_DB: when_we_meet
+        ports:
+          - 54321:5432
+        options: >-
+          --health-cmd "pg_isready -U wwm -d when_we_meet"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://wwm:wwm@127.0.0.1:54321/when_we_meet
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      # UI tokens, copy and message sites (D015); the UI e2e specs run with the rest of the e2e suite below.
+      - run: node scripts/ui-kit/ui-check.mjs
+      - run: npm run test:unit
+      - run: npx prisma migrate deploy
+      - run: npm run test:integration
+      # The production build, then proof that the development-only kit page is not in it (D018).
+      - run: npm run build:check
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-results
+          path: test-results/
+          retention-days: 7
+      - name: Company docs rules
+        run: |
+          test -f HANDOVER.md
+          grep -q "^Last verified:" HANDOVER.md

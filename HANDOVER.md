@@ -1,5 +1,5 @@
 # Handover — When We Meet
-Last verified: 2026-11-22 at b8057c3
+Last verified: 2026-11-22 at 8fce001
 
 Account-free group scheduling: a room with a date range, participants paint CAN/CANNOT/prefer
 in 1-hour slots, results rank the overlaps, the creator can finalize a time. Goals: `GOALS.md`
@@ -44,6 +44,9 @@ is the pilot of the Company ui-kit (G-001 in `E:\CLAUDE\projects\ui-kit\GOALS.md
 - Verification on 2026-11-22 (branch, b8057c3): unit 119/119, integration 29/29, e2e 32/32 with
   no retries (twice), `npm run ui:check` clean (4 static sections, 7 UI specs), `format:check`
   clean, `build:check` reports no kitchen sink in `.next`.
+- CI: `.github/workflows/ci.yml` runs format, lint, types, the ui-kit static checks, unit,
+  integration, `build:check` and e2e. The same steps pass locally; it has not run on GitHub yet
+  (the branch is not pushed).
 
 ## How things fit together
 
