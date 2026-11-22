@@ -11,8 +11,8 @@ is the pilot of the Company ui-kit (G-001 in `E:\CLAUDE\projects\ui-kit\GOALS.md
 ## Current state
 
 - **Live** at https://meet.app.julienika.cz (HTTP 200 re-checked 2026-11-22). App port 30010,
-  Postgres 54321 (127.0.0.1). Live build is ee8e689 (deployed 2026-09-28); the ui-kit pilot
-  below is not deployed.
+  Postgres 54321 (127.0.0.1). Live build is 6272b32 (deployed 2026-11-22), which includes the ui-kit
+  pilot below.
 - Done and deployed: G-001 M1–M5 (rooms, cookie identity with "is this you?", drag-painted grid,
   prefer layer, results heatmap + Best times, creator finalize/clear, 3-day expiry), the
   post-launch rounds (weekend shading, sticky headers, leave-room with ownership transfer,
@@ -47,9 +47,8 @@ is the pilot of the Company ui-kit (G-001 in `E:\CLAUDE\projects\ui-kit\GOALS.md
   no retries (2 workers), `ui-check` clean (4 static sections), `format:check` and `tsc` clean,
   lint 1 old warning (`_formData` in `app/r/[slug]/actions.ts`), `build:check` reports no kitchen
   sink in `.next`.
-- CI: `.github/workflows/ci.yml` runs format, lint, types, the ui-kit static checks, unit,
-  integration, `build:check` and e2e. The same steps pass locally; it has not run on GitHub yet
-  (the branch is not pushed).
+- CI: `.github/workflows/ci.yml` runs format, lint, route types (`next typegen`), types, the ui-kit
+  static checks, unit, integration, `build:check` and e2e on every push to `master`.
 
 ## How things fit together
 
@@ -104,7 +103,8 @@ is the pilot of the Company ui-kit (G-001 in `E:\CLAUDE\projects\ui-kit\GOALS.md
 
 ## Next steps and open questions
 
-- PENDING APPROVAL: deploy the ui-kit pilot (branch `goal/ui-kit-g001`) to production. No migration.
+- The daily-window slot keeps one empty line under the presets when no custom hours are open: it reserves
+  `dayEndBeforeStart`, which only custom hours can show. Fix, then redeploy.
 - The availability grid cannot be marked from the keyboard (WCAG 2.1.1): a feature for the Owner to
   schedule, not a copy change.
 - `playwright.config.ts` has `retries: 1`, which hides flakes; `create-join-mark-results` fails
@@ -138,6 +138,7 @@ is the pilot of the Company ui-kit (G-001 in `E:\CLAUDE\projects\ui-kit\GOALS.md
 | 2026-09-28 | e304af2 | Double-click/double-tap a day header fills that day with the current brush | Local unit 107/107, e2e incl. new fill-day spec under parallel load; no migration; migrate exit 0; live 200, feature exercised live; only when-we-meet app+cleanup restarted |
 | 2026-09-28 | f9dd100 | Adds hour-label and corner (whole-grid) fill shortcuts | Local unit 107/107, e2e incl. new fill-hour/all specs; no migration; migrate exit 0; live 200; only when-we-meet app+cleanup restarted |
 | 2026-09-28 | ee8e689 | Owner feedback: replaces the corner-fill confirmation with Undo/Redo (D014); fixes an `undefined`-in-JSON history bug the new persistence surfaced | Local unit 113/113, e2e 25/25 incl. under parallel-worker load; no migration; migrate exit 0; live 200, undo/redo exercised live incl. persistence across a reload; only when-we-meet app+cleanup restarted |
+| 2026-11-22 | 6272b32 | ui-kit pilot: tokens, kit components, message slots sized for their messages, shorter copy (D015–D021) | Local unit 122/122, integration 29/29, e2e 36/36; live create form at 360px in en/ru/cs/de: error moves nothing, axe 0 serious, no console error; 16 sites 200, no other container restarted |
 
 ## Decisions
 

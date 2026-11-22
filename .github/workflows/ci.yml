@@ -35,6 +35,7 @@ jobs:
       - run: npx prisma generate
       - run: npm run format:check
       - run: npm run lint
+      - run: npx next typegen # route and asset types tsc needs; a fresh checkout has none
       - run: npx tsc --noEmit
       # UI tokens, copy and message sites (D015); the UI e2e specs run with the rest of the e2e suite below.
       - run: node scripts/ui-kit/ui-check.mjs
