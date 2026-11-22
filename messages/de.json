@@ -84,9 +84,9 @@
     "errors": {
       "nameRequired": "Gib einen Namen ein.",
       "nameTooLong": "Der Name ist zu lang.",
-      "confirmFailed": "Hat nicht geklappt. Gib den Namen neu ein.",
+      "confirmFailed": "Gib deinen Namen bitte neu ein.",
       "roomFull": "Der Raum ist voll ({max} Personen).",
-      "notOnList": "Nur für Eingeladene. Wähl dich oben aus."
+      "notOnList": "Nur Eingeladene. Wähl dich oben aus."
     },
     "invitedLabel": "Eingeladen",
     "pickYourNameHint": "Tippe auf deinen Namen, wenn du dabei bist.",
@@ -141,7 +141,7 @@
       "title": "Raum verlassen?"
     },
     "errors": {
-      "ruleChanged": "Die Regeln haben sich geändert. Lies neu."
+      "ruleChanged": "Regeln geändert. Bitte neu lesen."
     }
   },
   "ParticipantsPanel": {

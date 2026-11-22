@@ -51,3 +51,8 @@ shares no slot with an error is always visible and was left as written.
 
 The availability grid is pointer-only: no keyboard way to mark a slot (WCAG 2.1.1). Listed for the
 Owner in `HANDOVER.md`; it is a feature, not a message change.
+
+After ui-kit D009 (6% headroom) these were shortened as well: en `ParticipantsPanel.errors.self` and
+`invitedNameTooLong`; ru `CreateRoom.errors.listedOnlyNeedsNames`, `ParticipantsPanel.errors.failed`,
+`invitedNameTooLong`, `addFailed`, `ruleFailed`; cs `listedOnlyNeedsNames`, `LeaveRoom.errors.ruleChanged`; de
+`JoinForm.errors.confirmFailed`, `notOnList`, `LeaveRoom.errors.ruleChanged`.

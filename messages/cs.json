@@ -52,7 +52,7 @@
       "descriptionTooLong": "Popis nesmí být delší než 2000 znaků",
       "invitedNameTooLong": "Jméno může mít nejvýš 60 znaků.",
       "tooManyInvitedNames": "Pozvat lze nejvýš 99 jmen.",
-      "listedOnlyNeedsNames": "Přidejte jména výše, nebo pusťte všechny.",
+      "listedOnlyNeedsNames": "Přidejte jména, nebo pusťte všechny.",
       "joinRuleInvalid": "Vyberte, kdo se může připojit."
     },
     "invitedLabel": "Pozvaní",
@@ -141,7 +141,7 @@
       "title": "Opustit místnost?"
     },
     "errors": {
-      "ruleChanged": "Nastavení se změnilo. Přečtěte si to znovu."
+      "ruleChanged": "Nastavení se změnilo. Přečtěte znovu."
     }
   },
   "ParticipantsPanel": {
