@@ -34,6 +34,14 @@ other three locales were rewritten to the same meaning (parity enforced by `test
 `notYou`, `endBeforeStart`, `rangeTooLong`, `descriptionPlaceholder`: same meaning, fewer words; the
 date errors now fit one line at 390px in all four locales (`tests/e2e/ui-quality.spec.ts`).
 
+M5 calibration (D021): every message a slot reserves space for now fits one line at 360px in all four
+locales. Shortened, in the locales where they wrapped: `CreateRoom` `dayEndBeforeStart`, `listedOnlyNeedsNames`,
+`invitedNameTooLong`, `tooManyInvitedNames`, `invalidInput`, `timezoneHint`; `JoinForm` `confirmFailed`,
+`notOnList`, `roomFull`; `LeaveRoom.ruleChanged`; `ParticipantsPanel` `addFailed`, `full`, `tooManyInvitedNames`,
+`ruleFailed`, `failed`, `self`, `notOwner`, `roomGone`, `claimed`, `nameMismatch`, `invitedNameTooLong`;
+`AvailabilityGrid` `errors.save`, `removedStatus`; `ResultsBoard` `notOwner`, `outOfRange`, `notFuture`. A hint that
+shares no slot with an error is always visible and was left as written.
+
 ## Added
 
 `gridLabel` (×2) names the scrollable grid regions for screen readers (axe `scrollable-region-focusable`);

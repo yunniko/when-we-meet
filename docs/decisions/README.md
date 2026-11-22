@@ -22,3 +22,4 @@ Numbers match the former `HANDOVER.md` `Dn` entries (referenced from `AGENTS.md`
 - D018 — The kit's kitchen sink is a development-only page, proven absent from builds — active
 - D019 — Grid instructions: one visible line, the rest on demand — active
 - D020 — Start and end dates share one full-width message slot — active
+- D021 — Each message slot lists what it can show, and that copy fits one phone line — active

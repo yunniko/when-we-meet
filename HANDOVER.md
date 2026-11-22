@@ -1,5 +1,5 @@
 # Handover — When We Meet
-Last verified: 2026-11-22 at 8fce001
+Last verified: 2026-11-22 at 6701ac3
 
 Account-free group scheduling: a room with a date range, participants paint CAN/CANNOT/prefer
 in 1-hour slots, results rank the overlaps, the creator can finalize a time. Goals: `GOALS.md`
@@ -40,10 +40,13 @@ is the pilot of the Company ui-kit (G-001 in `E:\CLAUDE\projects\ui-kit\GOALS.md
   components, so each hint, error, status, confirmation and empty state has one form and a
   reserved place; UI copy is 12% shorter (`docs/reviews/2026-11-22-ui-message-inventory.md`);
   the accent was darkened for contrast (D016); Prettier added (D017). The kit's kitchen sink is
-  at `/dev/ui-kit` under `npm run dev` only (D018).
-- Verification on 2026-11-22 (branch, b8057c3): unit 119/119, integration 29/29, e2e 32/32 with
-  no retries (twice), `npm run ui:check` clean (4 static sections, 7 UI specs), `format:check`
-  clean, `build:check` reports no kitchen sink in `.next`.
+  at `/dev/ui-kit` under `npm run dev` only (D018). Each message slot is sized for the longest
+  message it can show, listed in `lib/message-slots.ts`, and every such message fits one line at
+  360px in all four locales (D021).
+- Verification on 2026-11-22 (branch, 6701ac3): unit 122/122, integration 29/29, e2e 36/36 with
+  no retries (2 workers), `ui-check` clean (4 static sections), `format:check` and `tsc` clean,
+  lint 1 old warning (`_formData` in `app/r/[slug]/actions.ts`), `build:check` reports no kitchen
+  sink in `.next`.
 - CI: `.github/workflows/ci.yml` runs format, lint, types, the ui-kit static checks, unit,
   integration, `build:check` and e2e. The same steps pass locally; it has not run on GitHub yet
   (the branch is not pushed).
@@ -106,6 +109,7 @@ is the pilot of the Company ui-kit (G-001 in `E:\CLAUDE\projects\ui-kit\GOALS.md
   schedule, not a copy change.
 - `playwright.config.ts` has `retries: 1`, which hides flakes; `create-join-mark-results` fails
   rarely at its `toHaveURL` without retries, cause unknown (evidence: ui-kit G-001 progress log).
+  With the CPU saturated by another process, many specs time out at 30s; run e2e on an idle machine.
 
 - Owner: sign off G-004 after trying it on the live site. Then delete the pre-G-004 database
   backup in the host's backups folder (it holds participant names).
