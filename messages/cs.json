@@ -20,13 +20,12 @@
     "optional": "(nepovinné)",
     "roomNamePlaceholder": "např. Výlet na kole",
     "descriptionLabel": "Popis",
-    "descriptionPlaceholder": "Cokoliv užitečného — co vzít s sebou, místo konání atd.",
+    "descriptionPlaceholder": "Např. vezměte svačinu, sraz u brány",
     "fromLabel": "Od",
     "toLabel": "Do",
     "timezoneLabel": "Časové pásmo",
     "timezoneDetecting": "Zjišťování…",
     "timezoneChange": "Změnit",
-    "timezoneHelp": "Všichni účastníci místnosti označují a vidí časy v tomto jednom časovém pásmu.",
     "dailyWindowLegend": "Denní časové okno",
     "dailyStartLabel": "Začátek dne",
     "dailyEndLabel": "Konec dne",
@@ -58,29 +57,28 @@
     },
     "invitedLabel": "Pozvaní",
     "invitedPlaceholder": "Anna\nBoris\nChen",
-    "invitedHelp": "Jedno jméno na řádek. Každý se připojí klepnutím na své jméno na stránce místnosti. Nejvýš 99 jmen.",
     "joinRuleLegend": "Kdo se může připojit",
-    "joinRuleAnyone": "Kdokoli s odkazem může přidat své jméno",
-    "joinRuleListedOnly": "Jen pozvaná jména (vy vždy můžete)"
+    "joinRuleAnyone": "Kdokoli s odkazem",
+    "joinRuleListedOnly": "Jen pozvaní",
+    "timezoneHint": "Všichni zadávají a vidí časy v tomto pásmu.",
+    "invitedHint": "Jedno jméno na řádek, nejvýše 99.",
+    "joinRuleHint": "Do vlastní místnosti se připojíte vždy."
   },
   "JoinForm": {
-    "intro": "Chystáte se připojit k této místnosti a označit, kdy z uvedených časů máte volno. Registrace není potřeba — stačí jméno, které uvidí ostatní účastníci. Po přihlášení uvidíte společnou dostupnost všech na stránce s výsledky.",
-    "alreadyInRoom": "Již v této místnosti:",
-    "clickYourName": "— klikněte na své jméno, pokud jste to vy.",
+    "alreadyInRoom": "Již v místnosti",
     "itsMeTitle": "To jsem já — pokračovat jako {name}",
     "nameLabel": "Vaše jméno",
-    "nameHelp": "Musí být v této místnosti jedinečné. Pokud se sem později vrátíte z jiného prohlížeče nebo zařízení a budete chtít upravit své záznamy, budete muset zadat stejné jméno znovu.",
     "namePlaceholder": "např. Petr",
     "submit": "Připojit se",
     "submitting": "Připojování…",
     "collision": {
-      "hasMarks": "<b>{name}</b> už má v této místnosti záznamy:",
-      "noMarks": "Zatím žádné záznamy — jen rezervované jméno.",
       "summaryLine": "{can} může · {cannot} nemůže",
-      "isThisYou": "Jste to vy?",
-      "yesConfirm": "Ano, to jsem já",
       "noDifferent": "Ne, zvolit jiné jméno",
-      "invited": "<b>{name}</b> je na seznamu pozvaných do této místnosti."
+      "hasMarksHint": "<b>{name}</b> už má v této místnosti záznamy:",
+      "noMarksHint": "Zatím bez záznamů.",
+      "isThisYouTitle": "Jste to vy?",
+      "yes": "Ano, to jsem já",
+      "invitedHint": "<b>{name}</b> je na seznamu pozvaných do této místnosti."
     },
     "errors": {
       "nameRequired": "Zadejte jméno.",
@@ -89,17 +87,19 @@
       "roomFull": "Tato místnost dosáhla limitu {max} účastníků.",
       "notOnList": "Tato místnost přijímá jen pozvaná jména — vyberte své ze seznamu výše."
     },
-    "invitedLabel": "Pozvaní:",
-    "listedOnlyNote": "Do této místnosti se mohou připojit jen pozvaná jména.",
-    "listedOnlyCreatorNote": "Do této místnosti se mohou připojit jen pozvaná jména. Vy jste ji vytvořili, takže se můžete připojit pod jakýmkoli jménem."
+    "invitedLabel": "Pozvaní",
+    "pickYourNameHint": "Pokud tu jste, klepněte na své jméno.",
+    "nameHint": "Pro úpravy z jiného zařízení zadejte stejné jméno.",
+    "listedOnlyHint": "Připojit se mohou jen pozvaní.",
+    "listedOnlyCreatorHint": "Připojit se mohou jen pozvaní; jako zakladatel můžete použít jakékoli jméno."
   },
   "RoomPage": {
     "markingAs": "Označujete jako <b>{name}</b>",
-    "notYou": "Nejste to vy? Použít jiné jméno",
+    "notYou": "Použít jiné jméno",
     "alsoInRoom": "Také v této místnosti: {names}",
     "seeResults": "Zobrazit výsledky →",
-    "closedMessage": "Čas schůzky byl nastaven — označování dostupnosti je uzavřeno.",
-    "invitedNotJoined": "Pozvaní, kteří ještě nejsou v místnosti: {names}"
+    "closedEmpty": "Čas schůzky je určen, zadávání je uzavřeno.",
+    "notJoinedYet": "Zatím nepřipojení: {names}"
   },
   "AvailabilityGrid": {
     "brushes": {
@@ -108,16 +108,21 @@
       "prefer": "Preferuji",
       "clear": "Vymazat"
     },
-    "saving": "Ukládání…",
-    "saved": "Uloženo",
-    "saveError": "Uložení se nezdařilo — zkuste to znovu",
-    "removed": "Pod tímto jménem už v této místnosti nejste — načítám znovu…",
-    "instructions": "Klikněte, nebo klikněte a táhněte, pro označení časů. Na dotykové obrazovce: klepněte na políčko, nebo podržte a pak táhněte; přejetím prstem posouváte. Dvojklikem nebo dvojitým klepnutím na záhlaví dne, na popisek hodiny nebo na roh vlevo nahoře vyplníte ten den, tu hodinu, nebo celou mřížku. „Preferuji“ platí jen pro časy již označené jako Můžu.",
-    "fillDayTitle": "Dvojklikem nebo dvojitým klepnutím vyplníte celý tento den",
-    "fillHourTitle": "Dvojklikem nebo dvojitým klepnutím vyplníte celou tuto hodinu ve všech dnech",
-    "fillAllTitle": "Dvojklikem nebo dvojitým klepnutím vyplníte celou mřížku",
+    "fillDayTitle": "Dvojklikem nebo dvojklepnutím vyplníte tento den",
+    "fillHourTitle": "Dvojklikem nebo dvojklepnutím vyplníte tuto hodinu",
+    "fillAllTitle": "Dvojklikem nebo dvojklepnutím vyplníte vše",
     "undo": "Zpět",
-    "redo": "Znovu"
+    "redo": "Znovu",
+    "savingStatus": "Ukládání…",
+    "savedStatus": "Uloženo",
+    "errors": {
+      "save": "Uložení se nezdařilo — zkuste to znovu"
+    },
+    "removedStatus": "Už nejste v místnosti; načítám znovu…",
+    "instructionsHint": "Klepněte nebo táhněte. Dvojklepnutí na záhlaví ho vyplní.",
+    "instructionsLabel": "Jak zadávat",
+    "instructionsDetail": "Na dotykové obrazovce podržte a pak táhněte; přejetím posouváte. Dvojklik nebo dvojklepnutí na záhlaví dne, popisek hodiny nebo levý horní roh vyplní ten den, tu hodinu nebo celou mřížku. „Preferuji“ platí jen pro sloty už označené „Můžu“.",
+    "gridLabel": "Vaše dostupnost"
   },
   "FinalizedBanner": {
     "title": "📌 Čas schůzky nastaven: {when}",
@@ -126,23 +131,24 @@
   },
   "LeaveRoom": {
     "link": "Opustit místnost",
-    "warning": "Tímto se smaže vaše jméno a všechny vaše záznamy z této místnosti. Nelze vrátit zpět.",
-    "confirm": "Ano, smazat moje data",
     "cancel": "Zrušit",
-    "warningKeepsName": "Tímto se smažou všechny vaše záznamy a odhlásíte se. Vaše jméno zůstane na seznamu pozvaných, takže ho můžete později znovu použít.",
-    "confirmKeepsName": "Ano, smazat moje záznamy",
-    "ruleChanged": "Nastavení místnosti se právě změnilo. Než potvrdíte, přečtěte si to prosím znovu."
+    "confirm": {
+      "bodyKeepsName": "Tímto se smažou všechny vaše záznamy a odhlásíte se. Vaše jméno zůstane na seznamu pozvaných, takže ho můžete později znovu použít.",
+      "body": "Tímto se smaže vaše jméno a všechny vaše záznamy z této místnosti. Nelze vrátit zpět.",
+      "action": "Ano, smazat moje data",
+      "actionKeepsName": "Ano, smazat moje záznamy",
+      "title": "Opustit místnost?"
+    },
+    "errors": {
+      "ruleChanged": "Nastavení místnosti se právě změnilo. Než potvrdíte, přečtěte si to prosím znovu."
+    }
   },
   "ParticipantsPanel": {
     "heading": "Účastníci",
-    "ownerHint": "Vidíte to jen vy, protože tuto místnost organizujete.",
+    "ownerHint": "Tento panel vidíte jen vy.",
     "you": "{name} (vy)",
-    "nobodyElse": "Zatím se nikdo další nepřipojil.",
     "remove": "Odebrat",
     "removeLabel": "Odebrat {name}",
-    "warning": "Tímto se z místnosti smaže účastník {name} a všechny jeho záznamy. Nelze vrátit zpět.",
-    "typeToConfirm": "Pro potvrzení napište „{name}“",
-    "confirm": "Ano, odebrat {name}",
     "removing": "Odebírám…",
     "cancel": "Zrušit",
     "errors": {
@@ -164,21 +170,28 @@
     "notJoinedTag": "ještě není v místnosti",
     "leftTag": "už není v místnosti",
     "addLabel": "Přidat pozvaná jména",
-    "addHelp": "Jedno jméno na řádek. Jména, která už v místnosti jsou, se přeskočí.",
     "addButton": "Přidat",
     "adding": "Přidávám…",
     "addedResult": "{count, plural, =0 {Žádná nová jména nepřibyla.} one {Přidáno # jméno.} few {Přidána # jména.} other {Přidáno # jmen.}}",
     "skippedResult": "Už v místnosti: {names}",
     "joinRuleLegend": "Kdo se může připojit",
-    "joinRuleAnyone": "Kdokoli s odkazem může přidat své jméno",
-    "joinRuleListedOnly": "Jen jména z tohoto seznamu"
+    "joinRuleAnyone": "Kdokoli s odkazem",
+    "joinRuleListedOnly": "Jen jména z tohoto seznamu",
+    "empty": "Zatím se nikdo další nepřipojil.",
+    "removeConfirm": {
+      "body": "Tímto se z místnosti smaže účastník {name} a všechny jeho záznamy. Nelze vrátit zpět.",
+      "typeLabel": "Pro potvrzení napište „{name}“",
+      "action": "Ano, odebrat {name}",
+      "title": "Odebrat {name}?"
+    },
+    "addHint": "Jedno jméno na řádek. Jména, která už v místnosti jsou, se přeskočí."
   },
   "ResultsPage": {
     "pageTitle": "{title} — výsledky",
     "peopleCount": "{count, plural, one {# osoba} few {# osoby} other {# osob}}",
     "participantsLabel": "Účastníci: {names}",
     "editLink": "← Upravit moji dostupnost",
-    "joinedOfExpected": "Připojeno {joined} z {expected}.",
+    "joinedOfExpected": "Připojeno {joined} z {expected}",
     "notJoinedYet": "Ještě nejsou v místnosti: {names}"
   },
   "ResultsBoard": {
@@ -186,14 +199,13 @@
       "fewerCan": "méně může",
       "moreCan": "více může",
       "everyoneCan": "můžou všichni",
-      "preferHint": "★N = N lidí preferuje tento čas",
-      "clickToPick": "Klikněte na čas, abyste ho nastavili jako čas schůzky"
+      "clickToPick": "Kliknutím vyberte slot",
+      "prefer": "★N = N preferuje"
     },
     "cellTitleBase": "{can}/{total} může",
     "cellTitlePrefer": ", {count} preferuje",
     "cellTitleCannot": ", {count} nemůže",
     "bestTimesHeading": "Nejlepší časy",
-    "noSlotsYet": "Zatím nikdo neoznačil žádný dostupný čas.",
     "everyoneBadge": "všichni",
     "preferSuffix": " · ★{count} preferuje",
     "pickButton": "Vybrat tento čas",
@@ -205,7 +217,9 @@
       "invalidSlot": "Neplatný čas.",
       "outOfRange": "Tento čas není v rozsahu místnosti.",
       "notFuture": "Můžete vybrat jen čas v budoucnosti."
-    }
+    },
+    "slotsEmpty": "Zatím nikdo neoznačil žádný dostupný čas.",
+    "gridLabel": "Dostupnost podle času"
   },
   "About": {
     "pageTitle": "O aplikaci, podmínky a soukromí",

@@ -113,7 +113,7 @@ test("the server refuses a wrong name, a target who already left, and a browser 
   await panel.getByLabel("Type “Alice” to confirm").fill("alice");
   const otherTab = await context.newPage();
   await otherTab.goto(page.url());
-  await otherTab.getByRole("button", { name: "Not you? Use a different name" }).click();
+  await otherTab.getByRole("button", { name: "Use a different name" }).click();
   await joinRoom(otherTab, "Someone Else");
   await expect(otherTab.getByText("Marking as Someone Else")).toBeVisible();
   await panel.getByRole("button", { name: "Yes, remove Alice" }).click();

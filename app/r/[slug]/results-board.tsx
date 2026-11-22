@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { selectFinalSlot } from "@/app/r/[slug]/actions";
 import { formatDayLabel, formatHour, isWeekend, slotKey } from "@/lib/slots";
 import type { SlotResult } from "@/lib/results";
+import { EmptyState, StatusSlot } from "@/components/ui-kit";
 
 function cellStyle(result: SlotResult): CSSProperties {
   // A solid-color "image" layer (not backgroundColor) so the weekend shade
@@ -51,11 +52,7 @@ export function ResultsBoard({
 
   return (
     <>
-      {error && (
-        <p className="mb-4 rounded-md bg-danger-soft px-3 py-2 text-sm text-danger">
-          {t(`errors.${error}`)}
-        </p>
-      )}
+      <StatusSlot message={error ? t(`errors.${error}`) : null} tone="danger" className="mb-2" />
 
       <div className="mb-6 flex flex-wrap items-center gap-4 text-xs text-text-muted">
         <span className="flex items-center gap-1.5">
@@ -70,11 +67,17 @@ export function ResultsBoard({
           <span className="size-3 rounded-sm ring-2 ring-highlight" />
           {t("legend.everyoneCan")}
         </span>
-        <span className="flex items-center gap-1.5">{t("legend.preferHint")}</span>
+        <span className="flex items-center gap-1.5">{t("legend.prefer")}</span>
         {canPick && <span className="font-medium text-accent">{t("legend.clickToPick")}</span>}
       </div>
 
-      <div className="max-h-[70vh] overflow-auto rounded-md border border-border">
+      {/* Focusable so a keyboard can scroll it when no slot button is inside (a viewer who can't pick). */}
+      <div
+        role="region"
+        aria-label={t("gridLabel")}
+        tabIndex={0}
+        className="max-h-[70vh] overflow-auto rounded-md border border-border focus-visible:outline-2 focus-visible:outline-focus"
+      >
         <div
           className="inline-grid select-none"
           style={{ gridTemplateColumns: `72px repeat(${dates.length}, minmax(56px, 1fr))` }}
@@ -132,7 +135,7 @@ export function ResultsBoard({
 
       <h2 className="mt-8 mb-3 text-sm font-semibold">{t("bestTimesHeading")}</h2>
       {topResults.length === 0 ? (
-        <p className="text-sm text-text-muted">{t("noSlotsYet")}</p>
+        <EmptyState title={t("slotsEmpty")} className="items-start p-0 text-left" />
       ) : (
         <ol className="flex flex-col gap-1.5 text-sm">
           {topResults.map((r) => {

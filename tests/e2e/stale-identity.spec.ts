@@ -41,8 +41,8 @@ test("a grid rendered for one name refuses to save once the cookie names someone
   const other = await context.newPage();
   await other.goto(page.url());
   await expect(other.getByText("Marking as First")).toBeVisible();
-  // Switch identity in the second tab: "Not you?" then join as Second.
-  await other.getByRole("button", { name: "Not you? Use a different name" }).click();
+  // Switch identity in the second tab: "Use a different name", then join as Second.
+  await other.getByRole("button", { name: "Use a different name" }).click();
   await joinRoom(other, "Second");
   await expect(other.getByText("Marking as Second")).toBeVisible();
 
@@ -55,7 +55,7 @@ test("a grid rendered for one name refuses to save once the cookie names someone
   await expect(page.getByTestId("slot-2027-08-11-9")).not.toHaveAttribute("data-state", "CAN");
 
   // And First's original mark is still there for First.
-  await page.getByRole("button", { name: "Not you? Use a different name" }).click();
+  await page.getByRole("button", { name: "Use a different name" }).click();
   await page.getByRole("button", { name: "First", exact: true }).click();
   await page.getByRole("button", { name: "Yes, that's me" }).click();
   await expect(page.getByTestId("slot-2027-08-11-9")).toHaveAttribute("data-state", "CAN");

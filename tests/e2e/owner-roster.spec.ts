@@ -48,7 +48,7 @@ test("owner adds names, removes an unclaimed one in one click, and switches who 
   // Only names on the list: a stranger's own name is refused, a listed one works.
   await Promise.all([serverActionDone(page), panel.getByLabel("Only names on this list").check()]);
   const guest = await visitorAt(browser, page.url());
-  await expect(guest.page.getByText("Only invited names can join this room.")).toBeVisible();
+  await expect(guest.page.getByText("Only invited names can join")).toBeVisible();
   await joinRoom(guest.page, "Mallory");
   await expect(guest.page.getByText("This room only accepts invited names")).toBeVisible();
   await claim(guest.page, "Dana");
@@ -56,7 +56,7 @@ test("owner adds names, removes an unclaimed one in one click, and switches who 
   // Back to anyone with the link: a new name can join again.
   await Promise.all([
     serverActionDone(page),
-    panel.getByLabel("Anyone with the link can add their name").check(),
+    panel.getByLabel("Anyone with the link", { exact: true }).check(),
   ]);
   const walkIn = await visitorAt(browser, page.url());
   await joinRoom(walkIn.page, "Walk In");

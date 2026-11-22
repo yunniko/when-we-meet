@@ -1,11 +1,12 @@
 {
-  "kit": "c1b3828",
+  "kit": "0d357f9",
   "note": "Copied from projects/ui-kit by bin/sync.mjs; change the kit, not these files.",
   "files": [
     "components/ui-kit/button.tsx",
     "components/ui-kit/confirm-dialog.tsx",
     "components/ui-kit/cx.ts",
     "components/ui-kit/empty-state.tsx",
+    "components/ui-kit/field-group.tsx",
     "components/ui-kit/field.tsx",
     "components/ui-kit/index.ts",
     "components/ui-kit/inline-help.tsx",

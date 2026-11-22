@@ -18,6 +18,7 @@ import {
   type SlotUpdate,
 } from "@/lib/paint";
 import { formatDayLabel, formatHour, isWeekend, slotKey, type CellMark } from "@/lib/slots";
+import { InlineHelp, StatusSlot } from "@/components/ui-kit";
 
 const BRUSH_KEYS: { value: Brush; swatchClass: string }[] = [
   { value: "CAN", swatchClass: "bg-can" },
@@ -426,19 +427,35 @@ export function AvailabilityGrid({
             {t("redo")}
           </button>
         </div>
-        <span className="text-xs text-text-muted">
-          {saveState === "saving" && t("saving")}
-          {saveState === "saved" && t("saved")}
-          {saveState === "error" && t("saveError")}
-          {saveState === "removed" && t("removed")}
-        </span>
+        <StatusSlot
+          message={
+            saveState === "saving"
+              ? t("savingStatus")
+              : saveState === "saved"
+                ? t("savedStatus")
+                : saveState === "error"
+                  ? t("errors.save")
+                  : saveState === "removed"
+                    ? t("removedStatus")
+                    : null
+          }
+          tone={saveState === "error" ? "danger" : saveState === "saved" ? "success" : "neutral"}
+          className="min-w-32"
+        />
       </div>
 
-      <p className="text-xs text-text-muted">{t("instructions")}</p>
+      <div className="flex flex-wrap items-center gap-x-2 text-sm text-text-muted">
+        <span>{t("instructionsHint")}</span>
+        <InlineHelp label={t("instructionsLabel")}>{t("instructionsDetail")}</InlineHelp>
+      </div>
 
       <div
         data-testid="grid-scroll"
-        className="max-h-[70vh] overflow-auto rounded-md border border-border"
+        // Focusable so a keyboard can scroll it; the cells themselves are pointer-only (see HANDOVER next steps).
+        role="region"
+        aria-label={t("gridLabel")}
+        tabIndex={0}
+        className="max-h-[70vh] overflow-auto rounded-md border border-border focus-visible:outline-2 focus-visible:outline-focus"
       >
         <div
           ref={gridRef}

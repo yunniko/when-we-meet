@@ -17,16 +17,16 @@ test("listed-only room: invited names join by tapping, unlisted names are refuse
     invitedNames: ["Anna", "Boris"],
     listedOnly: true,
   });
-  await expect(page.getByText("Only invited names can join this room.")).toBeVisible();
-  await expect(page.getByText("You created it, so you can join under any name.")).toBeVisible();
+  await expect(page.getByText("Only invited names can join")).toBeVisible();
+  await expect(page.getByText("as the creator, you can use any name")).toBeVisible();
   await expect(page.getByRole("button", { name: "Anna", exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Boris", exact: true })).toBeVisible();
 
   const guestContext = await browser.newContext();
   const guest = await guestContext.newPage();
   await guest.goto(page.url());
-  await expect(guest.getByText("Only invited names can join this room.")).toBeVisible();
-  await expect(guest.getByText("You created it")).toHaveCount(0);
+  await expect(guest.getByText("Only invited names can join")).toBeVisible();
+  await expect(guest.getByText("as the creator")).toHaveCount(0);
 
   // A name that isn't on the list is refused.
   await joinRoom(guest, "Mallory");
@@ -38,7 +38,7 @@ test("listed-only room: invited names join by tapping, unlisted names are refuse
   await expect(guest.getByText("Anna is on this room's invite list.")).toBeVisible();
   await guest.getByRole("button", { name: "Yes, that's me" }).click();
   await expect(guest.getByText("Marking as Anna")).toBeVisible();
-  await expect(guest.getByText("Invited, not joined yet: Boris")).toBeVisible();
+  await expect(guest.getByText("Not joined yet: Boris")).toBeVisible();
   await paintAndWaitForSave(guest, "slot-2027-11-10-9");
 
   // The browser that created the room may join under an unlisted name, and
@@ -48,14 +48,14 @@ test("listed-only room: invited names join by tapping, unlisted names are refuse
   const panel = page.getByRole("region", { name: "Participants" });
   await expect(panel).toBeVisible();
   await expect(page.getByText("Also in this room: Anna")).toBeVisible();
-  await expect(page.getByText("Invited, not joined yet: Boris")).toBeVisible();
+  await expect(page.getByText("Not joined yet: Boris")).toBeVisible();
   await expect(panel.getByText("not joined yet", { exact: true })).toBeVisible();
 
   // Both joined people can make 09:00, but Boris hasn't joined, so the slot
   // isn't marked as "everyone".
   await paintAndWaitForSave(page, "slot-2027-11-10-9");
   await page.getByRole("link", { name: "See results →" }).click();
-  await expect(page.getByText("2 of 3 people have joined.")).toBeVisible();
+  await expect(page.getByText("2 of 3 joined")).toBeVisible();
   await expect(page.getByText("Not joined yet: Boris")).toBeVisible();
   // Totals count joined people only: 2 of 2, not 2 of 3 with Boris.
   await expect(page.getByTestId("result-slot-2027-11-10-9")).toHaveAttribute("title", /^2\/2 can/);
@@ -74,14 +74,14 @@ test("a room open to anyone with the link keeps accepting new names alongside it
     endDate: "2027-11-11",
     invitedNames: ["Invitee"],
   });
-  await expect(page.getByText("Only invited names can join this room.")).toHaveCount(0);
+  await expect(page.getByText("Only invited names can join")).toHaveCount(0);
 
   const walkInContext = await browser.newContext();
   const walkIn = await walkInContext.newPage();
   await walkIn.goto(page.url());
   await joinRoom(walkIn, "Walk In");
   await expect(walkIn.getByText("Marking as Walk In")).toBeVisible();
-  await expect(walkIn.getByText("Invited, not joined yet: Invitee")).toBeVisible();
+  await expect(walkIn.getByText("Not joined yet: Invitee")).toBeVisible();
   await walkInContext.close();
 });
 
@@ -90,7 +90,7 @@ test("room creation rejects a listed-only room without names and an over-long na
 }) => {
   const createButton = page.getByRole("button", { name: "Create room & get link" });
   const invitedBox = page.getByLabel("Invited people");
-  const listedOnly = page.getByLabel("Only the invited names (you can always join)");
+  const listedOnly = page.getByLabel("Only invited names", { exact: true });
 
   await fillRoomForm(page, {
     title: "Bad Invites",
@@ -116,7 +116,7 @@ test("room creation rejects a listed-only room without names and an over-long na
   await invitedBox.fill("Fine Name\nfine name\nOther");
   await createButton.click();
   await page.waitForURL(/\/r\/[a-z0-9]+$/);
-  await expect(page.getByText("Only invited names can join this room.")).toBeVisible();
+  await expect(page.getByText("Only invited names can join")).toBeVisible();
   await expect(page.getByRole("button", { name: "Fine Name", exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "fine name", exact: true })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Other", exact: true })).toBeVisible();
@@ -146,7 +146,7 @@ test.describe("on a phone", () => {
     expect(await fits()).toBe(true);
 
     await page.getByRole("button", { name: "Yes, that's me" }).tap();
-    await expect(page.getByText("Invited, not joined yet: Short")).toBeVisible();
+    await expect(page.getByText("Not joined yet: Short")).toBeVisible();
     expect(await fits()).toBe(true);
 
     await page.getByRole("link", { name: "See results →" }).tap();

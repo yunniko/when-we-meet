@@ -20,13 +20,12 @@
     "optional": "(optional)",
     "roomNamePlaceholder": "e.g. Camping trip",
     "descriptionLabel": "Description",
-    "descriptionPlaceholder": "Any details worth sharing — bring snacks, location, etc.",
+    "descriptionPlaceholder": "e.g. Bring snacks; meet at the gate",
     "fromLabel": "From",
     "toLabel": "To",
     "timezoneLabel": "Timezone",
     "timezoneDetecting": "Detecting…",
     "timezoneChange": "Change",
-    "timezoneHelp": "Everyone in this room marks and sees times in this single timezone.",
     "dailyWindowLegend": "Daily time window",
     "dailyStartLabel": "Daily start",
     "dailyEndLabel": "Daily end",
@@ -58,29 +57,28 @@
     },
     "invitedLabel": "Invited people",
     "invitedPlaceholder": "Anna\nBoris\nChen",
-    "invitedHelp": "One name per line. Each person taps their name on the room page to join. Up to 99 names.",
     "joinRuleLegend": "Who can join",
-    "joinRuleAnyone": "Anyone with the link can add their name",
-    "joinRuleListedOnly": "Only the invited names (you can always join)"
+    "joinRuleAnyone": "Anyone with the link",
+    "joinRuleListedOnly": "Only invited names",
+    "timezoneHint": "Everyone marks and sees times in this zone.",
+    "invitedHint": "One name per line, up to 99.",
+    "joinRuleHint": "You can always join your own room."
   },
   "JoinForm": {
-    "intro": "You're about to join this room to mark which of the times above you're free. No account needed — just a name the rest of the group will see. Once you're in, you can see everyone's combined availability on the results page.",
-    "alreadyInRoom": "Already in this room:",
-    "clickYourName": "— click your name if it's you.",
+    "alreadyInRoom": "Already in this room",
     "itsMeTitle": "It's me — continue as {name}",
     "nameLabel": "Your name",
-    "nameHelp": "Must be unique in this room. If you come back later on a different browser or device to edit your marks, you'll need to enter this same name again.",
     "namePlaceholder": "e.g. Sam",
     "submit": "Join room",
     "submitting": "Joining…",
     "collision": {
-      "hasMarks": "<b>{name}</b> already has marks in this room:",
-      "noMarks": "No marks yet — just an empty name reservation.",
       "summaryLine": "{can} can · {cannot} can't",
-      "isThisYou": "Is this you?",
-      "yesConfirm": "Yes, that's me",
       "noDifferent": "No, use a different name",
-      "invited": "<b>{name}</b> is on this room's invite list."
+      "hasMarksHint": "<b>{name}</b> already has marks in this room:",
+      "noMarksHint": "No marks yet.",
+      "isThisYouTitle": "Is this you?",
+      "yes": "Yes, that's me",
+      "invitedHint": "<b>{name}</b> is on this room's invite list."
     },
     "errors": {
       "nameRequired": "Enter a name.",
@@ -89,17 +87,19 @@
       "roomFull": "This room has reached its limit of {max} participants.",
       "notOnList": "This room only accepts invited names — pick yours from the list above."
     },
-    "invitedLabel": "Invited:",
-    "listedOnlyNote": "Only invited names can join this room.",
-    "listedOnlyCreatorNote": "Only invited names can join this room. You created it, so you can join under any name."
+    "invitedLabel": "Invited",
+    "pickYourNameHint": "Tap your name if it's you.",
+    "nameHint": "Use the same name to edit from another device.",
+    "listedOnlyHint": "Only invited names can join.",
+    "listedOnlyCreatorHint": "Only invited names can join; as the creator, you can use any name."
   },
   "RoomPage": {
     "markingAs": "Marking as <b>{name}</b>",
-    "notYou": "Not you? Use a different name",
+    "notYou": "Use a different name",
     "alsoInRoom": "Also in this room: {names}",
     "seeResults": "See results →",
-    "closedMessage": "The meeting time has been set — availability marking is closed.",
-    "invitedNotJoined": "Invited, not joined yet: {names}"
+    "closedEmpty": "Meeting time set; marking is closed.",
+    "notJoinedYet": "Not joined yet: {names}"
   },
   "AvailabilityGrid": {
     "brushes": {
@@ -108,16 +108,21 @@
       "prefer": "Prefer",
       "clear": "Clear"
     },
-    "saving": "Saving…",
-    "saved": "Saved",
-    "saveError": "Couldn't save — try again",
-    "removed": "You're no longer in this room as this name — reloading…",
-    "instructions": "Click, or click and drag, to paint slots. On a touch screen: tap a slot, or press and hold, then drag; swipe to scroll. Double-click or double-tap a day's header, an hour's label, or the top-left corner to fill that day, that hour, or the whole grid. \"Prefer\" only applies to slots already marked Can.",
-    "fillDayTitle": "Double-click or double-tap to fill this whole day",
-    "fillHourTitle": "Double-click or double-tap to fill this whole hour across every day",
-    "fillAllTitle": "Double-click or double-tap to fill the entire grid",
+    "fillDayTitle": "Double-click or double-tap to fill this day",
+    "fillHourTitle": "Double-click or double-tap to fill this hour",
+    "fillAllTitle": "Double-click or double-tap to fill everything",
     "undo": "Undo",
-    "redo": "Redo"
+    "redo": "Redo",
+    "savingStatus": "Saving…",
+    "savedStatus": "Saved",
+    "errors": {
+      "save": "Couldn't save — try again"
+    },
+    "removedStatus": "You're no longer in this room; reloading…",
+    "instructionsHint": "Tap or drag to paint. Double-tap a header to fill it.",
+    "instructionsLabel": "How to mark",
+    "instructionsDetail": "On a touch screen, press and hold, then drag; swipe to scroll. Double-click or double-tap a day's header, an hour's label or the top-left corner to fill that day, that hour or the whole grid. \"Prefer\" only applies to slots already marked Can.",
+    "gridLabel": "Your availability"
   },
   "FinalizedBanner": {
     "title": "📌 Meeting time set: {when}",
@@ -126,23 +131,24 @@
   },
   "LeaveRoom": {
     "link": "Leave the room",
-    "warning": "This deletes your name and all your marks from this room. It can't be undone.",
-    "confirm": "Yes, delete my data",
     "cancel": "Cancel",
-    "warningKeepsName": "This deletes all your marks and signs you out. Your name stays on the invite list, so you can claim it again later.",
-    "confirmKeepsName": "Yes, delete my marks",
-    "ruleChanged": "The room's settings just changed. Please read this again before confirming."
+    "confirm": {
+      "bodyKeepsName": "This deletes all your marks and signs you out. Your name stays on the invite list, so you can claim it again later.",
+      "body": "This deletes your name and all your marks from this room. It can't be undone.",
+      "action": "Yes, delete my data",
+      "actionKeepsName": "Yes, delete my marks",
+      "title": "Leave this room?"
+    },
+    "errors": {
+      "ruleChanged": "The room's settings just changed. Please read this again before confirming."
+    }
   },
   "ParticipantsPanel": {
     "heading": "Participants",
-    "ownerHint": "Only you see this, because you organize this room.",
+    "ownerHint": "Only you see this panel.",
     "you": "{name} (you)",
-    "nobodyElse": "Nobody else has joined yet.",
     "remove": "Remove",
     "removeLabel": "Remove {name}",
-    "warning": "This deletes {name} and all their marks from this room. It can't be undone.",
-    "typeToConfirm": "Type “{name}” to confirm",
-    "confirm": "Yes, remove {name}",
     "removing": "Removing…",
     "cancel": "Cancel",
     "errors": {
@@ -164,21 +170,28 @@
     "notJoinedTag": "not joined yet",
     "leftTag": "left the room",
     "addLabel": "Add invited names",
-    "addHelp": "One name per line. Names already in the room are skipped.",
     "addButton": "Add",
     "adding": "Adding…",
     "addedResult": "{count, plural, =0 {No new names added.} one {Added # name.} other {Added # names.}}",
     "skippedResult": "Already in the room: {names}",
     "joinRuleLegend": "Who can join",
-    "joinRuleAnyone": "Anyone with the link can add their name",
-    "joinRuleListedOnly": "Only names on this list"
+    "joinRuleAnyone": "Anyone with the link",
+    "joinRuleListedOnly": "Only names on this list",
+    "empty": "Nobody else has joined yet.",
+    "removeConfirm": {
+      "body": "This deletes {name} and all their marks from this room. It can't be undone.",
+      "typeLabel": "Type “{name}” to confirm",
+      "action": "Yes, remove {name}",
+      "title": "Remove {name}?"
+    },
+    "addHint": "One name per line. Names already in the room are skipped."
   },
   "ResultsPage": {
     "pageTitle": "{title} — results",
     "peopleCount": "{count, plural, one {# person} other {# people}}",
     "participantsLabel": "Participants: {names}",
     "editLink": "← Edit my availability",
-    "joinedOfExpected": "{joined} of {expected} people have joined.",
+    "joinedOfExpected": "{joined} of {expected} joined",
     "notJoinedYet": "Not joined yet: {names}"
   },
   "ResultsBoard": {
@@ -186,14 +199,13 @@
       "fewerCan": "fewer can",
       "moreCan": "more can",
       "everyoneCan": "everyone can",
-      "preferHint": "★N = N prefer this slot",
-      "clickToPick": "Click a slot to set it as the meeting time"
+      "clickToPick": "Click a slot to pick it",
+      "prefer": "★N = N prefer"
     },
     "cellTitleBase": "{can}/{total} can",
     "cellTitlePrefer": ", {count} prefer",
     "cellTitleCannot": ", {count} can't",
     "bestTimesHeading": "Best times",
-    "noSlotsYet": "Nobody has marked any slots as available yet.",
     "everyoneBadge": "everyone",
     "preferSuffix": " · ★{count} prefer",
     "pickButton": "Pick this time",
@@ -205,7 +217,9 @@
       "invalidSlot": "Invalid slot.",
       "outOfRange": "That slot isn't in this room's range.",
       "notFuture": "You can only pick a time in the future."
-    }
+    },
+    "slotsEmpty": "Nobody has marked any slots as available yet.",
+    "gridLabel": "Availability by time"
   },
   "About": {
     "pageTitle": "About, Terms & Privacy",

@@ -20,13 +20,12 @@
     "optional": "(optional)",
     "roomNamePlaceholder": "z. B. Campingausflug",
     "descriptionLabel": "Beschreibung",
-    "descriptionPlaceholder": "Alles Wissenswerte — was mitbringen, Treffpunkt usw.",
+    "descriptionPlaceholder": "z. B. Snacks mitbringen, Treffpunkt am Tor",
     "fromLabel": "Von",
     "toLabel": "Bis",
     "timezoneLabel": "Zeitzone",
     "timezoneDetecting": "Wird ermittelt…",
     "timezoneChange": "Ändern",
-    "timezoneHelp": "Alle Teilnehmer dieses Raums tragen ihre Verfügbarkeit in dieser einen Zeitzone ein und sehen sie auch so.",
     "dailyWindowLegend": "Tägliches Zeitfenster",
     "dailyStartLabel": "Tagesbeginn",
     "dailyEndLabel": "Tagesende",
@@ -58,29 +57,28 @@
     },
     "invitedLabel": "Eingeladene",
     "invitedPlaceholder": "Anna\nBoris\nChen",
-    "invitedHelp": "Ein Name pro Zeile. Alle treten bei, indem sie auf der Raumseite auf ihren Namen tippen. Bis zu 99 Namen.",
     "joinRuleLegend": "Wer beitreten kann",
-    "joinRuleAnyone": "Alle mit dem Link können ihren Namen hinzufügen",
-    "joinRuleListedOnly": "Nur eingeladene Namen (du kannst immer beitreten)"
+    "joinRuleAnyone": "Alle mit dem Link",
+    "joinRuleListedOnly": "Nur eingeladene Namen",
+    "timezoneHint": "Alle tragen Zeiten in dieser Zone ein und sehen sie so.",
+    "invitedHint": "Ein Name pro Zeile, höchstens 99.",
+    "joinRuleHint": "Deinem eigenen Raum kannst du immer beitreten."
   },
   "JoinForm": {
-    "intro": "Du bist dabei, diesem Raum beizutreten, um einzutragen, zu welchen der oben genannten Zeiten du kannst. Kein Konto nötig — nur ein Name, den die restliche Gruppe sieht. Sobald du drin bist, siehst du die gemeinsame Verfügbarkeit aller auf der Ergebnisseite.",
-    "alreadyInRoom": "Bereits in diesem Raum:",
-    "clickYourName": "— klicke auf deinen Namen, falls du das bist.",
+    "alreadyInRoom": "Schon im Raum",
     "itsMeTitle": "Das bin ich — weiter als {name}",
     "nameLabel": "Dein Name",
-    "nameHelp": "Muss in diesem Raum eindeutig sein. Wenn du später über einen anderen Browser oder ein anderes Gerät zurückkommst, um deine Einträge zu bearbeiten, musst du denselben Namen erneut eingeben.",
     "namePlaceholder": "z. B. Max",
     "submit": "Raum beitreten",
     "submitting": "Trete bei…",
     "collision": {
-      "hasMarks": "<b>{name}</b> hat bereits Einträge in diesem Raum:",
-      "noMarks": "Noch keine Einträge — nur eine leere Namensreservierung.",
       "summaryLine": "{can} kann · {cannot} kann nicht",
-      "isThisYou": "Bist du das?",
-      "yesConfirm": "Ja, das bin ich",
       "noDifferent": "Nein, anderen Namen verwenden",
-      "invited": "<b>{name}</b> steht auf der Einladungsliste dieses Raums."
+      "hasMarksHint": "<b>{name}</b> hat bereits Einträge in diesem Raum:",
+      "noMarksHint": "Noch keine Einträge.",
+      "isThisYouTitle": "Bist du das?",
+      "yes": "Ja, das bin ich",
+      "invitedHint": "<b>{name}</b> steht auf der Einladungsliste dieses Raums."
     },
     "errors": {
       "nameRequired": "Gib einen Namen ein.",
@@ -89,17 +87,19 @@
       "roomFull": "Dieser Raum hat sein Limit von {max} Teilnehmern erreicht.",
       "notOnList": "Dieser Raum nimmt nur eingeladene Namen an — wähle deinen aus der Liste oben."
     },
-    "invitedLabel": "Eingeladen:",
-    "listedOnlyNote": "Diesem Raum können nur eingeladene Namen beitreten.",
-    "listedOnlyCreatorNote": "Diesem Raum können nur eingeladene Namen beitreten. Du hast ihn erstellt, darum kannst du unter jedem Namen beitreten."
+    "invitedLabel": "Eingeladen",
+    "pickYourNameHint": "Tippe auf deinen Namen, wenn du dabei bist.",
+    "nameHint": "Mit demselben Namen bearbeitest du auch von einem anderen Gerät.",
+    "listedOnlyHint": "Nur eingeladene Namen können beitreten.",
+    "listedOnlyCreatorHint": "Nur eingeladene Namen können beitreten; als Ersteller kannst du jeden Namen nutzen."
   },
   "RoomPage": {
     "markingAs": "Du trägst ein als <b>{name}</b>",
-    "notYou": "Nicht du? Anderen Namen verwenden",
+    "notYou": "Anderen Namen nutzen",
     "alsoInRoom": "Ebenfalls in diesem Raum: {names}",
     "seeResults": "Ergebnisse ansehen →",
-    "closedMessage": "Die Besprechungszeit wurde festgelegt — das Eintragen der Verfügbarkeit ist geschlossen.",
-    "invitedNotJoined": "Eingeladen, noch nicht beigetreten: {names}"
+    "closedEmpty": "Termin steht fest, Eintragen ist geschlossen.",
+    "notJoinedYet": "Noch nicht dabei: {names}"
   },
   "AvailabilityGrid": {
     "brushes": {
@@ -108,16 +108,21 @@
       "prefer": "Bevorzugt",
       "clear": "Leeren"
     },
-    "saving": "Wird gespeichert…",
-    "saved": "Gespeichert",
-    "saveError": "Speichern fehlgeschlagen — versuche es erneut",
-    "removed": "Du bist unter diesem Namen nicht mehr in diesem Raum – wird neu geladen …",
-    "instructions": "Klicke oder klicke und ziehe, um Zeiten einzutragen. Auf dem Touchscreen: Tippe auf ein Feld oder halte gedrückt und ziehe dann; Wischen scrollt. Doppelklick oder Doppeltipp auf die Kopfzeile eines Tages, die Beschriftung einer Stunde oder die obere linke Ecke füllt diesen Tag, diese Stunde oder das gesamte Raster. „Bevorzugt“ gilt nur für bereits mit „Kann“ markierte Zeiten.",
-    "fillDayTitle": "Doppelklick oder Doppeltipp füllt diesen ganzen Tag",
-    "fillHourTitle": "Doppelklick oder Doppeltipp füllt diese ganze Stunde an jedem Tag",
-    "fillAllTitle": "Doppelklick oder Doppeltipp füllt das gesamte Raster",
+    "fillDayTitle": "Doppelklick oder Doppeltippen füllt diesen Tag",
+    "fillHourTitle": "Doppelklick oder Doppeltippen füllt diese Stunde",
+    "fillAllTitle": "Doppelklick oder Doppeltippen füllt alles",
     "undo": "Rückgängig",
-    "redo": "Wiederholen"
+    "redo": "Wiederholen",
+    "savingStatus": "Wird gespeichert…",
+    "savedStatus": "Gespeichert",
+    "errors": {
+      "save": "Speichern fehlgeschlagen — versuche es erneut"
+    },
+    "removedStatus": "Du bist nicht mehr im Raum; lädt neu…",
+    "instructionsHint": "Tippen oder ziehen zum Markieren. Doppeltippen auf eine Kopfzeile füllt sie.",
+    "instructionsLabel": "So markierst du",
+    "instructionsDetail": "Auf einem Touchscreen gedrückt halten, dann ziehen; wischen scrollt. Doppelklick oder Doppeltippen auf die Kopfzeile eines Tages, die Beschriftung einer Stunde oder die Ecke oben links füllt den Tag, die Stunde oder das ganze Raster. „Bevorzugt“ gilt nur für Felder, die schon auf „Kann“ stehen.",
+    "gridLabel": "Deine Verfügbarkeit"
   },
   "FinalizedBanner": {
     "title": "📌 Besprechungszeit festgelegt: {when}",
@@ -126,23 +131,24 @@
   },
   "LeaveRoom": {
     "link": "Raum verlassen",
-    "warning": "Dadurch werden dein Name und alle deine Einträge aus diesem Raum gelöscht. Das kann nicht rückgängig gemacht werden.",
-    "confirm": "Ja, meine Daten löschen",
     "cancel": "Abbrechen",
-    "warningKeepsName": "Dadurch werden alle deine Einträge gelöscht und du wirst abgemeldet. Dein Name bleibt auf der Einladungsliste, sodass du ihn später wieder wählen kannst.",
-    "confirmKeepsName": "Ja, meine Einträge löschen",
-    "ruleChanged": "Die Einstellungen des Raums haben sich gerade geändert. Bitte lies das noch einmal, bevor du bestätigst."
+    "confirm": {
+      "bodyKeepsName": "Dadurch werden alle deine Einträge gelöscht und du wirst abgemeldet. Dein Name bleibt auf der Einladungsliste, sodass du ihn später wieder wählen kannst.",
+      "body": "Dadurch werden dein Name und alle deine Einträge aus diesem Raum gelöscht. Das kann nicht rückgängig gemacht werden.",
+      "action": "Ja, meine Daten löschen",
+      "actionKeepsName": "Ja, meine Einträge löschen",
+      "title": "Raum verlassen?"
+    },
+    "errors": {
+      "ruleChanged": "Die Einstellungen des Raums haben sich gerade geändert. Bitte lies das noch einmal, bevor du bestätigst."
+    }
   },
   "ParticipantsPanel": {
     "heading": "Teilnehmende",
-    "ownerHint": "Nur du siehst das, weil du diesen Raum organisierst.",
+    "ownerHint": "Nur du siehst diesen Bereich.",
     "you": "{name} (du)",
-    "nobodyElse": "Bisher ist sonst niemand beigetreten.",
     "remove": "Entfernen",
     "removeLabel": "{name} entfernen",
-    "warning": "Dadurch werden {name} und alle zugehörigen Einträge aus diesem Raum gelöscht. Das kann nicht rückgängig gemacht werden.",
-    "typeToConfirm": "Gib „{name}“ zur Bestätigung ein",
-    "confirm": "Ja, {name} entfernen",
     "removing": "Wird entfernt …",
     "cancel": "Abbrechen",
     "errors": {
@@ -164,21 +170,28 @@
     "notJoinedTag": "noch nicht beigetreten",
     "leftTag": "hat den Raum verlassen",
     "addLabel": "Eingeladene Namen hinzufügen",
-    "addHelp": "Ein Name pro Zeile. Namen, die schon im Raum sind, werden übersprungen.",
     "addButton": "Hinzufügen",
     "adding": "Wird hinzugefügt …",
     "addedResult": "{count, plural, =0 {Keine neuen Namen hinzugefügt.} one {# Name hinzugefügt.} other {# Namen hinzugefügt.}}",
     "skippedResult": "Schon im Raum: {names}",
     "joinRuleLegend": "Wer beitreten kann",
-    "joinRuleAnyone": "Alle mit dem Link können ihren Namen hinzufügen",
-    "joinRuleListedOnly": "Nur Namen auf dieser Liste"
+    "joinRuleAnyone": "Alle mit dem Link",
+    "joinRuleListedOnly": "Nur Namen auf dieser Liste",
+    "empty": "Bisher ist sonst niemand beigetreten.",
+    "removeConfirm": {
+      "body": "Dadurch werden {name} und alle zugehörigen Einträge aus diesem Raum gelöscht. Das kann nicht rückgängig gemacht werden.",
+      "typeLabel": "Gib „{name}“ zur Bestätigung ein",
+      "action": "Ja, {name} entfernen",
+      "title": "{name} entfernen?"
+    },
+    "addHint": "Ein Name pro Zeile. Namen, die schon im Raum sind, werden übersprungen."
   },
   "ResultsPage": {
     "pageTitle": "{title} — Ergebnisse",
     "peopleCount": "{count, plural, one {# Person} other {# Personen}}",
     "participantsLabel": "Teilnehmer: {names}",
     "editLink": "← Meine Verfügbarkeit bearbeiten",
-    "joinedOfExpected": "{joined, plural, one {# von {expected} ist beigetreten.} other {# von {expected} sind beigetreten.}}",
+    "joinedOfExpected": "{joined} von {expected} dabei",
     "notJoinedYet": "Noch nicht beigetreten: {names}"
   },
   "ResultsBoard": {
@@ -186,14 +199,13 @@
       "fewerCan": "weniger können",
       "moreCan": "mehr können",
       "everyoneCan": "alle können",
-      "preferHint": "★N = N bevorzugen diese Zeit",
-      "clickToPick": "Klicke auf eine Zeit, um sie als Besprechungszeit festzulegen"
+      "clickToPick": "Klicke ein Feld zum Wählen",
+      "prefer": "★N = N bevorzugen"
     },
     "cellTitleBase": "{can}/{total} können",
     "cellTitlePrefer": ", {count} bevorzugen",
     "cellTitleCannot": ", {count} können nicht",
     "bestTimesHeading": "Beste Zeiten",
-    "noSlotsYet": "Noch niemand hat eine verfügbare Zeit markiert.",
     "everyoneBadge": "alle",
     "preferSuffix": " · ★{count} bevorzugen",
     "pickButton": "Diese Zeit wählen",
@@ -205,7 +217,9 @@
       "invalidSlot": "Ungültige Zeit.",
       "outOfRange": "Diese Zeit liegt außerhalb des Zeitraums dieses Raums.",
       "notFuture": "Du kannst nur eine Zeit in der Zukunft wählen."
-    }
+    },
+    "slotsEmpty": "Noch niemand hat eine verfügbare Zeit markiert.",
+    "gridLabel": "Verfügbarkeit nach Zeit"
   },
   "About": {
     "pageTitle": "Über uns, AGB & Datenschutz",

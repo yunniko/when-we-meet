@@ -4,6 +4,7 @@ import {
   useActionState,
   useEffect,
   useLayoutEffect,
+  useRef,
   useState,
   useTransition,
   type ChangeEvent,
@@ -14,9 +15,7 @@ import { createRoom, type CreateRoomState } from "@/app/actions";
 import { DAILY_PRESETS, type DailyPresetKey } from "@/lib/room-presets";
 import { formatHoursWindow } from "@/lib/slots";
 import { pickGuessedTimezone } from "@/lib/timezone-guess";
-
-const inputClass =
-  "rounded-md border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-accent";
+import { Button, Choice, Field, FieldGroup, StatusSlot, controlClass } from "@/components/ui-kit";
 
 const PRESET_KEYS: DailyPresetKey[] = ["evening", "wholeDay", "morning", "midday", "custom"];
 
@@ -179,243 +178,165 @@ export function CreateRoomForm() {
     });
   }
 
+  // After a refused submit, focus the first field with an error, so the summary beside the button and the
+  // field's own message point at the same place.
+  const formRef = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    if (!state.fieldErrors) return;
+    formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+  }, [state]);
+
+  const optional = <span className="text-text-muted">{t("optional")}</span>;
+
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-      {state.error && (
-        <p role="alert" className="rounded-md bg-danger-soft px-3 py-2 text-sm text-danger">
-          {t(`errors.${state.error}`)}
-        </p>
-      )}
-
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="title" className="text-sm font-medium">
-          {t("roomNameLabel")} <span className="text-text-muted">{t("optional")}</span>
-        </label>
-        <input
-          id="title"
-          name="title"
-          type="text"
-          maxLength={120}
-          defaultValue={state.values.title}
-          placeholder={t("roomNamePlaceholder")}
-          className={inputClass}
-        />
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="description" className="text-sm font-medium">
-          {t("descriptionLabel")} <span className="text-text-muted">{t("optional")}</span>
-        </label>
-        <textarea
-          id="description"
-          name="description"
-          rows={3}
-          maxLength={2000}
-          defaultValue={state.values.description}
-          placeholder={t("descriptionPlaceholder")}
-          className={`${inputClass} resize-y`}
-        />
-        {fieldError("description") && (
-          <p className="text-xs text-danger">{fieldError("description")}</p>
+    <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-3">
+      <Field label={<>{t("roomNameLabel")} {optional}</>}>
+        {(p) => (
+          <input
+            {...p}
+            name="title"
+            type="text"
+            maxLength={120}
+            defaultValue={state.values.title}
+            placeholder={t("roomNamePlaceholder")}
+            className={controlClass}
+          />
         )}
-      </div>
+      </Field>
+
+      <Field label={<>{t("descriptionLabel")} {optional}</>} error={fieldError("description")} validates>
+        {(p) => (
+          <textarea
+            {...p}
+            name="description"
+            rows={3}
+            maxLength={2000}
+            defaultValue={state.values.description}
+            placeholder={t("descriptionPlaceholder")}
+            className={`${controlClass} resize-y py-2`}
+          />
+        )}
+      </Field>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="startDate" className="text-sm font-medium">
-            {t("fromLabel")}
-          </label>
-          <input
-            id="startDate"
-            name="startDate"
-            type="date"
-            required
-            defaultValue={state.values.startDate}
-            className={inputClass}
-          />
-          {fieldError("startDate") && (
-            <p className="text-xs text-danger">{fieldError("startDate")}</p>
+        <Field label={t("fromLabel")} error={fieldError("startDate")} validates>
+          {(p) => (
+            <input {...p} name="startDate" type="date" required defaultValue={state.values.startDate} className={controlClass} />
           )}
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="endDate" className="text-sm font-medium">
-            {t("toLabel")}
-          </label>
-          <input
-            id="endDate"
-            name="endDate"
-            type="date"
-            required
-            defaultValue={state.values.endDate}
-            className={inputClass}
-          />
-          {fieldError("endDate") && (
-            <p className="text-xs text-danger">{fieldError("endDate")}</p>
+        </Field>
+        <Field label={t("toLabel")} error={fieldError("endDate")} validates>
+          {(p) => (
+            <input {...p} name="endDate" type="date" required defaultValue={state.values.endDate} className={controlClass} />
           )}
-        </div>
+        </Field>
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="timezone" className="text-sm font-medium">
-          {t("timezoneLabel")}
-        </label>
-        {/* The actual submitted value always comes from this hidden input,
-            regardless of which view below is showing — the <select> (when
-            open) is deliberately unnamed so it never double-submits. */}
-        <input type="hidden" name="timezone" value={timezone} />
-        {isEditingTimezone ? (
-          <select
-            id="timezone"
-            required
-            autoFocus
-            value={timezone}
-            onChange={handleTimezoneChange}
-            className={inputClass}
-          >
-            {!timezone && (
-              <option value="" disabled hidden>
-                {t("timezoneDetecting")}
-              </option>
-            )}
-            {zoneGroups.map(({ region, zones }) => (
-              <optgroup key={region} label={region}>
-                {zones.map((z) => (
-                  <option key={z} value={z}>
-                    {timezoneLabel(z)}
+      <Field label={t("timezoneLabel")} hint={t("timezoneHint")} error={fieldError("timezone")}>
+        {(p) => (
+          <>
+            {/* The submitted value always comes from this hidden input, whichever view shows: the <select> is
+                deliberately unnamed so it never double-submits. */}
+            <input type="hidden" name="timezone" value={timezone} />
+            {isEditingTimezone ? (
+              <select {...p} required autoFocus value={timezone} onChange={handleTimezoneChange} className={controlClass}>
+                {!timezone && (
+                  <option value="" disabled hidden>
+                    {t("timezoneDetecting")}
                   </option>
+                )}
+                {zoneGroups.map(({ region, zones }) => (
+                  <optgroup key={region} label={region}>
+                    {zones.map((z) => (
+                      <option key={z} value={z}>
+                        {timezoneLabel(z)}
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
-              </optgroup>
-            ))}
-          </select>
-        ) : (
-          <div
-            id="timezone"
-            className={`${inputClass} flex items-center justify-between gap-3`}
-          >
-            <span>{timezone ? fullTimezoneLabel(timezone) : t("timezoneDetecting")}</span>
-            <button
-              type="button"
-              onClick={() => setIsEditingTimezone(true)}
-              className="shrink-0 text-xs font-medium text-accent underline hover:text-accent-hover"
-            >
-              {t("timezoneChange")}
-            </button>
-          </div>
+              </select>
+            ) : (
+              <div {...p} className={`${controlClass} flex items-center justify-between gap-3`}>
+                <span>{timezone ? fullTimezoneLabel(timezone) : t("timezoneDetecting")}</span>
+                <button
+                  type="button"
+                  onClick={() => setIsEditingTimezone(true)}
+                  className="-mr-2 min-h-11 shrink-0 px-2 text-sm font-medium text-accent underline hover:text-accent-hover"
+                >
+                  {t("timezoneChange")}
+                </button>
+              </div>
+            )}
+          </>
         )}
-        <p className="text-xs text-text-muted">{t("timezoneHelp")}</p>
-        {fieldError("timezone") && (
-          <p className="text-xs text-danger">{fieldError("timezone")}</p>
-        )}
-      </div>
+      </Field>
 
-      <fieldset className="flex flex-col gap-2">
-        <legend className="mb-2 text-sm font-medium">{t("dailyWindowLegend")}</legend>
+      <FieldGroup legend={t("dailyWindowLegend")} error={fieldError("dayStartHour") ?? fieldError("dayEndHour")} validates>
         {presetOptions.map((p) => (
-          <label key={p.value} className="flex items-center gap-2 text-sm">
-            <input
-              type="radio"
-              name="preset"
-              value={p.value}
-              checked={preset === p.value}
-              onChange={() => setPreset(p.value)}
-              className="size-4 accent-accent"
-            />
+          <Choice key={p.value} type="radio" name="preset" value={p.value} checked={preset === p.value} onChange={() => setPreset(p.value)}>
             {p.label}
-          </label>
+          </Choice>
         ))}
         {showCustom && (
           <div className="grid grid-cols-2 gap-4 pl-6">
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="dayStartHour" className="text-xs">
-                {t("dailyStartLabel")}
-              </label>
-              <input
-                id="dayStartHour"
-                name="dayStartHour"
-                type="number"
-                min={0}
-                max={23}
-                defaultValue={state.values.dayStartHour}
-                className={inputClass}
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="dayEndHour" className="text-xs">
-                {t("dailyEndLabel")}
-              </label>
-              <input
-                id="dayEndHour"
-                name="dayEndHour"
-                type="number"
-                min={1}
-                max={24}
-                defaultValue={state.values.dayEndHour}
-                className={inputClass}
-              />
-            </div>
+            <Field label={t("dailyStartLabel")}>
+              {(p) => (
+                <input
+                  {...p}
+                  aria-invalid={fieldError("dayStartHour") ? true : undefined}
+                  name="dayStartHour"
+                  type="number"
+                  min={0}
+                  max={23}
+                  defaultValue={state.values.dayStartHour}
+                  className={controlClass}
+                />
+              )}
+            </Field>
+            <Field label={t("dailyEndLabel")}>
+              {(p) => (
+                <input
+                  {...p}
+                  aria-invalid={fieldError("dayEndHour") ? true : undefined}
+                  name="dayEndHour"
+                  type="number"
+                  min={1}
+                  max={24}
+                  defaultValue={state.values.dayEndHour}
+                  className={controlClass}
+                />
+              )}
+            </Field>
           </div>
         )}
-        {fieldError("dayEndHour") && (
-          <p className="text-xs text-danger">{fieldError("dayEndHour")}</p>
-        )}
-      </fieldset>
+      </FieldGroup>
 
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="invitedNames" className="text-sm font-medium">
-          {t("invitedLabel")} <span className="text-text-muted">{t("optional")}</span>
-        </label>
-        <textarea
-          id="invitedNames"
-          name="invitedNames"
-          rows={4}
-          aria-invalid={fieldError("invitedNames") ? true : undefined}
-          aria-describedby={
-            fieldError("invitedNames") ? "invitedNames-help invitedNames-error" : "invitedNames-help"
-          }
-          defaultValue={state.values.invitedNames}
-          placeholder={t("invitedPlaceholder")}
-          className={`${inputClass} resize-y`}
-        />
-        <p id="invitedNames-help" className="text-xs text-text-muted">
-          {t("invitedHelp")}
-        </p>
-        {fieldError("invitedNames") && (
-          <p id="invitedNames-error" className="text-xs text-danger">
-            {fieldError("invitedNames")}
-          </p>
+      <Field label={<>{t("invitedLabel")} {optional}</>} hint={t("invitedHint")} error={fieldError("invitedNames")}>
+        {(p) => (
+          <textarea
+            {...p}
+            name="invitedNames"
+            rows={4}
+            defaultValue={state.values.invitedNames}
+            placeholder={t("invitedPlaceholder")}
+            className={`${controlClass} resize-y py-2`}
+          />
         )}
-      </div>
+      </Field>
 
-      <fieldset className="flex flex-col gap-2">
-        <legend className="mb-2 text-sm font-medium">{t("joinRuleLegend")}</legend>
+      <FieldGroup legend={t("joinRuleLegend")} hint={t("joinRuleHint")} error={fieldError("joinRule")}>
         {(["ANYONE", "LISTED_ONLY"] as const).map((rule) => (
-          <label key={rule} className="flex items-center gap-2 text-sm">
-            <input
-              type="radio"
-              name="joinRule"
-              value={rule}
-              checked={joinRule === rule}
-              onChange={() => setJoinRule(rule)}
-              aria-describedby={fieldError("joinRule") ? "joinRule-error" : undefined}
-              className="size-4 accent-accent"
-            />
+          <Choice key={rule} type="radio" name="joinRule" value={rule} checked={joinRule === rule} onChange={() => setJoinRule(rule)}>
             {rule === "ANYONE" ? t("joinRuleAnyone") : t("joinRuleListedOnly")}
-          </label>
+          </Choice>
         ))}
-        {fieldError("joinRule") && (
-          <p id="joinRule-error" className="text-xs text-danger">
-            {fieldError("joinRule")}
-          </p>
-        )}
-      </fieldset>
+      </FieldGroup>
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="mt-2 rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-50"
-      >
-        {isPending ? t("submitting") : t("submit")}
-      </button>
+      <div className="mt-2 flex flex-col gap-1">
+        <Button type="submit" busy={isPending} busyLabel={t("submitting")}>
+          {t("submit")}
+        </Button>
+        <StatusSlot message={state.error ? t(`errors.${state.error}`) : null} tone="danger" />
+      </div>
     </form>
   );
 }

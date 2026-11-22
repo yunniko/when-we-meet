@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { joinRoom, type JoinState } from "@/app/r/[slug]/actions";
 import { formatDayLabel } from "@/lib/slots";
 import { MAX_PARTICIPANTS_PER_ROOM } from "@/lib/validation";
+import { Button, Field, controlClass } from "@/components/ui-kit";
 
 const initialState: JoinState = { step: "form" };
 
@@ -62,39 +63,41 @@ export function JoinForm({
       </span>
     ));
 
+  const error =
+    effective.step === "form" && effective.error ? t(`errors.${effective.error}`, { max: MAX_PARTICIPANTS_PER_ROOM }) : null;
+
   return (
     <div className="mx-auto w-full max-w-md px-4 py-12">
-      <h1 className="text-2xl font-semibold tracking-tight">
-        {roomTitle || tCommon("untitledRoom")}
-      </h1>
+      <h1 className="text-2xl font-semibold tracking-tight">{roomTitle || tCommon("untitledRoom")}</h1>
       <p className="mt-1 text-sm text-text-muted">
         {dateRangeLabel} · {hoursLabel} · {timezone}
       </p>
-      {roomDescription && (
-        <p className="mt-3 text-sm whitespace-pre-wrap">{roomDescription}</p>
-      )}
-      <p className="mt-2 text-sm text-text-muted">{t("intro")}</p>
+      {roomDescription && <p className="mt-3 text-sm whitespace-pre-wrap">{roomDescription}</p>}
       {listedOnly && (
-        <p className="mt-2 text-sm text-text-muted">
-          {t(canUseAnyName ? "listedOnlyCreatorNote" : "listedOnlyNote")}
-        </p>
+        <p className="mt-3 text-sm text-text-muted">{t(canUseAnyName ? "listedOnlyCreatorHint" : "listedOnlyHint")}</p>
       )}
-      {joinedNames.length > 0 && (
-        <div className="mt-3 text-sm wrap-anywhere text-text-muted">
-          {t("alreadyInRoom")} {nameButtons(joinedNames)} {t("clickYourName")}
-        </div>
-      )}
-      {invitedNames.length > 0 && (
-        <div className="mt-3 text-sm wrap-anywhere text-text-muted">
-          {t("invitedLabel")} {nameButtons(invitedNames)} {t("clickYourName")}
+      {(joinedNames.length > 0 || invitedNames.length > 0) && (
+        <div className="mt-3 flex flex-col gap-1 text-sm wrap-anywhere text-text-muted">
+          {joinedNames.length > 0 && (
+            <div>
+              {t("alreadyInRoom")}: {nameButtons(joinedNames)}
+            </div>
+          )}
+          {invitedNames.length > 0 && (
+            <div>
+              {t("invitedLabel")}: {nameButtons(invitedNames)}
+            </div>
+          )}
+          <p>{t("pickYourNameHint")}</p>
         </div>
       )}
 
       <div className="mt-6 rounded-2xl border border-border bg-surface p-6 shadow-sm">
         {effective.step === "collision" ? (
           <div className="flex flex-col gap-4">
+            <h2 className="text-base font-medium">{t("collision.isThisYouTitle")}</h2>
             <p className="text-sm wrap-anywhere">
-              {t.rich(effective.invited ? "collision.invited" : "collision.hasMarks", {
+              {t.rich(effective.invited ? "collision.invitedHint" : "collision.hasMarksHint", {
                 name: effective.name,
                 b: (chunks) => <span className="font-medium">{chunks}</span>,
               })}
@@ -111,66 +114,40 @@ export function JoinForm({
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-text-muted">{t("collision.noMarks")}</p>
+              <p className="text-sm text-text-muted">{t("collision.noMarksHint")}</p>
             )}
-            <p className="text-sm font-medium">{t("collision.isThisYou")}</p>
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3">
               <form action={formAction}>
-                <input
-                  type="hidden"
-                  name="confirmParticipantId"
-                  value={effective.participantId}
-                />
-                <button
-                  type="submit"
-                  disabled={pending}
-                  className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-on-accent hover:bg-accent-hover disabled:opacity-50"
-                >
-                  {t("collision.yesConfirm")}
-                </button>
+                <input type="hidden" name="confirmParticipantId" value={effective.participantId} />
+                <Button type="submit" busy={pending} busyLabel={t("submitting")}>
+                  {t("collision.yes")}
+                </Button>
               </form>
-              <button
-                type="button"
-                onClick={() => setDismissed(true)}
-                className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-text/5"
-              >
+              <Button variant="secondary" onClick={() => setDismissed(true)}>
                 {t("collision.noDifferent")}
-              </button>
+              </Button>
             </div>
           </div>
         ) : (
-          <form
-            action={formAction}
-            onSubmit={() => setDismissed(false)}
-            className="flex flex-col gap-3"
-          >
-            <label htmlFor="name" className="text-sm font-medium">
-              {t("nameLabel")}
-            </label>
-            <p className="-mt-1.5 text-xs text-text-muted">{t("nameHelp")}</p>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              required
-              maxLength={60}
-              autoFocus
-              defaultValue={effective.step === "form" ? effective.name : ""}
-              placeholder={t("namePlaceholder")}
-              className="rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent"
-            />
-            {effective.step === "form" && effective.error && (
-              <p className="text-xs text-danger">
-                {t(`errors.${effective.error}`, { max: MAX_PARTICIPANTS_PER_ROOM })}
-              </p>
-            )}
-            <button
-              type="submit"
-              disabled={pending}
-              className="mt-1 rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-on-accent hover:bg-accent-hover disabled:opacity-50"
-            >
-              {pending ? t("submitting") : t("submit")}
-            </button>
+          <form action={formAction} onSubmit={() => setDismissed(false)} className="flex flex-col gap-2">
+            <Field label={t("nameLabel")} hint={t("nameHint")} error={error}>
+              {(p) => (
+                <input
+                  {...p}
+                  name="name"
+                  type="text"
+                  required
+                  maxLength={60}
+                  autoFocus
+                  defaultValue={effective.step === "form" ? effective.name : ""}
+                  placeholder={t("namePlaceholder")}
+                  className={controlClass}
+                />
+              )}
+            </Field>
+            <Button type="submit" busy={pending} busyLabel={t("submitting")}>
+              {t("submit")}
+            </Button>
           </form>
         )}
       </div>

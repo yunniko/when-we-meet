@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { leaveRoom } from "@/app/r/[slug]/actions";
 import type { JoinRuleValue } from "@/lib/roster";
+import { ConfirmDialog, StatusSlot } from "@/components/ui-kit";
 
 export function LeaveRoomButton({
   roomId,
@@ -38,46 +39,32 @@ export function LeaveRoomButton({
     });
   }
 
-  if (!confirming) {
-    return (
+  return (
+    <>
       <button
         type="button"
         onClick={() => setConfirming(true)}
-        className="text-xs text-danger underline hover:text-danger-hover"
+        className="min-h-11 px-1 text-sm text-danger underline hover:text-danger-hover"
       >
         {t("link")}
       </button>
-    );
-  }
-
-  return (
-    <div className="mt-1 flex flex-col items-end gap-1.5 rounded-md border border-danger-border bg-danger-soft px-3 py-2">
-      {ruleChanged && (
-        <p role="alert" className="text-xs font-medium text-danger">
-          {t("ruleChanged")}
-        </p>
-      )}
-      <p className="text-xs text-danger">{t(keepsName ? "warningKeepsName" : "warning")}</p>
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={confirm}
-          disabled={isPending}
-          className="rounded-md bg-danger px-2.5 py-1 text-xs font-medium text-on-danger hover:bg-danger-hover disabled:opacity-50"
-        >
-          {t(keepsName ? "confirmKeepsName" : "confirm")}
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setConfirming(false);
-            setRuleChanged(false);
-          }}
-          className="rounded-md border border-border bg-surface px-2.5 py-1 text-xs font-medium hover:bg-text/5"
-        >
-          {t("cancel")}
-        </button>
-      </div>
-    </div>
+      <ConfirmDialog
+        open={confirming}
+        title={t("confirm.title")}
+        body={t(keepsName ? "confirm.bodyKeepsName" : "confirm.body")}
+        confirmLabel={t(keepsName ? "confirm.actionKeepsName" : "confirm.action")}
+        cancelLabel={t("cancel")}
+        danger
+        busy={isPending}
+        onConfirm={confirm}
+        onCancel={() => {
+          setConfirming(false);
+          setRuleChanged(false);
+        }}
+      >
+        {/* Reserved whether or not the room's rule changed under the dialog, so the buttons never move. */}
+        <StatusSlot message={ruleChanged ? t("errors.ruleChanged") : null} tone="danger" />
+      </ConfirmDialog>
+    </>
   );
 }

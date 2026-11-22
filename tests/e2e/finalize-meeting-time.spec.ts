@@ -24,10 +24,10 @@ test("creator can pick, lock, and clear the final meeting time", async ({ browse
 
   // Only the creator sees pick controls on the results page.
   await page.getByRole("link", { name: "See results →" }).click();
-  await expect(page.getByText("Click a slot to set it as the meeting time")).toBeVisible();
+  await expect(page.getByText("Click a slot to pick it")).toBeVisible();
 
   await page2.getByRole("link", { name: "See results →" }).click();
-  await expect(page2.getByText("Click a slot to set it as the meeting time")).toHaveCount(0);
+  await expect(page2.getByText("Click a slot to pick it")).toHaveCount(0);
 
   // Creator picks the overlapping slot.
   await page.getByTestId("result-slot-2027-04-10-9").click();
@@ -41,7 +41,7 @@ test("creator can pick, lock, and clear the final meeting time", async ({ browse
   await page2.goto(`/r/${slug}`);
   await expect(page2.getByText(/Meeting time set:.*09:00–10:00/)).toBeVisible();
   await expect(page2.getByRole("button", { name: "Clear selection" })).toHaveCount(0);
-  await expect(page2.getByText("availability marking is closed")).toBeVisible();
+  await expect(page2.getByText("marking is closed")).toBeVisible();
   await expect(page2.getByTestId("slot-2027-04-10-10")).toHaveCount(0);
 
   // Creator clears it, restoring normal marking for everyone.

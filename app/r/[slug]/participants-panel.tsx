@@ -14,6 +14,16 @@ import {
   type RemoveParticipantResult,
 } from "@/app/r/[slug]/actions";
 import { confirmationMatches, type JoinRuleValue } from "@/lib/roster";
+import {
+  Button,
+  Choice,
+  ConfirmDialog,
+  EmptyState,
+  Field,
+  FieldGroup,
+  StatusSlot,
+  controlClass,
+} from "@/components/ui-kit";
 
 type ErrorOf<T> = T extends { ok: false; error: infer E } ? E : never;
 type ErrorKey =
@@ -92,17 +102,6 @@ export function ParticipantsPanel({
     setConfirmingId(null);
     setTyped("");
     setFormError(null);
-  }
-
-  // Cancel returns keyboard focus to the row's Remove button, which only
-  // exists again after the confirmation unmounts.
-  function cancel() {
-    const returnTo = confirmingId;
-    close();
-    setNotice(null);
-    if (returnTo) {
-      requestAnimationFrame(() => document.getElementById(`remove-open-${returnTo}`)?.focus());
-    }
   }
 
   async function submit(target: Other) {
@@ -193,182 +192,142 @@ export function ParticipantsPanel({
     }
   }
 
+  const target = others.find((p) => p.id === confirmingId) ?? null;
+  const matches = target ? confirmationMatches(typed, target.name) : false;
+  const addMessage = addResult
+    ? [
+        t("addedResult", { count: addResult.added }),
+        addResult.skipped.length > 0 ? t("skippedResult", { names: addResult.skipped.join(", ") }) : null,
+      ]
+        .filter(Boolean)
+        .join(" ")
+    : null;
+
   return (
-    <section
-      aria-labelledby="participants-heading"
-      className="mt-6 rounded-2xl border border-border bg-surface p-6 shadow-sm"
-    >
+    <section aria-labelledby="participants-heading" className="mt-6 rounded-2xl border border-border bg-surface p-6 shadow-sm">
       <h2 id="participants-heading" className="text-sm font-semibold">
         {t("heading")}
       </h2>
-      <p className="mt-1 text-xs text-text-muted">{t("ownerHint")}</p>
-
-      {notice && (
-        <p role="status" className="mt-3 rounded-md bg-danger-soft px-3 py-2 text-sm wrap-anywhere text-danger">
-          {t(`errors.${notice.key}`, { name: notice.name })}
-        </p>
-      )}
+      {/* One line under the heading: the outcome of a removal when there is one, otherwise who sees this panel. */}
+      <StatusSlot
+        message={notice ? t(`errors.${notice.key}`, { name: notice.name }) : t("ownerHint")}
+        tone={notice ? "danger" : "neutral"}
+        className="mt-1 wrap-anywhere"
+      />
 
       <ul className="mt-3 flex flex-col divide-y divide-border">
         <li className="py-2 text-sm wrap-anywhere">{t("you", { name: ownerName })}</li>
-        {others.map((p) => {
-          const isOpen = confirmingId === p.id;
-          const matches = confirmationMatches(typed, p.name);
-          const inputId = `remove-confirm-${p.id}`;
-          return (
-            <li key={p.id} className="py-2 text-sm">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex min-w-0 flex-wrap items-center gap-x-2">
-                  <span className="min-w-0 wrap-anywhere">{p.name}</span>
-                  {p.invited && (
-                    <span className="rounded-full bg-text/5 px-1.5 py-0.5 text-2xs text-text-muted">
-                      {t(p.left ? "leftTag" : "notJoinedTag")}
-                    </span>
-                  )}
-                </div>
-                {!isOpen && (
-                  <button
-                    id={`remove-open-${p.id}`}
-                    type="button"
-                    onClick={() => {
-                      if (p.invited) void removeInvited(p);
-                      else open(p.id);
-                    }}
-                    disabled={removingId === p.id}
-                    aria-label={t("removeLabel", { name: p.name })}
-                    className="shrink-0 px-1 py-1 text-xs text-danger underline hover:text-danger-hover disabled:opacity-50"
-                  >
-                    {t("remove")}
-                  </button>
-                )}
-              </div>
-              {isOpen && (
-                <form
-                  data-testid="remove-confirm-form"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    void submit(p);
-                  }}
-                  className="mt-2 flex flex-col gap-2 rounded-md border border-danger-border bg-danger-soft px-3 py-2"
-                >
-                  <p className="text-xs wrap-anywhere text-danger">{t("warning", { name: p.name })}</p>
-                  <label htmlFor={inputId} className="text-xs font-medium wrap-anywhere">
-                    {t("typeToConfirm", { name: p.name })}
-                  </label>
-                  <input
-                    id={inputId}
-                    type="text"
-                    value={typed}
-                    onChange={(e) => setTyped(e.target.value)}
-                    autoFocus
-                    autoComplete="off"
-                    autoCapitalize="none"
-                    autoCorrect="off"
-                    spellCheck={false}
-                    maxLength={80}
-                    // 16px on phones so iOS doesn't zoom the page on focus.
-                    className="w-full rounded-md border border-border bg-background px-3 py-2 text-base outline-none focus:border-accent sm:text-sm"
-                  />
-                  {formError && (
-                    <p role="alert" className="text-xs font-medium text-danger">
-                      {t(`errors.${formError}`, { name: p.name })}
-                    </p>
-                  )}
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      type="submit"
-                      disabled={!matches || pending}
-                      className="max-w-full rounded-md bg-danger px-2.5 py-1.5 text-left text-xs font-medium wrap-anywhere text-on-danger hover:bg-danger-hover disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      {pending ? t("removing") : t("confirm", { name: p.name })}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={cancel}
-                      className="rounded-md border border-border bg-surface px-2.5 py-1.5 text-xs font-medium hover:bg-text/5"
-                    >
-                      {t("cancel")}
-                    </button>
-                  </div>
-                </form>
+        {others.map((p) => (
+          <li key={p.id} className="flex items-center justify-between gap-3 py-1 text-sm">
+            <div className="flex min-w-0 flex-wrap items-center gap-x-2">
+              <span className="min-w-0 wrap-anywhere">{p.name}</span>
+              {p.invited && (
+                <span className="rounded-full bg-text/5 px-1.5 py-0.5 text-xs text-text-muted">
+                  {t(p.left ? "leftTag" : "notJoinedTag")}
+                </span>
               )}
-            </li>
-          );
-        })}
+            </div>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                if (p.invited) void removeInvited(p);
+                else open(p.id);
+              }}
+              busy={removingId === p.id}
+              busyLabel={t("removing")}
+              aria-label={t("removeLabel", { name: p.name })}
+              className="shrink-0"
+            >
+              {t("remove")}
+            </Button>
+          </li>
+        ))}
       </ul>
-      {others.length === 0 && <p className="mt-1 text-sm text-text-muted">{t("nobodyElse")}</p>}
+      {others.length === 0 && <EmptyState title={t("empty")} />}
+
+      <ConfirmDialog
+        open={target != null}
+        title={target ? t("removeConfirm.title", { name: target.name }) : ""}
+        body={target ? t("removeConfirm.body", { name: target.name }) : ""}
+        confirmLabel={target ? t("removeConfirm.action", { name: target.name }) : ""}
+        cancelLabel={t("cancel")}
+        danger
+        busy={pending}
+        busyLabel={t("removing")}
+        canConfirm={matches}
+        onConfirm={() => target && matches && void submit(target)}
+        onCancel={() => {
+          close();
+          setNotice(null);
+        }}
+      >
+        {target && (
+          // A real form, so Enter submits; the server re-checks the typed name either way (the e2e spec
+          // submits a mismatch past the disabled button to prove it).
+          <form
+            data-testid="remove-confirm-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void submit(target);
+            }}
+          >
+          <Field label={t("removeConfirm.typeLabel", { name: target.name })} error={formError ? t(`errors.${formError}`, { name: target.name }) : null} validates>
+            {(f) => (
+              <input
+                {...f}
+                type="text"
+                value={typed}
+                onChange={(e) => setTyped(e.target.value)}
+                autoComplete="off"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                maxLength={80}
+                className={controlClass}
+              />
+            )}
+          </Field>
+          </form>
+        )}
+      </ConfirmDialog>
 
       <form
         onSubmit={(e) => {
           e.preventDefault();
           void addNames();
         }}
-        className="mt-5 flex flex-col gap-1.5 border-t border-border pt-4"
+        className="mt-5 flex flex-col gap-2 border-t border-border pt-4"
       >
-        <label htmlFor="add-invited-names" className="text-sm font-medium">
-          {t("addLabel")}
-        </label>
-        <textarea
-          id="add-invited-names"
-          rows={3}
-          value={addText}
-          onChange={(e) => setAddText(e.target.value)}
-          // Read-only while saving: a successful add clears the box, which
-          // would otherwise also wipe anything typed in the meantime.
-          readOnly={adding}
-          aria-describedby="add-invited-help"
-          aria-invalid={addError ? true : undefined}
-          className="w-full resize-y rounded-md border border-border bg-background px-3 py-2 text-base outline-none focus:border-accent sm:text-sm"
-        />
-        <p id="add-invited-help" className="text-xs text-text-muted">
-          {t("addHelp")}
-        </p>
-        {addError && (
-          <p role="alert" className="text-xs font-medium text-danger">
-            {t(`errors.${addError}`, { name: "" })}
-          </p>
-        )}
-        {addResult && (
-          <p role="status" className="text-xs wrap-anywhere text-text-muted">
-            {t("addedResult", { count: addResult.added })}
-            {addResult.skipped.length > 0 && (
-              <> {t("skippedResult", { names: addResult.skipped.join(", ") })}</>
-            )}
-          </p>
-        )}
-        <div>
-          <button
-            type="submit"
-            disabled={adding || !addText.trim()}
-            className="rounded-md border border-accent px-3 py-1.5 text-xs font-medium text-accent hover:bg-accent/10 disabled:opacity-50"
-          >
-            {adding ? t("adding") : t("addButton")}
-          </button>
+        <Field label={t("addLabel")} hint={t("addHint")} error={addError ? t(`errors.${addError}`, { name: "" }) : null}>
+          {(f) => (
+            <textarea
+              {...f}
+              rows={3}
+              value={addText}
+              onChange={(e) => setAddText(e.target.value)}
+              // Read-only while saving: a successful add clears the box, which would otherwise also wipe
+              // anything typed in the meantime.
+              readOnly={adding}
+              className={`${controlClass} resize-y py-2`}
+            />
+          )}
+        </Field>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button type="submit" variant="secondary" busy={adding} busyLabel={t("adding")} aria-disabled={!addText.trim() || undefined}>
+            {t("addButton")}
+          </Button>
+          <StatusSlot message={addMessage} tone="success" className="min-w-0 flex-1 wrap-anywhere" />
         </div>
       </form>
 
       <div className="mt-5 border-t border-border pt-4">
-        <fieldset className="flex flex-col gap-2">
-          <legend className="mb-2 text-sm font-medium">{t("joinRuleLegend")}</legend>
+        <FieldGroup legend={t("joinRuleLegend")} error={ruleError ? t(`errors.${ruleError}`, { name: "" }) : null} validates>
           {JOIN_RULES.map((rule) => (
-            <label key={rule} className="flex items-center gap-2 text-sm">
-              <input
-                type="radio"
-                name="panel-join-rule"
-                value={rule}
-                checked={shownRule === rule}
-                onChange={() => void chooseRule(rule)}
-                className="size-4 accent-accent"
-              />
+            <Choice key={rule} type="radio" name="panel-join-rule" value={rule} checked={shownRule === rule} onChange={() => void chooseRule(rule)}>
               {rule === "ANYONE" ? t("joinRuleAnyone") : t("joinRuleListedOnly")}
-            </label>
+            </Choice>
           ))}
-          {ruleError && (
-            <p role="alert" className="text-xs font-medium text-danger">
-              {t(`errors.${ruleError}`, { name: "" })}
-            </p>
-          )}
-        </fieldset>
+        </FieldGroup>
       </div>
     </section>
   );

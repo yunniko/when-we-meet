@@ -83,7 +83,8 @@ export default async function ResultsPage({
               {t("joinedOfExpected", {
                 joined: participants.length,
                 expected: participants.length + roster.invited.length,
-              })}{" "}
+              })}
+              {" · "}
               {t("notJoinedYet", { names: roster.invited.map((p) => p.name).join(", ") })}
             </p>
           )}

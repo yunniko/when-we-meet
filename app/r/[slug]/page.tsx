@@ -16,6 +16,7 @@ import { LeaveRoomButton } from "@/app/r/[slug]/leave-room-button";
 import { ParticipantsPanel } from "@/app/r/[slug]/participants-panel";
 import { leaveIdentity } from "@/app/r/[slug]/actions";
 import { NewEventButton } from "@/app/new-event-button";
+import { EmptyState } from "@/components/ui-kit";
 
 export default async function RoomPage({
   params,
@@ -145,7 +146,7 @@ export default async function RoomPage({
                 <p>{t("alsoInRoom", { names: others.joined.map((p) => p.name).join(", ") })}</p>
               )}
               {others.invited.length > 0 && (
-                <p>{t("invitedNotJoined", { names: others.invited.map((p) => p.name).join(", ") })}</p>
+                <p>{t("notJoinedYet", { names: others.invited.map((p) => p.name).join(", ") })}</p>
               )}
             </div>
           ) : (
@@ -160,9 +161,7 @@ export default async function RoomPage({
         </div>
 
         {isFinalized ? (
-          <p className="rounded-md border border-dashed border-border px-4 py-6 text-center text-sm text-text-muted">
-            {t("closedMessage")}
-          </p>
+          <EmptyState title={t("closedEmpty")} className="rounded-md border border-dashed border-border py-6" />
         ) : (
           <AvailabilityGrid
             // Keyed by identity so a server re-render for a different

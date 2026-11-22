@@ -30,7 +30,7 @@ export async function fillRoomForm(page: Page, opts: RoomFormOptions): Promise<v
     await page.getByLabel("Invited people").fill(opts.invitedNames.join("\n"));
   }
   if (opts.listedOnly) {
-    await page.getByLabel("Only the invited names (you can always join)").check();
+    await page.getByLabel("Only invited names", { exact: true }).check();
   }
 }
 
