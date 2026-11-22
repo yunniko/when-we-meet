@@ -39,9 +39,17 @@ hours, and timezone names are deliberately **not** localized — they stay
 in a single consistent format for everyone in a room, by design (see
 `HANDOVER.md` D2/D8).
 
-53 Vitest unit tests + 5 Playwright e2e specs, all green. See `HANDOVER.md`
-for the full picture, including a couple of still-open flags for the Owner
-(none blocking).
+Test counts and open questions for the Owner: see `HANDOVER.md`.
+
+## Style
+
+A light, warm theme: cream backgrounds, a burnt-orange accent, the hand-drawn
+hero illustration. Colours, radii and type are tokens in `design/tokens.json`
+(generated into `app/tokens.css`), and every hint, error, status, dialog and
+empty state comes from the Company ui-kit components in `components/ui-kit/`
+(copies; change them in `E:\CLAUDE\projects\ui-kit` and re-sync). Copy is
+short: one line of hint per control, detail behind a "?" only where needed.
+`npm run ui:check` enforces it (D015 in `docs/decisions/`).
 
 ## Running it locally
 
@@ -55,7 +63,11 @@ npm run dev                   # http://localhost:3000
 
 Tests: `npm test` (Vitest unit + Playwright e2e — e2e boots its own dev
 server on a dedicated port, see `playwright.config.ts`). `npm run
-test:unit` / `npm run test:e2e` to run just one layer.
+test:unit` / `npm run test:e2e` to run just one layer. `npm run ui:check`
+(UI tokens, copy and message checks, then the UI e2e specs), `npm run
+format:check`, and `npm run build:check` (production build, then proof the
+development-only kit page is not in it). The kit page itself is at
+`/dev/ui-kit` under `npm run dev`.
 
 Rooms past their retention window (3 days after the finalized meeting date,
 or 3 days after the planning range's end if nothing was finalized) are

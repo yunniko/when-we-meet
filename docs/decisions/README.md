@@ -16,3 +16,9 @@ Numbers match the former `HANDOVER.md` `Dn` entries (referenced from `AGENTS.md`
 - D012 — A request acts as a participant only while its cookie token still matches — active
 - D013 — Only a listed-only leave is marked as "left" for the owner — active
 - D014 — Per-identity undo/redo replaces the corner-fill confirmation prompt — active
+- D015 — The UI is built on the Company ui-kit: tokens, kit components, ui:check — active
+- D016 — Accent darkened from #e0762a to #ad4f18 — active
+- D017 — Prettier with the Company config, checked by format:check — active
+- D018 — The kit's kitchen sink is a development-only page, proven absent from builds — active
+- D019 — Grid instructions: one visible line, the rest on demand — active
+- D020 — Start and end dates share one full-width message slot — active
