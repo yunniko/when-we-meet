@@ -43,9 +43,9 @@
       "timezoneRequired": "Wähle eine Zeitzone",
       "startDateInvalid": "Gib ein gültiges Startdatum ein",
       "endDateInvalid": "Gib ein gültiges Enddatum ein",
-      "endBeforeStart": "Das Enddatum muss am oder nach dem Startdatum liegen",
+      "endBeforeStart": "Das Enddatum liegt vor dem Startdatum",
       "dayEndBeforeStart": "Die Tages-Endzeit muss nach der Tages-Startzeit liegen",
-      "rangeTooLong": "Der Planungszeitraum darf nicht länger als 60 Tage sein",
+      "rangeTooLong": "Der Zeitraum ist zu lang (max. 60 Tage)",
       "dayHourInvalid": "Gib eine gültige Stunde ein",
       "dayStartHourRange": "Die Startstunde muss zwischen 0 und 23 liegen",
       "dayEndHourRange": "Die Endstunde muss zwischen 1 und 24 liegen",
@@ -62,7 +62,8 @@
     "joinRuleListedOnly": "Nur eingeladene Namen",
     "timezoneHint": "Alle tragen Zeiten in dieser Zone ein und sehen sie so.",
     "invitedHint": "Ein Name pro Zeile, höchstens 99.",
-    "joinRuleHint": "Deinem eigenen Raum kannst du immer beitreten."
+    "joinRuleHint": "Deinem eigenen Raum kannst du immer beitreten.",
+    "datesLegend": "Zeitraum"
   },
   "JoinForm": {
     "alreadyInRoom": "Schon im Raum",

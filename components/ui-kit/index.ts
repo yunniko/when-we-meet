@@ -5,6 +5,7 @@ export { EmptyState, type EmptyStateProps } from "./empty-state";
 export { Field, controlClass, type FieldControlProps, type FieldProps } from "./field";
 export { Choice, FieldGroup, type FieldGroupProps } from "./field-group";
 export { InlineHelp, type InlineHelpProps } from "./inline-help";
-export { KitchenSink, SINK_MARKER } from "./kitchen-sink";
+// KitchenSink is deliberately not exported here: a barrel export puts it in every bundle that imports the kit.
+// Import it from "./kitchen-sink" on the development-only route.
 export { StatusSlot, type StatusTone } from "./status-slot";
 export { ToastProvider, useToast, type ToastTone } from "./toast";

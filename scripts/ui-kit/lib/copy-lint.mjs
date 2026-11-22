@@ -20,7 +20,6 @@ export const BANNED = [
 
 /** @returns {{key: string, segments: string[], text: string, line: number}[]} */
 export function readCatalog(format, raw) {
-  const lines = raw.split(/\r?\n/);
   const lineOf = (index) => raw.slice(0, index).split("\n").length;
   if (format === "next-intl" || format === "arb") {
     const data = JSON.parse(raw);

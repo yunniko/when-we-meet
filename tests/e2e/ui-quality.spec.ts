@@ -1,7 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 import { createRoom, fillRoomForm, joinRoom, paintAndWaitForSave } from "./helpers";
 import { expectNoSeriousA11yViolations } from "./ui-kit/axe";
-import { expectStableLayout, recordLayoutShifts, resetLayoutShifts } from "./ui-kit/layout-shift";
+import { expectStableLayout, expectUnmoved, recordLayoutShifts, resetLayoutShifts } from "./ui-kit/layout-shift";
 
 // The UI standard's checks on every screen (COMPANY/UI_STANDARDS.md §5): no serious accessibility violation, no
 // layout shift when a message appears or changes, and no console error (a hydration mismatch is otherwise silent:
@@ -24,7 +24,7 @@ test("create form: accessible, and a refused submit moves nothing and focuses th
 
   await resetLayoutShifts(page);
   await page.getByRole("button", { name: "Create room & get link" }).click();
-  await expect(page.getByText("End date must be on or after the start date")).toBeVisible();
+  await expect(page.getByText("The end date is before the start date")).toBeVisible();
   await expect(page.getByLabel("To", { exact: true })).toBeFocused();
   await expectStableLayout(page);
   await expectNoSeriousA11yViolations(page);
@@ -66,3 +66,32 @@ test("join form, grid, results and dialogs: accessible, and saving moves nothing
   await expectNoSeriousA11yViolations(page);
   expect(errors).toEqual([]);
 });
+
+test("the kit's kitchen sink renders under next dev with this project's tokens", async ({ page }) => {
+  // A development-only page (app/dev/ui-kit/page.dev.tsx); `npm run build:check` proves no build contains it.
+  const errors = collectConsoleErrors(page);
+  await page.goto("/dev/ui-kit");
+  await expect(page.locator("[data-ui-kit-sink]")).toBeVisible();
+  await expectNoSeriousA11yViolations(page);
+  expect(errors).toEqual([]);
+});
+
+// The shift API only sees the viewport, and the focus() after a refused submit scrolls: compare positions instead,
+// at phone width where a message is likeliest to wrap. Every locale, since German and Russian run longest.
+for (const locale of ["en", "ru", "cs", "de"]) {
+  test(`create form at 390px (${locale}): a refused submit moves nothing below the fields`, async ({ page, context }) => {
+    await context.addCookies([{ name: "locale", value: locale, url: "http://localhost:30099" }]);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    await page.locator('input[name="title"]').fill("UI check");
+    await page.locator('input[name="startDate"]').fill("2027-03-10");
+    await page.locator('input[name="endDate"]').fill("2027-03-01");
+    const below = ['textarea[name="invitedNames"]', 'button[type="submit"]'];
+    await expectUnmoved(page, below, () =>
+      page
+        .locator('button[type="submit"]')
+        .click()
+        .then(() => page.locator('[aria-invalid="true"]').first().waitFor())
+    );
+  });
+}

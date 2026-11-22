@@ -14,7 +14,8 @@ export function findSink(dir) {
   const hits = [];
   const visit = (d, rel) => {
     for (const name of readdirSync(d)) {
-      if (name === "cache") continue; // Next's build cache keeps development compilations.
+      // Next keeps development compilations in its build cache and, since Next 16, `next dev` output in `dev/`.
+      if (name === "cache" || name === "dev") continue;
       const path = join(d, name);
       const r = rel ? `${rel}/${name}` : name;
       if (statSync(path).isDirectory()) visit(path, r);

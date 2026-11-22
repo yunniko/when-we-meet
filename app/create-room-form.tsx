@@ -220,14 +220,38 @@ export function CreateRoomForm() {
         )}
       </Field>
 
-      <div className="grid grid-cols-2 gap-4">
-        <Field label={t("fromLabel")} error={fieldError("startDate")} validates>
-          {(p) => <input {...p} name="startDate" type="date" required defaultValue={state.values.startDate} className={controlClass} />}
-        </Field>
-        <Field label={t("toLabel")} error={fieldError("endDate")} validates>
-          {(p) => <input {...p} name="endDate" type="date" required defaultValue={state.values.endDate} className={controlClass} />}
-        </Field>
-      </div>
+      {/* One question, one message: the pair shares a full-width slot, so a date error never wraps in a half
+          column and pushes the form down (found at 390px; see tests/e2e/ui-quality.spec.ts). */}
+      <FieldGroup legend={t("datesLegend")} error={fieldError("startDate") ?? fieldError("endDate")} validates>
+        <div className="grid grid-cols-2 gap-4">
+          <Field label={t("fromLabel")}>
+            {(p) => (
+              <input
+                {...p}
+                aria-invalid={fieldError("startDate") ? true : undefined}
+                name="startDate"
+                type="date"
+                required
+                defaultValue={state.values.startDate}
+                className={controlClass}
+              />
+            )}
+          </Field>
+          <Field label={t("toLabel")}>
+            {(p) => (
+              <input
+                {...p}
+                aria-invalid={fieldError("endDate") ? true : undefined}
+                name="endDate"
+                type="date"
+                required
+                defaultValue={state.values.endDate}
+                className={controlClass}
+              />
+            )}
+          </Field>
+        </div>
+      </FieldGroup>
 
       <Field label={t("timezoneLabel")} hint={t("timezoneHint")} error={fieldError("timezone")}>
         {(p) => (

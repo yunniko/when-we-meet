@@ -62,3 +62,30 @@ export async function expectStableLayout(page: Page, budget = 0.01): Promise<voi
     throw new Error(`layout shifted by ${total.toFixed(4)}, budget ${budget}:\n${detail}`);
   }
 }
+
+/**
+ * Runs `action` and fails if any of `selectors` moved on the page (document coordinates, so off-screen too). The
+ * Layout Instability API only reports shifts inside the viewport: a message that wraps to a second line below the
+ * fold, or before a focus() scrolls it into view, never reaches `expectStableLayout`. Name the elements after the
+ * message, such as the next field and the submit button. Found in the when-we-meet pilot (ui-kit G-001 M4).
+ */
+export async function expectUnmoved(page: Page, selectors: string[], action: () => Promise<void>): Promise<void> {
+  const tops = () =>
+    page.evaluate(
+      (sels) =>
+        sels.map((s) => {
+          const el = document.querySelector(s);
+          if (!el) throw new Error(`expectUnmoved: nothing matches ${s}`);
+          return el.getBoundingClientRect().top + window.scrollY;
+        }),
+      selectors
+    );
+  const before = await tops();
+  await action();
+  const after = await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))).then(tops);
+  const moved = selectors
+    .map((s, i) => ({ s, d: after[i] - before[i] }))
+    .filter(({ d }) => Math.abs(d) > 0.5)
+    .map(({ s, d }) => `  ${s} moved ${d > 0 ? "down" : "up"} ${Math.abs(d).toFixed(1)}px`);
+  if (moved.length) throw new Error(`layout moved:\n${moved.join("\n")}`);
+}

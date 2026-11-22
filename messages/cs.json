@@ -43,9 +43,9 @@
       "timezoneRequired": "Vyberte časové pásmo",
       "startDateInvalid": "Zadejte platné datum začátku",
       "endDateInvalid": "Zadejte platné datum konce",
-      "endBeforeStart": "Datum konce musí být stejné nebo pozdější než datum začátku",
+      "endBeforeStart": "Datum konce je před datem začátku",
       "dayEndBeforeStart": "Konec denního okna musí být později než jeho začátek",
-      "rangeTooLong": "Plánovací rozsah nesmí být delší než 60 dní",
+      "rangeTooLong": "Období může mít nejvýš 60 dní",
       "dayHourInvalid": "Zadejte platnou hodinu",
       "dayStartHourRange": "Hodina začátku dne musí být mezi 0 a 23",
       "dayEndHourRange": "Hodina konce dne musí být mezi 1 a 24",
@@ -62,7 +62,8 @@
     "joinRuleListedOnly": "Jen pozvaní",
     "timezoneHint": "Všichni zadávají a vidí časy v tomto pásmu.",
     "invitedHint": "Jedno jméno na řádek, nejvýše 99.",
-    "joinRuleHint": "Do vlastní místnosti se připojíte vždy."
+    "joinRuleHint": "Do vlastní místnosti se připojíte vždy.",
+    "datesLegend": "Období"
   },
   "JoinForm": {
     "alreadyInRoom": "Již v místnosti",

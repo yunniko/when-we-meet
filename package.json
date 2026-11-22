@@ -13,9 +13,10 @@
     "test": "npm run test:unit && npm run test:integration && npm run test:e2e",
     "cleanup": "tsx scripts/cleanup-expired-rooms.ts",
     "ui:tokens": "node scripts/ui-kit/ui-tokens.mjs",
-    "ui:check": "node scripts/ui-kit/ui-check.mjs",
+    "ui:check": "node scripts/ui-kit/ui-check.mjs && playwright test ui-quality",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "build:check": "next build && node scripts/ui-kit/build-clean.mjs .next"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.1",

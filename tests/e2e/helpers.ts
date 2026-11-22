@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 
 export type RoomFormOptions = {
   title: string;
@@ -56,4 +56,8 @@ export async function paintAndWaitForSave(page: Page, testId: string): Promise<v
     page.waitForResponse((res) => res.request().method() === "POST" && res.status() === 200),
     page.getByTestId(testId).click(),
   ]);
+  // The grid shows "Saved" once the client has applied the action's result; the response alone can arrive first.
+  // A navigation started in that gap was the suspected cause of a rare toHaveURL failure (unconfirmed; see the
+  // ui-kit G-001 progress log, 2026-11-22).
+  await expect(page.getByText("Saved", { exact: true })).toBeVisible();
 }

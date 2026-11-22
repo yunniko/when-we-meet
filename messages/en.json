@@ -43,9 +43,9 @@
       "timezoneRequired": "Pick a timezone",
       "startDateInvalid": "Enter a valid start date",
       "endDateInvalid": "Enter a valid end date",
-      "endBeforeStart": "End date must be on or after the start date",
+      "endBeforeStart": "The end date is before the start date",
       "dayEndBeforeStart": "Daily end time must be after the daily start time",
-      "rangeTooLong": "Planning range can't be longer than 60 days",
+      "rangeTooLong": "The range can't exceed 60 days",
       "dayHourInvalid": "Enter a valid hour",
       "dayStartHourRange": "Daily start hour must be between 0 and 23",
       "dayEndHourRange": "Daily end hour must be between 1 and 24",
@@ -62,7 +62,8 @@
     "joinRuleListedOnly": "Only invited names",
     "timezoneHint": "Everyone marks and sees times in this zone.",
     "invitedHint": "One name per line, up to 99.",
-    "joinRuleHint": "You can always join your own room."
+    "joinRuleHint": "You can always join your own room.",
+    "datesLegend": "Dates"
   },
   "JoinForm": {
     "alreadyInRoom": "Already in this room",

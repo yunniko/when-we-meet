@@ -5,6 +5,8 @@ const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  // `.dev.tsx` pages (the ui-kit kitchen sink) exist only under `next dev`; see app/dev/ui-kit/page.dev.tsx.
+  pageExtensions: process.env.NODE_ENV === "production" ? ["tsx", "ts"] : ["dev.tsx", "tsx", "ts"],
   async headers() {
     return [
       {

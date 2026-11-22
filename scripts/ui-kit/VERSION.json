@@ -1,5 +1,5 @@
 {
-  "kit": "0d357f9",
+  "kit": "81f9bb8",
   "note": "Copied from projects/ui-kit by bin/sync.mjs; change the kit, not these files.",
   "files": [
     "components/ui-kit/button.tsx",
