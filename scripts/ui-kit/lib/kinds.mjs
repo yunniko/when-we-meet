@@ -1,13 +1,14 @@
 // Message kinds (COMPANY/UI_STANDARDS.md §3): a message's key says what kind of text it is, and the kind
 // decides its component, place and length cap. Shared by copy-lint and message-sites.
 
-/** Default caps in characters, measured on the source language. `null` is uncapped. */
+/** Default caps in characters, measured on the source language. `null` is uncapped. Calibrated in
+ * docs/reviews/2026-11-22-pilot-calibration.md. */
 export const CAPS = {
   label: 30,
   title: 60,
   placeholder: 40,
   hint: 80,
-  error: 120,
+  error: 60, // a wordiness bound; the binding limit is one phone line (D007, expectMessagesFit)
   result: 60,
   status: 60,
   confirm: 160,
