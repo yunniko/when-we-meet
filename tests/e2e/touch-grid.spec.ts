@@ -7,16 +7,13 @@ import { createRoom, joinRoom } from "./helpers";
 // tap paints one cell, hold-then-drag paints a run of cells.
 test.use({ ...devices["Pixel 5"] });
 
-
 async function center(page: Page, testId: string): Promise<{ x: number; y: number }> {
   const box = await page.getByTestId(testId).boundingBox();
   if (!box) throw new Error(`${testId} has no box`);
   return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
 }
 
-test("touch: swipe scrolls the days, tap paints one cell, hold-and-drag paints a run", async ({
-  page,
-}) => {
+test("touch: swipe scrolls the days, tap paints one cell, hold-and-drag paints a run", async ({ page }) => {
   // 31 days so the grid is far wider than the phone viewport.
   await createRoom(page, { title: "Touch", startDate: "2027-01-01", endDate: "2027-01-31" });
   await joinRoom(page, "Tanya");
@@ -71,9 +68,7 @@ test("touch: swipe scrolls the days, tap paints one cell, hold-and-drag paints a
   const to = await center(page, "slot-2027-01-04-9");
   await touch("touchStart", [from]);
   await page.waitForTimeout(400);
-  const savePromise = page.waitForResponse(
-    (res) => res.request().method() === "POST" && res.status() === 200,
-  );
+  const savePromise = page.waitForResponse((res) => res.request().method() === "POST" && res.status() === 200);
   await touch("touchMove", [{ x: (from.x + to.x) / 2, y: from.y }]);
   await page.waitForTimeout(16);
   await touch("touchMove", [to]);

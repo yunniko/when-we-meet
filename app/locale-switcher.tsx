@@ -8,7 +8,5 @@ export async function LocaleSwitcher() {
   const current = await getLocale();
   const t = await getTranslations("LocaleSwitcher");
   const options = locales.map((code) => ({ code, label: localeDisplayName(code) }));
-  return (
-    <LocaleSelect current={current} options={options} action={setLocaleAction} label={t("label")} />
-  );
+  return <LocaleSelect current={current} options={options} action={setLocaleAction} label={t("label")} />;
 }

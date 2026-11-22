@@ -29,16 +29,8 @@ export const createRoomSchema = z
     timezone: z.string().min(1, "timezoneRequired"),
     startDate: z.string().date("startDateInvalid"),
     endDate: z.string().date("endDateInvalid"),
-    dayStartHour: z.coerce
-      .number("dayHourInvalid")
-      .int("dayHourInvalid")
-      .min(0, "dayStartHourRange")
-      .max(23, "dayStartHourRange"),
-    dayEndHour: z.coerce
-      .number("dayHourInvalid")
-      .int("dayHourInvalid")
-      .min(1, "dayEndHourRange")
-      .max(24, "dayEndHourRange"),
+    dayStartHour: z.coerce.number("dayHourInvalid").int("dayHourInvalid").min(0, "dayStartHourRange").max(23, "dayStartHourRange"),
+    dayEndHour: z.coerce.number("dayHourInvalid").int("dayHourInvalid").min(1, "dayEndHourRange").max(24, "dayEndHourRange"),
     // One name per line (G-004), parsed, trimmed and deduplicated here so
     // the action only ever sees a clean list. See parseInvitedNames below.
     // The raw ceiling only bounds parsing work: the real limits (60
@@ -76,14 +68,13 @@ export const createRoomSchema = z
   })
   .refine(
     (v) => {
-      const days =
-        (Date.parse(v.endDate) - Date.parse(v.startDate)) / 86_400_000;
+      const days = (Date.parse(v.endDate) - Date.parse(v.startDate)) / 86_400_000;
       return days <= 60;
     },
     {
       message: "rangeTooLong",
       path: ["endDate"],
-    },
+    }
   );
 
 export type CreateRoomInput = z.infer<typeof createRoomSchema>;
@@ -101,9 +92,7 @@ export const MAX_NAME_LENGTH = 60;
 // join their own room (G-004 AC1).
 export const MAX_INVITED_NAMES = MAX_PARTICIPANTS_PER_ROOM - 1;
 
-export type InvitedNamesResult =
-  | { ok: true; names: string[] }
-  | { ok: false; error: "invitedNameTooLong" | "tooManyInvitedNames" };
+export type InvitedNamesResult = { ok: true; names: string[] } | { ok: false; error: "invitedNameTooLong" | "tooManyInvitedNames" };
 
 // Parses the creation form's "Invited people" box: one name per line,
 // trimmed, blank lines skipped, duplicates dropped (case-insensitive, the

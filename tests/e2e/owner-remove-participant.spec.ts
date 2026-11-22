@@ -14,10 +14,7 @@ async function joinAs(browser: Browser, url: string, name: string) {
   return { context, page };
 }
 
-test("owner removes a participant after typing their name; non-owners never see the panel", async ({
-  page,
-  browser,
-}) => {
+test("owner removes a participant after typing their name; non-owners never see the panel", async ({ page, browser }) => {
   await createRoom(page, { title: "Remove Flow", startDate: "2027-09-10", endDate: "2027-09-10" });
   await joinRoom(page, "Organizer");
   await expect(page.getByText("Marking as Organizer")).toBeVisible();
@@ -117,9 +114,7 @@ test("the server refuses a wrong name, a target who already left, and a browser 
   await joinRoom(otherTab, "Someone Else");
   await expect(otherTab.getByText("Marking as Someone Else")).toBeVisible();
   await panel.getByRole("button", { name: "Yes, remove Alice" }).click();
-  await expect(
-    panel.getByText("You're no longer this room's organizer. Reload the page."),
-  ).toBeVisible();
+  await expect(panel.getByText("You're no longer this room's organizer. Reload the page.")).toBeVisible();
   await expect(otherTab.getByRole("region", { name: "Participants" })).toHaveCount(0);
   await otherTab.reload();
   await expect(otherTab.getByText(/Also in this room:.*Alice/)).toBeVisible();
@@ -131,10 +126,7 @@ test("the server refuses a wrong name, a target who already left, and a browser 
 test.describe("on a phone", () => {
   test.use({ viewport: { width: 393, height: 851 }, hasTouch: true, isMobile: true });
 
-  test("the panel fits the screen with a long name and removal works by tap", async ({
-    page,
-    browser,
-  }) => {
+  test("the panel fits the screen with a long name and removal works by tap", async ({ page, browser }) => {
     const longName = "Maximilian-Alexander-von-Hohenzollern";
     await createRoom(page, { title: "Phone Remove", startDate: "2027-09-12", endDate: "2027-09-12" });
     await joinRoom(page, "Organizer");
@@ -146,10 +138,7 @@ test.describe("on a phone", () => {
     await panel.getByRole("button", { name: `Remove ${longName}` }).tap();
     await panel.getByLabel(`Type “${longName}” to confirm`).fill(longName);
 
-    const fits = () =>
-      page.evaluate(
-        () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
-      );
+    const fits = () => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
     expect(await fits()).toBe(true);
 
     await panel.getByRole("button", { name: `Yes, remove ${longName}` }).tap();

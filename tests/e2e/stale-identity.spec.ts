@@ -5,10 +5,7 @@ import { createRoom, joinRoom, paintAndWaitForSave } from "./helpers";
 // the save is refused with a distinguishable result and the tab re-renders
 // from the server instead of silently writing as nobody or as someone else.
 
-test("a grid left open after the participant is deleted reloads to the join form on its next save", async ({
-  page,
-  context,
-}) => {
+test("a grid left open after the participant is deleted reloads to the join form on its next save", async ({ page, context }) => {
   await createRoom(page, { title: "Stale", startDate: "2027-08-10", endDate: "2027-08-10" });
   await joinRoom(page, "Ghost");
   await paintAndWaitForSave(page, "slot-2027-08-10-9");
@@ -30,10 +27,7 @@ test("a grid left open after the participant is deleted reloads to the join form
   await expect(stale.getByLabel("Your name")).toBeVisible();
 });
 
-test("a grid rendered for one name refuses to save once the cookie names someone else", async ({
-  page,
-  context,
-}) => {
+test("a grid rendered for one name refuses to save once the cookie names someone else", async ({ page, context }) => {
   await createRoom(page, { title: "Mismatch", startDate: "2027-08-11", endDate: "2027-08-11" });
   await joinRoom(page, "First");
   await paintAndWaitForSave(page, "slot-2027-08-11-9");

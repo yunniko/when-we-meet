@@ -45,11 +45,7 @@ export type JoinState =
       summary: MarkSummary;
     };
 
-async function collisionState(participant: {
-  id: string;
-  name: string;
-  joinedAt: Date | null;
-}): Promise<JoinState> {
+async function collisionState(participant: { id: string; name: string; joinedAt: Date | null }): Promise<JoinState> {
   const availability = await prisma.availability.findMany({
     where: { participantId: participant.id },
     orderBy: [{ slotDate: "asc" }, { slotHour: "asc" }],
@@ -63,11 +59,7 @@ async function collisionState(participant: {
   };
 }
 
-export async function joinRoom(
-  ctx: { roomId: string; slug: string },
-  _prev: JoinState,
-  formData: FormData,
-): Promise<JoinState> {
+export async function joinRoom(ctx: { roomId: string; slug: string }, _prev: JoinState, formData: FormData): Promise<JoinState> {
   // Ownership, capacity and name uniqueness are decided in lib/membership.ts
   // under the room lock (D010, D011); this action validates input and turns
   // the outcome into form state.
@@ -100,10 +92,7 @@ export async function joinRoom(
   redirect(`/r/${ctx.slug}`);
 }
 
-export async function leaveIdentity(
-  ctx: { roomId: string; slug: string },
-  _formData: FormData,
-): Promise<void> {
+export async function leaveIdentity(ctx: { roomId: string; slug: string }, _formData: FormData): Promise<void> {
   await clearParticipantCookie(ctx.roomId);
   redirect(`/r/${ctx.slug}`);
 }
@@ -126,7 +115,7 @@ export async function leaveRoom(ctx: {
     const outcome = await leaveRoomAs(
       ctx.roomId,
       { participantId: participant.id, cookieToken: participant.cookieToken },
-      ctx.expectedRule,
+      ctx.expectedRule
     );
     if (outcome === "ruleChanged") return { ok: false, error: "ruleChanged" };
   }
@@ -140,7 +129,7 @@ export async function leaveRoom(ctx: {
 // in lib/membership.ts, so a crafted request can't skip the confirmation.
 export async function removeParticipant(
   ctx: { roomId: string; slug: string },
-  input: { participantId: string; typedName: string },
+  input: { participantId: string; typedName: string }
 ): Promise<RemoveParticipantResult> {
   const room = await findActiveRoom(ctx.slug);
   if (!room || room.id !== ctx.roomId) return { ok: false, error: "roomGone" };
@@ -152,7 +141,7 @@ export async function removeParticipant(
     room.id,
     { participantId: current.id, cookieToken: current.cookieToken },
     input.participantId,
-    input.typedName,
+    input.typedName
   );
   if (result.ok) {
     revalidatePath(`/r/${ctx.slug}`);
@@ -164,9 +153,10 @@ export async function removeParticipant(
 // Owner-only editing of the invited list and the join rule (G-004 M3). The
 // room comes from findActiveRoom and identity from the cookie; ownership is
 // re-checked under the room lock in lib/membership.ts (D010, D012).
-async function ownerRequest(
-  ctx: { roomId: string; slug: string },
-): Promise<{ ok: true; roomId: string; actor: Actor } | { ok: false; error: "roomGone" | "notOwner" }> {
+async function ownerRequest(ctx: {
+  roomId: string;
+  slug: string;
+}): Promise<{ ok: true; roomId: string; actor: Actor } | { ok: false; error: "roomGone" | "notOwner" }> {
   const room = await findActiveRoom(ctx.slug);
   if (!room || room.id !== ctx.roomId) return { ok: false, error: "roomGone" };
   const current = await getCurrentParticipant(room.id);
@@ -188,10 +178,7 @@ export type AddInvitedNamesResult =
   // Keys under ParticipantsPanel.errors (translated client-side).
   | { ok: false; error: "invitedNameTooLong" | "tooManyInvitedNames" | "nothingToAdd" };
 
-export async function addInvitedNames(
-  ctx: { roomId: string; slug: string },
-  text: string,
-): Promise<AddInvitedNamesResult> {
+export async function addInvitedNames(ctx: { roomId: string; slug: string }, text: string): Promise<AddInvitedNamesResult> {
   if (typeof text !== "string" || text.length > MAX_INVITED_TEXT_LENGTH) {
     return { ok: false, error: "tooManyInvitedNames" };
   }
@@ -208,10 +195,7 @@ export async function addInvitedNames(
 
 export type RemoveInvitedNameResult = RemoveUnclaimedResult;
 
-export async function removeInvitedName(
-  ctx: { roomId: string; slug: string },
-  participantId: string,
-): Promise<RemoveInvitedNameResult> {
+export async function removeInvitedName(ctx: { roomId: string; slug: string }, participantId: string): Promise<RemoveInvitedNameResult> {
   const owner = await ownerRequest(ctx);
   if (!owner.ok) return owner;
   const result = await removeUnclaimedParticipant(owner.roomId, owner.actor, participantId);
@@ -221,10 +205,7 @@ export async function removeInvitedName(
 
 export type ChangeJoinRuleResult = SetJoinRuleResult | { ok: false; error: "invalidRule" };
 
-export async function changeJoinRule(
-  ctx: { roomId: string; slug: string },
-  rule: JoinRuleValue,
-): Promise<ChangeJoinRuleResult> {
+export async function changeJoinRule(ctx: { roomId: string; slug: string }, rule: JoinRuleValue): Promise<ChangeJoinRuleResult> {
   if (rule !== "ANYONE" && rule !== "LISTED_ONLY") return { ok: false, error: "invalidRule" };
   const owner = await ownerRequest(ctx);
   if (!owner.ok) return owner;
@@ -255,7 +236,7 @@ export type SaveAvailabilityResult =
 export async function saveAvailability(
   roomId: string,
   expectedParticipantId: string,
-  slots: SlotUpdate[],
+  slots: SlotUpdate[]
 ): Promise<SaveAvailabilityResult> {
   if (slots.length > MAX_SLOTS_PER_SAVE) {
     return { ok: false, code: "failed", error: "Too many slots in one request." };
@@ -299,7 +280,7 @@ export async function saveAvailability(
       slotHour: s.hour,
       status: s.status,
       preferred: s.preferred,
-    })),
+    }))
   );
   if (saved === "removed") {
     return { ok: false, code: "removed", error: "You're not joined in this room." };
@@ -310,10 +291,7 @@ export async function saveAvailability(
 // Sets or clears the meeting time only while the current browser still owns
 // the room at the moment of writing (same id and cookie token, D012). An
 // ownership change after the isRoomOwner check makes this match nothing.
-async function updateRoomAsOwner(
-  roomId: string,
-  data: { selectedDate: Date | null; selectedHour: number | null },
-): Promise<boolean> {
+async function updateRoomAsOwner(roomId: string, data: { selectedDate: Date | null; selectedHour: number | null }): Promise<boolean> {
   const current = await getCurrentParticipant(roomId);
   if (!current) return false;
   const { count } = await prisma.room.updateMany({
@@ -338,7 +316,7 @@ async function updateRoomAsOwner(
 export async function selectFinalSlot(
   ctx: { roomId: string; slug: string },
   date: string,
-  hour: number,
+  hour: number
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const room = await prisma.room.findUnique({ where: { id: ctx.roomId } });
   if (!room) return { ok: false, error: "roomNotFound" };
@@ -364,9 +342,7 @@ export async function selectFinalSlot(
   return { ok: true };
 }
 
-export async function deselectFinalSlot(
-  ctx: { roomId: string; slug: string },
-): Promise<{ ok: true } | { ok: false; error: string }> {
+export async function deselectFinalSlot(ctx: { roomId: string; slug: string }): Promise<{ ok: true } | { ok: false; error: string }> {
   const room = await prisma.room.findUnique({ where: { id: ctx.roomId } });
   if (!room) return { ok: false, error: "Room not found." };
   if (!(await isRoomOwner(room))) {

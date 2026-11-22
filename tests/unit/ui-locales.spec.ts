@@ -1,11 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  DEFAULT_LOCALE,
-  enabledUiLocales,
-  isUiLocale,
-  localeDisplayName,
-  mergeMessages,
-} from "@/lib/ui-locales";
+import { DEFAULT_LOCALE, enabledUiLocales, isUiLocale, localeDisplayName, mergeMessages } from "@/lib/ui-locales";
 
 describe("enabledUiLocales", () => {
   it("is the fixed four-language set, English first", () => {

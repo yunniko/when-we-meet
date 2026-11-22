@@ -40,12 +40,7 @@ export function mergeMessages(base: Messages, overlay: Messages): Messages {
   const result: Messages = { ...base };
   for (const [key, value] of Object.entries(overlay)) {
     const existing = result[key];
-    if (
-      value !== null &&
-      typeof value === "object" &&
-      existing !== null &&
-      typeof existing === "object"
-    ) {
+    if (value !== null && typeof value === "object" && existing !== null && typeof existing === "object") {
       result[key] = mergeMessages(existing as Messages, value as Messages);
     } else {
       result[key] = value;

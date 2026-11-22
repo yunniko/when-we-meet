@@ -56,7 +56,10 @@ export function ResultsBoard({
 
       <div className="mb-6 flex flex-wrap items-center gap-4 text-xs text-text-muted">
         <span className="flex items-center gap-1.5">
-          <span className="size-3 rounded-sm border border-border" style={{ backgroundColor: "color-mix(in srgb, var(--color-can) 15%, transparent)" }} />
+          <span
+            className="size-3 rounded-sm border border-border"
+            style={{ backgroundColor: "color-mix(in srgb, var(--color-can) 15%, transparent)" }}
+          />
           {t("legend.fewerCan")}
         </span>
         <span className="flex items-center gap-1.5">
@@ -78,10 +81,7 @@ export function ResultsBoard({
         tabIndex={0}
         className="max-h-[70vh] overflow-auto rounded-md border border-border focus-visible:outline-2 focus-visible:outline-focus"
       >
-        <div
-          className="inline-grid select-none"
-          style={{ gridTemplateColumns: `72px repeat(${dates.length}, minmax(56px, 1fr))` }}
-        >
+        <div className="inline-grid select-none" style={{ gridTemplateColumns: `72px repeat(${dates.length}, minmax(56px, 1fr))` }}>
           <div className="sticky left-0 top-0 z-20 border-b border-r border-border bg-surface" />
           {dates.map((date) => (
             <div
@@ -167,9 +167,7 @@ export function ResultsBoard({
                   </span>
                 </div>
                 {r.missingNames.length > 0 && (
-                  <p className="text-xs text-text-muted">
-                    {t("cantLabel", { names: r.missingNames.join(", ") })}
-                  </p>
+                  <p className="text-xs text-text-muted">{t("cantLabel", { names: r.missingNames.join(", ") })}</p>
                 )}
               </li>
             );

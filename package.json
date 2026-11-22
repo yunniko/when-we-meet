@@ -13,7 +13,9 @@
     "test": "npm run test:unit && npm run test:integration && npm run test:e2e",
     "cleanup": "tsx scripts/cleanup-expired-rooms.ts",
     "ui:tokens": "node scripts/ui-kit/ui-tokens.mjs",
-    "ui:check": "node scripts/ui-kit/ui-check.mjs"
+    "ui:check": "node scripts/ui-kit/ui-check.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.1",
@@ -37,6 +39,7 @@
     "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.3.1",
+    "prettier": "3.10.1",
     "prisma": "^7.9.1",
     "tailwindcss": "^4",
     "tsx": "^4.23.12",

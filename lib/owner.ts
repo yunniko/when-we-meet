@@ -7,10 +7,7 @@ import { getCurrentParticipant } from "@/lib/participant";
 // flow. This checks whichever participant the current browser is logged in
 // as (via the normal participant cookie). Who becomes owner, and when, is
 // decided in lib/membership.ts (rule: shouldBecomeOwner in lib/roster.ts).
-export async function isRoomOwner(room: {
-  id: string;
-  creatorParticipantId: string | null;
-}): Promise<boolean> {
+export async function isRoomOwner(room: { id: string; creatorParticipantId: string | null }): Promise<boolean> {
   if (!room.creatorParticipantId) return false;
   const participant = await getCurrentParticipant(room.id);
   return participant?.id === room.creatorParticipantId;

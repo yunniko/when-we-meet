@@ -64,10 +64,7 @@ test("listed-only room: invited names join by tapping, unlisted names are refuse
   await guestContext.close();
 });
 
-test("a room open to anyone with the link keeps accepting new names alongside its invites", async ({
-  page,
-  browser,
-}) => {
+test("a room open to anyone with the link keeps accepting new names alongside its invites", async ({ page, browser }) => {
   await createRoom(page, {
     title: "Open Invites",
     startDate: "2027-11-11",
@@ -125,12 +122,9 @@ test("room creation rejects a listed-only room without names and an over-long na
 test.describe("on a phone", () => {
   test.use({ viewport: { width: 393, height: 851 }, hasTouch: true, isMobile: true });
 
-  test("a long unbroken invited name wraps instead of widening the join, room and results pages", async ({
-    page,
-  }) => {
+  test("a long unbroken invited name wraps instead of widening the join, room and results pages", async ({ page }) => {
     const longName = "W".repeat(60);
-    const fits = () =>
-      page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
+    const fits = () => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
 
     await createRoom(page, {
       title: "Long Names",

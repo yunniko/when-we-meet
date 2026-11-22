@@ -18,11 +18,7 @@ import { leaveIdentity } from "@/app/r/[slug]/actions";
 import { NewEventButton } from "@/app/new-event-button";
 import { EmptyState } from "@/components/ui-kit";
 
-export default async function RoomPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function RoomPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const room = await findActiveRoom(slug);
   if (!room) notFound();
@@ -33,13 +29,7 @@ export default async function RoomPage({
   const isFinalized = room.selectedDate !== null && room.selectedHour !== null;
   const isOwner = await isRoomOwner(room);
   const banner = isFinalized && (
-    <FinalizedBanner
-      roomId={room.id}
-      slug={room.slug}
-      date={dateOnly(room.selectedDate!)}
-      hour={room.selectedHour!}
-      isOwner={isOwner}
-    />
+    <FinalizedBanner roomId={room.id} slug={room.slug} date={dateOnly(room.selectedDate!)} hour={room.selectedHour!} isOwner={isOwner} />
   );
 
   const participant = await getCurrentParticipant(room.id);
@@ -49,7 +39,7 @@ export default async function RoomPage({
     await prisma.participant.findMany({
       where: { roomId: room.id, ...(participant ? { NOT: { id: participant.id } } : {}) },
       select: { id: true, name: true, joinedAt: true, createdAt: true, leftAt: true },
-    }),
+    })
   );
 
   if (!participant) {
@@ -97,16 +87,11 @@ export default async function RoomPage({
     <div className="mx-auto w-full max-w-4xl px-4 py-8">
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {room.title || tCommon("untitledRoom")}
-          </h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{room.title || tCommon("untitledRoom")}</h1>
           <p className="mt-1 text-sm text-text-muted">
-            {formatDateRange(room.startDate, room.endDate)} ·{" "}
-            {hoursLabel} · {room.timezone}
+            {formatDateRange(room.startDate, room.endDate)} · {hoursLabel} · {room.timezone}
           </p>
-          {room.description && (
-            <p className="mt-2 text-sm whitespace-pre-wrap">{room.description}</p>
-          )}
+          {room.description && <p className="mt-2 text-sm whitespace-pre-wrap">{room.description}</p>}
         </div>
         <div className="min-w-0 text-sm wrap-anywhere sm:text-right">
           <div className="mb-2">
@@ -119,19 +104,12 @@ export default async function RoomPage({
             })}
           </p>
           <form action={leaveIdentity.bind(null, { roomId: room.id, slug: room.slug })}>
-            <button
-              type="submit"
-              className="text-xs text-text-muted underline hover:text-text"
-            >
+            <button type="submit" className="text-xs text-text-muted underline hover:text-text">
               {t("notYou")}
             </button>
           </form>
           <div className="mt-1">
-            <LeaveRoomButton
-              roomId={room.id}
-              slug={room.slug}
-              joinRule={room.joinRule}
-            />
+            <LeaveRoomButton roomId={room.id} slug={room.slug} joinRule={room.joinRule} />
           </div>
         </div>
       </div>
@@ -142,20 +120,13 @@ export default async function RoomPage({
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           {others.joined.length + others.invited.length > 0 ? (
             <div className="min-w-0 text-sm break-words text-text-muted">
-              {others.joined.length > 0 && (
-                <p>{t("alsoInRoom", { names: others.joined.map((p) => p.name).join(", ") })}</p>
-              )}
-              {others.invited.length > 0 && (
-                <p>{t("notJoinedYet", { names: others.invited.map((p) => p.name).join(", ") })}</p>
-              )}
+              {others.joined.length > 0 && <p>{t("alsoInRoom", { names: others.joined.map((p) => p.name).join(", ") })}</p>}
+              {others.invited.length > 0 && <p>{t("notJoinedYet", { names: others.invited.map((p) => p.name).join(", ") })}</p>}
             </div>
           ) : (
             <span />
           )}
-          <Link
-            href={`/r/${room.slug}/results`}
-            className="text-sm font-medium text-accent underline hover:text-accent-hover"
-          >
+          <Link href={`/r/${room.slug}/results`} className="text-sm font-medium text-accent underline hover:text-accent-hover">
             {t("seeResults")}
           </Link>
         </div>

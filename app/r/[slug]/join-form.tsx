@@ -52,19 +52,14 @@ export function JoinForm({
         {i > 0 && ", "}
         <form action={formAction} onSubmit={() => setDismissed(false)} className="inline">
           <input type="hidden" name="name" value={name} />
-          <button
-            type="submit"
-            className="text-accent underline hover:text-accent-hover"
-            title={t("itsMeTitle", { name })}
-          >
+          <button type="submit" className="text-accent underline hover:text-accent-hover" title={t("itsMeTitle", { name })}>
             {name}
           </button>
         </form>
       </span>
     ));
 
-  const error =
-    effective.step === "form" && effective.error ? t(`errors.${effective.error}`, { max: MAX_PARTICIPANTS_PER_ROOM }) : null;
+  const error = effective.step === "form" && effective.error ? t(`errors.${effective.error}`, { max: MAX_PARTICIPANTS_PER_ROOM }) : null;
 
   return (
     <div className="mx-auto w-full max-w-md px-4 py-12">
@@ -73,9 +68,7 @@ export function JoinForm({
         {dateRangeLabel} · {hoursLabel} · {timezone}
       </p>
       {roomDescription && <p className="mt-3 text-sm whitespace-pre-wrap">{roomDescription}</p>}
-      {listedOnly && (
-        <p className="mt-3 text-sm text-text-muted">{t(canUseAnyName ? "listedOnlyCreatorHint" : "listedOnlyHint")}</p>
-      )}
+      {listedOnly && <p className="mt-3 text-sm text-text-muted">{t(canUseAnyName ? "listedOnlyCreatorHint" : "listedOnlyHint")}</p>}
       {(joinedNames.length > 0 || invitedNames.length > 0) && (
         <div className="mt-3 flex flex-col gap-1 text-sm wrap-anywhere text-text-muted">
           {joinedNames.length > 0 && (
@@ -107,9 +100,7 @@ export function JoinForm({
                 {effective.summary.byDate.map((d) => (
                   <li key={d.date} className="flex justify-between gap-4">
                     <span>{formatDayLabel(d.date)}</span>
-                    <span className="text-text-muted">
-                      {t("collision.summaryLine", { can: d.canCount, cannot: d.cannotCount })}
-                    </span>
+                    <span className="text-text-muted">{t("collision.summaryLine", { can: d.canCount, cannot: d.cannotCount })}</span>
                   </li>
                 ))}
               </ul>

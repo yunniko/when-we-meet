@@ -54,7 +54,7 @@ export function GET(): NextResponse {
     <lastmod>${lastmod}</lastmod>
     <changefreq>${changeFrequency}</changefreq>
     <priority>${priority}</priority>
-  </url>`,
+  </url>`
     )
     .join("\n");
 

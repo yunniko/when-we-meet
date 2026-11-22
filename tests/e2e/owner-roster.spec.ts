@@ -6,8 +6,7 @@ import { createRoom, joinRoom, paintAndWaitForSave } from "./helpers";
 // owner sees marked as having left (D013). Each extra person has their own
 // browser context, so their cookies are separate.
 
-const serverActionDone = (page: Page) =>
-  page.waitForResponse((res) => res.request().method() === "POST" && res.status() === 200);
+const serverActionDone = (page: Page) => page.waitForResponse((res) => res.request().method() === "POST" && res.status() === 200);
 
 async function visitorAt(browser: Browser, url: string) {
   const context = await browser.newContext();
@@ -22,10 +21,7 @@ async function claim(page: Page, name: string) {
   await expect(page.getByText(`Marking as ${name}`)).toBeVisible();
 }
 
-test("owner adds names, removes an unclaimed one in one click, and switches who can join", async ({
-  page,
-  browser,
-}) => {
+test("owner adds names, removes an unclaimed one in one click, and switches who can join", async ({ page, browser }) => {
   await createRoom(page, { title: "Roster", startDate: "2027-12-01", endDate: "2027-12-01" });
   await joinRoom(page, "Organizer");
   await expect(page.getByText("Marking as Organizer")).toBeVisible();
@@ -54,10 +50,7 @@ test("owner adds names, removes an unclaimed one in one click, and switches who 
   await claim(guest.page, "Dana");
 
   // Back to anyone with the link: a new name can join again.
-  await Promise.all([
-    serverActionDone(page),
-    panel.getByLabel("Anyone with the link", { exact: true }).check(),
-  ]);
+  await Promise.all([serverActionDone(page), panel.getByLabel("Anyone with the link", { exact: true }).check()]);
   const walkIn = await visitorAt(browser, page.url());
   await joinRoom(walkIn.page, "Walk In");
   await expect(walkIn.page.getByText("Marking as Walk In")).toBeVisible();
@@ -66,10 +59,7 @@ test("owner adds names, removes an unclaimed one in one click, and switches who 
   await walkIn.context.close();
 });
 
-test("removing an invited name someone claimed meanwhile asks for the typed confirmation instead", async ({
-  page,
-  browser,
-}) => {
+test("removing an invited name someone claimed meanwhile asks for the typed confirmation instead", async ({ page, browser }) => {
   await createRoom(page, {
     title: "Claimed Meanwhile",
     startDate: "2027-12-02",
@@ -110,10 +100,7 @@ test("removing an invited name someone claimed meanwhile asks for the typed conf
   await guest.context.close();
 });
 
-test("leaving a listed-only room keeps the name on the list, and the owner sees that the person left", async ({
-  page,
-  browser,
-}) => {
+test("leaving a listed-only room keeps the name on the list, and the owner sees that the person left", async ({ page, browser }) => {
   await createRoom(page, {
     title: "Leaving",
     startDate: "2027-12-03",
@@ -150,10 +137,7 @@ test("leaving a listed-only room keeps the name on the list, and the owner sees 
   await guest.context.close();
 });
 
-test("a leave confirmed after the owner changed the rule is refused and shows the new warning", async ({
-  page,
-  browser,
-}) => {
+test("a leave confirmed after the owner changed the rule is refused and shows the new warning", async ({ page, browser }) => {
   await createRoom(page, { title: "Rule Changed", startDate: "2027-12-04", endDate: "2027-12-04" });
   await joinRoom(page, "Organizer");
   await expect(page.getByText("Marking as Organizer")).toBeVisible();

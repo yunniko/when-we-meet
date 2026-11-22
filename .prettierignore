@@ -1,0 +1,15 @@
+# Generated or vendored: each has its own source of truth and a check that compares bytes.
+generated/
+.next/
+test-results/
+playwright-report/
+node_modules/
+package-lock.json
+app/tokens.css
+components/ui-kit/
+scripts/ui-kit/
+tests/e2e/ui-kit/
+
+# Markdown is hand-wrapped on purpose: HANDOVER.md and the decision files are capped, and a reflow would
+# rewrite every one of them and change what those caps measure (as in cross-stitch).
+*.md

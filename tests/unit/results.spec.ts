@@ -10,7 +10,7 @@ function row(
   hour: number,
   participantName: string,
   status: "CAN" | "CANNOT",
-  preferred = false,
+  preferred = false
 ): AvailabilityRow & { participantName: string } {
   return {
     slotDate: new Date(`${date}T00:00:00Z`),

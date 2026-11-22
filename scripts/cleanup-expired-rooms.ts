@@ -27,9 +27,7 @@ async function main() {
     await prisma.room.deleteMany({ where: { id: { in: expired.map((r) => r.id) } } });
   }
 
-  console.log(
-    `Cleanup: removed ${expired.length} of ${rooms.length} room(s) checked.`,
-  );
+  console.log(`Cleanup: removed ${expired.length} of ${rooms.length} room(s) checked.`);
   await prisma.$disconnect();
 }
 

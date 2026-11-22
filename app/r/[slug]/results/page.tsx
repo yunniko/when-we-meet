@@ -12,11 +12,7 @@ import { FinalizedBanner } from "@/app/r/[slug]/finalized-banner";
 import { ResultsBoard } from "@/app/r/[slug]/results-board";
 import { NewEventButton } from "@/app/new-event-button";
 
-export default async function ResultsPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function ResultsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const room = await findActiveRoom(slug);
   if (!room) notFound();
@@ -38,7 +34,7 @@ export default async function ResultsPage({
     await prisma.participant.findMany({
       where: { roomId: room.id },
       select: { id: true, name: true, joinedAt: true, createdAt: true },
-    }),
+    })
   );
   const participants = roster.joined;
   const totalParticipants = participants.length;
@@ -59,7 +55,7 @@ export default async function ResultsPage({
     hours,
     participants.map((p) => p.name),
     namedRows,
-    { pendingInvites: roster.invited.length },
+    { pendingInvites: roster.invited.length }
   );
   const topResults = results.filter((r) => r.canCount > 0).slice(0, 10);
 
@@ -67,12 +63,9 @@ export default async function ResultsPage({
     <div className="mx-auto w-full max-w-4xl px-4 py-8">
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {t("pageTitle", { title: room.title || tCommon("untitledRoom") })}
-          </h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{t("pageTitle", { title: room.title || tCommon("untitledRoom") })}</h1>
           <p className="mt-1 text-sm text-text-muted">
-            {formatDateRange(room.startDate, room.endDate)} ·{" "}
-            {formatHoursWindow(room.dayStartHour, room.dayEndHour)} · {room.timezone} ·{" "}
+            {formatDateRange(room.startDate, room.endDate)} · {formatHoursWindow(room.dayStartHour, room.dayEndHour)} · {room.timezone} ·{" "}
             {t("peopleCount", { count: totalParticipants })}
           </p>
           <p className="mt-1 text-sm wrap-anywhere text-text-muted">
@@ -88,9 +81,7 @@ export default async function ResultsPage({
               {t("notJoinedYet", { names: roster.invited.map((p) => p.name).join(", ") })}
             </p>
           )}
-          {room.description && (
-            <p className="mt-2 text-sm whitespace-pre-wrap">{room.description}</p>
-          )}
+          {room.description && <p className="mt-2 text-sm whitespace-pre-wrap">{room.description}</p>}
         </div>
         <div className="flex flex-col gap-2 sm:items-end">
           <NewEventButton />

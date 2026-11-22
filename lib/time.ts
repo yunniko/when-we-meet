@@ -4,10 +4,7 @@
 // values with no conversion (see HANDOVER D2). Converting "now" into a
 // timezone's local wall-clock reading (rather than converting stored slots
 // between zones) doesn't reintroduce that complexity; it's a one-way read.
-export function nowInTimezone(
-  timeZone: string,
-  at: Date = new Date(),
-): { date: string; hour: number } {
+export function nowInTimezone(timeZone: string, at: Date = new Date()): { date: string; hour: number } {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone,
     year: "numeric",
@@ -22,12 +19,7 @@ export function nowInTimezone(
   return { date, hour };
 }
 
-export function isSlotInFuture(
-  date: string,
-  hour: number,
-  timeZone: string,
-  at: Date = new Date(),
-): boolean {
+export function isSlotInFuture(date: string, hour: number, timeZone: string, at: Date = new Date()): boolean {
   const now = nowInTimezone(timeZone, at);
   if (date !== now.date) return date > now.date;
   return hour > now.hour;

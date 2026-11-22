@@ -12,13 +12,7 @@ export default async function Home() {
             itself, and the product name is a proper noun. */}
         <h1 className="sr-only">When We Meet</h1>
         <div className="overflow-hidden rounded-2xl border border-border shadow-sm">
-          <Image
-            src={heroImage}
-            alt={t("heroAlt")}
-            priority
-            sizes="(min-width: 640px) 576px, 100vw"
-            className="w-full h-auto"
-          />
+          <Image src={heroImage} alt={t("heroAlt")} priority sizes="(min-width: 640px) 576px, 100vw" className="w-full h-auto" />
         </div>
 
         <p className="mt-5 text-center text-sm text-text-muted">{t("tagline")}</p>

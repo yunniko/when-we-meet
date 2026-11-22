@@ -25,11 +25,7 @@ export function preferStrokeSets(first: CellMark | undefined): boolean {
   return !(first?.status === "CAN" && first.preferred);
 }
 
-function targetMark(
-  current: CellMark | undefined,
-  brush: Brush,
-  preferSets: boolean,
-): CellMark | undefined | "noop" {
+function targetMark(current: CellMark | undefined, brush: Brush, preferSets: boolean): CellMark | undefined | "noop" {
   if (brush === "CLEAR") return undefined;
   if (brush === "PREFER") {
     // Only applies to CAN slots; anything else is left untouched.
@@ -54,7 +50,7 @@ export function applyBrush(
   date: string,
   hour: number,
   brush: Brush,
-  preferSets: boolean,
+  preferSets: boolean
 ): { marks: Marks; change: SlotUpdate | null } {
   const key = slotKey(date, hour);
   const current = marks[key];

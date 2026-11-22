@@ -26,10 +26,7 @@ export type CreateRoomState = {
   };
 };
 
-export async function createRoom(
-  _prevState: CreateRoomState,
-  formData: FormData,
-): Promise<CreateRoomState> {
+export async function createRoom(_prevState: CreateRoomState, formData: FormData): Promise<CreateRoomState> {
   const presetRaw = String(formData.get("preset") ?? "");
   const preset = isPresetKey(presetRaw) ? presetRaw : "custom";
   const fromPreset = preset !== "custom" ? DAILY_PRESETS[preset] : null;
@@ -85,7 +82,7 @@ export async function createRoom(
       ownerToken,
       joinRule: data.joinRule,
     },
-    data.invitedNames,
+    data.invitedNames
   );
   await setOwnerCookie(room.id, ownerToken);
 

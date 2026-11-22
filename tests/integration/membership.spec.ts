@@ -125,14 +125,10 @@ describe("joinByName", () => {
   it("holds the cap when several people join at the same moment", async () => {
     const room = await makeRoom();
     await fillRoom(room.id, MAX_PARTICIPANTS_PER_ROOM - 2);
-    const results = await Promise.all(
-      ["A", "B", "C", "D", "E"].map((n) => joinByName(room.id, `Late ${n}`, undefined)),
-    );
+    const results = await Promise.all(["A", "B", "C", "D", "E"].map((n) => joinByName(room.id, `Late ${n}`, undefined)));
     expect(results.filter((r) => r.kind === "joined")).toHaveLength(2);
     expect(results.filter((r) => r.kind === "full")).toHaveLength(3);
-    expect(await prisma.participant.count({ where: { roomId: room.id } })).toBe(
-      MAX_PARTICIPANTS_PER_ROOM,
-    );
+    expect(await prisma.participant.count({ where: { roomId: room.id } })).toBe(MAX_PARTICIPANTS_PER_ROOM);
   });
 
   it("reports a room that no longer exists", async () => {
@@ -266,9 +262,7 @@ describe("removal", () => {
 
       const state = await roomState(room.id);
       expect(state.creatorParticipantId).not.toBeNull();
-      expect(
-        await prisma.participant.findUnique({ where: { id: state.creatorParticipantId! } }),
-      ).not.toBeNull();
+      expect(await prisma.participant.findUnique({ where: { id: state.creatorParticipantId! } })).not.toBeNull();
       if (removal.ok) {
         expect(state.creatorParticipantId).toBe(next.id); // removal won the lock first
       } else {
@@ -331,7 +325,7 @@ describe("saveMarks", () => {
         { slotDate: day, slotHour: 10, status: "CANNOT", preferred: true },
         { slotDate: day, slotHour: 11, status: "CAN", preferred: false },
         { slotDate: day, slotHour: 11, status: "CANNOT", preferred: false },
-      ]),
+      ])
     ).toBe("saved");
     expect(await marksOf(ann.id)).toEqual([
       { slotHour: 9, status: "CAN", preferred: true },
@@ -343,7 +337,7 @@ describe("saveMarks", () => {
       await saveMarks(room.id, actor(ann), [
         { slotDate: day, slotHour: 9, status: null, preferred: false },
         { slotDate: day, slotHour: 10, status: "CAN", preferred: false },
-      ]),
+      ])
     ).toBe("saved");
     expect(await marksOf(ann.id)).toEqual([
       { slotHour: 10, status: "CAN", preferred: false },
@@ -357,9 +351,7 @@ describe("saveMarks", () => {
     const stale = actor(ann);
     await leaveRoomAs(room.id, stale);
 
-    expect(
-      await saveMarks(room.id, stale, [{ slotDate: day, slotHour: 9, status: "CAN", preferred: false }]),
-    ).toBe("removed");
+    expect(await saveMarks(room.id, stale, [{ slotDate: day, slotHour: 9, status: "CAN", preferred: false }])).toBe("removed");
     expect(await prisma.availability.count({ where: { participantId: ann.id } })).toBe(0);
   });
 
@@ -371,14 +363,11 @@ describe("saveMarks", () => {
     for (let round = 0; round < 60; round++) {
       const room = await makeRoom("LISTED_ONLY");
       const ann = await addMember(room.id, "Ann", at(0));
-      const save = () =>
-        saveMarks(room.id, actor(ann), [{ slotDate: day, slotHour: 9, status: "CAN", preferred: false }]);
+      const save = () => saveMarks(room.id, actor(ann), [{ slotDate: day, slotHour: 9, status: "CAN", preferred: false }]);
       const leave = () => leaveRoomAs(room.id, actor(ann));
       const stagger = round % 6;
       const [saved] =
-        round % 2 === 0
-          ? await Promise.all([save(), pause(stagger).then(leave)])
-          : await Promise.all([pause(stagger).then(save), leave()]);
+        round % 2 === 0 ? await Promise.all([save(), pause(stagger).then(leave)]) : await Promise.all([pause(stagger).then(save), leave()]);
       expect(["saved", "removed"]).toContain(saved);
       expect(await prisma.availability.count({ where: { participantId: ann.id } })).toBe(0);
     }

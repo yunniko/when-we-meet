@@ -144,7 +144,7 @@ describe("historySideToUpdates", () => {
       expect.arrayContaining([
         { date: "2027-01-15", hour: 9, status: "CAN", preferred: false },
         { date: "2027-01-15", hour: 10, status: null, preferred: false },
-      ]),
+      ])
     );
     expect(updates).toHaveLength(2);
   });

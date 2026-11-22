@@ -1,15 +1,6 @@
 "use client";
 
-import {
-  useActionState,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-  useTransition,
-  type ChangeEvent,
-  type FormEvent,
-} from "react";
+import { useActionState, useEffect, useLayoutEffect, useRef, useState, useTransition, type ChangeEvent, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { createRoom, type CreateRoomState } from "@/app/actions";
 import { DAILY_PRESETS, type DailyPresetKey } from "@/lib/room-presets";
@@ -56,13 +47,14 @@ function groupedTimezoneOptions(): { region: string; zones: string[] }[] {
     list.push(zone);
     groups.set(region, list);
   }
-  return [...groups.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([region, list]) => ({ region, zones: list.sort() }));
+  return [...groups.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([region, list]) => ({ region, zones: list.sort() }));
 }
 
 function timezoneLabel(zone: string): string {
-  return zone.slice(zone.indexOf("/") + 1).replaceAll("_", " ").replaceAll("/", " / ");
+  return zone
+    .slice(zone.indexOf("/") + 1)
+    .replaceAll("_", " ")
+    .replaceAll("/", " / ");
 }
 
 // The region-qualified version shown in the collapsed info label — plain
@@ -90,10 +82,7 @@ const initialState: CreateRoomState = {
 
 export function CreateRoomForm() {
   const t = useTranslations("CreateRoom");
-  const [state, formAction] = useActionState(
-    createRoom,
-    initialState,
-  );
+  const [state, formAction] = useActionState(createRoom, initialState);
   const [isPending, startTransition] = useTransition();
   const [timezone, setTimezone] = useState(() => state.values.timezone || "");
   const zoneGroups = groupedTimezoneOptions();
@@ -147,8 +136,7 @@ export function CreateRoomForm() {
   const [preset, setPreset] = useState<DailyPresetKey>("evening");
   const [joinRule, setJoinRule] = useState<"ANYONE" | "LISTED_ONLY">("ANYONE");
   const showCustom = preset === "custom";
-  const fieldError = (field: string) =>
-    state.fieldErrors?.[field] ? t(`errors.${state.fieldErrors[field]}`) : null;
+  const fieldError = (field: string) => (state.fieldErrors?.[field] ? t(`errors.${state.fieldErrors[field]}`) : null);
 
   // Only the preset's name is translated; the "(17:00–22:00)" part is
   // locale-invariant digits built from the same formatter the room/results
@@ -190,7 +178,13 @@ export function CreateRoomForm() {
 
   return (
     <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-3">
-      <Field label={<>{t("roomNameLabel")} {optional}</>}>
+      <Field
+        label={
+          <>
+            {t("roomNameLabel")} {optional}
+          </>
+        }
+      >
         {(p) => (
           <input
             {...p}
@@ -204,7 +198,15 @@ export function CreateRoomForm() {
         )}
       </Field>
 
-      <Field label={<>{t("descriptionLabel")} {optional}</>} error={fieldError("description")} validates>
+      <Field
+        label={
+          <>
+            {t("descriptionLabel")} {optional}
+          </>
+        }
+        error={fieldError("description")}
+        validates
+      >
         {(p) => (
           <textarea
             {...p}
@@ -220,14 +222,10 @@ export function CreateRoomForm() {
 
       <div className="grid grid-cols-2 gap-4">
         <Field label={t("fromLabel")} error={fieldError("startDate")} validates>
-          {(p) => (
-            <input {...p} name="startDate" type="date" required defaultValue={state.values.startDate} className={controlClass} />
-          )}
+          {(p) => <input {...p} name="startDate" type="date" required defaultValue={state.values.startDate} className={controlClass} />}
         </Field>
         <Field label={t("toLabel")} error={fieldError("endDate")} validates>
-          {(p) => (
-            <input {...p} name="endDate" type="date" required defaultValue={state.values.endDate} className={controlClass} />
-          )}
+          {(p) => <input {...p} name="endDate" type="date" required defaultValue={state.values.endDate} className={controlClass} />}
         </Field>
       </div>
 
@@ -310,7 +308,15 @@ export function CreateRoomForm() {
         )}
       </FieldGroup>
 
-      <Field label={<>{t("invitedLabel")} {optional}</>} hint={t("invitedHint")} error={fieldError("invitedNames")}>
+      <Field
+        label={
+          <>
+            {t("invitedLabel")} {optional}
+          </>
+        }
+        hint={t("invitedHint")}
+        error={fieldError("invitedNames")}
+      >
         {(p) => (
           <textarea
             {...p}

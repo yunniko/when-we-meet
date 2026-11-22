@@ -100,20 +100,13 @@ describe("shouldBecomeOwner", () => {
 
   it("never replaces an existing owner", () => {
     expect(shouldBecomeOwner({ ...unowned, creatorParticipantId: "p1" }, "tok")).toBe(false);
-    expect(
-      shouldBecomeOwner({ ...unowned, creatorParticipantId: "p1", ownershipVacant: true }, undefined),
-    ).toBe(false);
+    expect(shouldBecomeOwner({ ...unowned, creatorParticipantId: "p1", ownershipVacant: true }, undefined)).toBe(false);
   });
 });
 
 describe("splitRoster", () => {
   it("separates joined people, in join order, from invited names, in the order added", () => {
-    const { joined, invited } = splitRoster([
-      member("j2", 20, 0),
-      member("i2", null, 5),
-      member("j1", 10, 1),
-      member("i1", null, 3),
-    ]);
+    const { joined, invited } = splitRoster([member("j2", 20, 0), member("i2", null, 5), member("j1", 10, 1), member("i1", null, 3)]);
     expect(joined.map((m) => m.id)).toEqual(["j1", "j2"]);
     expect(invited.map((m) => m.id)).toEqual(["i1", "i2"]);
   });

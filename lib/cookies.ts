@@ -7,17 +7,12 @@ function cookieName(roomId: string): string {
   return `wwm_p_${roomId}`;
 }
 
-export async function getParticipantToken(
-  roomId: string,
-): Promise<string | undefined> {
+export async function getParticipantToken(roomId: string): Promise<string | undefined> {
   const store = await cookies();
   return store.get(cookieName(roomId))?.value;
 }
 
-export async function setParticipantCookie(
-  roomId: string,
-  token: string,
-): Promise<void> {
+export async function setParticipantCookie(roomId: string, token: string): Promise<void> {
   const store = await cookies();
   store.set(cookieName(roomId), token, {
     httpOnly: true,

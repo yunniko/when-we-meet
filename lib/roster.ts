@@ -30,10 +30,7 @@ export function leaveEffect(rule: JoinRuleValue): "delete" | "reset" {
 }
 
 function compareJoinOrder(a: Member, b: Member): number {
-  return (
-    (a.joinedAt?.getTime() ?? 0) - (b.joinedAt?.getTime() ?? 0) ||
-    compareCreationOrder(a, b)
-  );
+  return (a.joinedAt?.getTime() ?? 0) - (b.joinedAt?.getTime() ?? 0) || compareCreationOrder(a, b);
 }
 
 function compareCreationOrder(a: Member, b: Member): number {
@@ -60,7 +57,7 @@ export function pickSuccessor<T extends Member>(members: T[], leavingId: string)
 // proven by its owner-token cookie, is tagged.
 export function shouldBecomeOwner(
   room: { creatorParticipantId: string | null; ownershipVacant: boolean; ownerToken: string },
-  presentedOwnerToken: string | undefined,
+  presentedOwnerToken: string | undefined
 ): boolean {
   if (room.creatorParticipantId !== null) return false;
   if (room.ownershipVacant) return true;
@@ -70,10 +67,7 @@ export function shouldBecomeOwner(
 // Whether joining may add a name that isn't in the room yet. Under "listed
 // names only" just the browser that created the room may (G-004 AC3), so
 // the creator is never locked out of their own room.
-export function mayAddNewName(
-  room: { joinRule: JoinRuleValue; ownerToken: string },
-  presentedOwnerToken: string | undefined,
-): boolean {
+export function mayAddNewName(room: { joinRule: JoinRuleValue; ownerToken: string }, presentedOwnerToken: string | undefined): boolean {
   if (room.joinRule === "ANYONE") return true;
   return presentedOwnerToken !== undefined && presentedOwnerToken === room.ownerToken;
 }
@@ -85,7 +79,7 @@ export function mayAddNewName(
 export function planInvitedAdditions(
   existingNameKeys: string[],
   names: string[],
-  max: number,
+  max: number
 ): { add: string[]; skipped: string[]; overBy: number } {
   const taken = new Set(existingNameKeys);
   const add: string[] = [];

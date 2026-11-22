@@ -53,7 +53,7 @@ async function assignOwnerIfEligible(
   tx: Tx,
   roomId: string,
   participantId: string,
-  presentedOwnerToken: string | undefined,
+  presentedOwnerToken: string | undefined
 ): Promise<void> {
   const room = await tx.room.findUnique({ where: { id: roomId } });
   if (!room || !shouldBecomeOwner(room, presentedOwnerToken)) return;
@@ -72,9 +72,7 @@ async function passOwnership(tx: Tx, roomId: string, leavingId: string): Promise
   const next = pickSuccessor(joined, leavingId);
   await tx.room.update({
     where: { id: roomId },
-    data: next
-      ? { creatorParticipantId: next.id, ownershipVacant: false }
-      : { creatorParticipantId: null, ownershipVacant: true },
+    data: next ? { creatorParticipantId: next.id, ownershipVacant: false } : { creatorParticipantId: null, ownershipVacant: true },
   });
 }
 
@@ -89,11 +87,7 @@ export type JoinByNameResult =
   | { kind: "roomGone" };
 
 // `name` must already be validated (trimmed, 1–60 chars).
-export async function joinByName(
-  roomId: string,
-  name: string,
-  presentedOwnerToken: string | undefined,
-): Promise<JoinByNameResult> {
+export async function joinByName(roomId: string, name: string, presentedOwnerToken: string | undefined): Promise<JoinByNameResult> {
   const nameKey = nameKeyOf(name);
   return prisma.$transaction(async (tx): Promise<JoinByNameResult> => {
     if (!(await lockRoomRow(tx, roomId))) return { kind: "roomGone" };
@@ -127,7 +121,7 @@ export type ClaimResult = { kind: "claimed"; cookieToken: string } | { kind: "no
 export async function claimParticipant(
   roomId: string,
   participantId: string,
-  presentedOwnerToken: string | undefined,
+  presentedOwnerToken: string | undefined
 ): Promise<ClaimResult> {
   return prisma.$transaction(async (tx): Promise<ClaimResult> => {
     if (!(await lockRoomRow(tx, roomId))) return { kind: "notFound" };
@@ -155,7 +149,7 @@ export async function leaveRoomAs(
   // The join rule the leaver's confirmation described. If the owner has
   // switched it since, nothing happens, so nobody gets an outcome they
   // weren't told about.
-  expectedRule?: JoinRuleValue,
+  expectedRule?: JoinRuleValue
 ): Promise<LeaveOutcome> {
   return prisma.$transaction(async (tx): Promise<LeaveOutcome> => {
     if (!(await lockRoomRow(tx, roomId))) return "notFound";
@@ -199,7 +193,7 @@ export async function removeParticipantConfirmed(
   roomId: string,
   actor: Actor,
   targetId: string,
-  typedName: string,
+  typedName: string
 ): Promise<RemoveParticipantResult> {
   return prisma.$transaction(async (tx): Promise<RemoveParticipantResult> => {
     if (!(await lockRoomRow(tx, roomId))) return { ok: false, error: "roomGone" };
@@ -225,11 +219,7 @@ export type RemoveUnclaimedResult =
 
 // Owner removes an invited name nobody has claimed; nothing is lost, so no
 // typed confirmation. The delete only matches a still-unclaimed row.
-export async function removeUnclaimedParticipant(
-  roomId: string,
-  actor: Actor,
-  targetId: string,
-): Promise<RemoveUnclaimedResult> {
+export async function removeUnclaimedParticipant(roomId: string, actor: Actor, targetId: string): Promise<RemoveUnclaimedResult> {
   return prisma.$transaction(async (tx): Promise<RemoveUnclaimedResult> => {
     if (!(await lockRoomRow(tx, roomId))) return { ok: false, error: "roomGone" };
     const room = await tx.room.findUniqueOrThrow({ where: { id: roomId } });
@@ -265,11 +255,7 @@ type SetMark = MarkWrite & { status: "CAN" | "CANNOT" };
 // or the save finds the rotated token (or no row) and writes nothing.
 // Deliberately no room lock, so paint strokes never queue behind membership
 // changes.
-export async function saveMarks(
-  roomId: string,
-  actor: Actor,
-  slots: MarkWrite[],
-): Promise<"saved" | "removed"> {
+export async function saveMarks(roomId: string, actor: Actor, slots: MarkWrite[]): Promise<"saved" | "removed"> {
   // A slot repeated within one request: the last write wins.
   const bySlot = new Map<string, MarkWrite>();
   for (const s of slots) bySlot.set(`${s.slotDate.toISOString()}|${s.slotHour}`, s);
@@ -312,10 +298,7 @@ export async function saveMarks(
 // it commits, so no room lock is needed. Names must already be parsed and
 // deduplicated (parseInvitedNames); createdAt is spaced 1 ms apart so the
 // invited list keeps the order the names were typed in (splitRoster).
-export async function createRoomWithInvites(
-  data: Omit<Prisma.RoomCreateInput, "participants" | "creator">,
-  invitedNames: string[],
-) {
+export async function createRoomWithInvites(data: Omit<Prisma.RoomCreateInput, "participants" | "creator">, invitedNames: string[]) {
   const base = Date.now();
   return prisma.room.create({
     data: {
@@ -333,19 +316,13 @@ export async function createRoomWithInvites(
   });
 }
 
-export type AddInvitedResult =
-  | { ok: true; added: string[]; skipped: string[] }
-  | { ok: false; error: "roomGone" | "notOwner" | "full" };
+export type AddInvitedResult = { ok: true; added: string[]; skipped: string[] } | { ok: false; error: "roomGone" | "notOwner" | "full" };
 
 // Owner adds invited names after creation (G-004 M3). Names already in the
 // room, joined or invited, are skipped rather than refused; if the rest would
 // take the room past its cap, nothing is added. `names` must already be
 // parsed (parseInvitedNames).
-export async function addInvitedParticipants(
-  roomId: string,
-  actor: Actor,
-  names: string[],
-): Promise<AddInvitedResult> {
+export async function addInvitedParticipants(roomId: string, actor: Actor, names: string[]): Promise<AddInvitedResult> {
   return prisma.$transaction(async (tx): Promise<AddInvitedResult> => {
     if (!(await lockRoomRow(tx, roomId))) return { ok: false, error: "roomGone" };
     const room = await tx.room.findUniqueOrThrow({ where: { id: roomId } });
@@ -359,7 +336,7 @@ export async function addInvitedParticipants(
     const plan = planInvitedAdditions(
       existing.map((p) => p.nameKey),
       names,
-      MAX_PARTICIPANTS_PER_ROOM,
+      MAX_PARTICIPANTS_PER_ROOM
     );
     if (plan.overBy > 0) return { ok: false, error: "full" };
 
@@ -390,11 +367,7 @@ export type SetJoinRuleResult = { ok: true } | { ok: false; error: "roomGone" | 
 
 // Owner switches who may join. Under the room lock, so a join already inside
 // its transaction finishes under the old rule and the next one sees the new.
-export async function setJoinRule(
-  roomId: string,
-  actor: Actor,
-  rule: JoinRuleValue,
-): Promise<SetJoinRuleResult> {
+export async function setJoinRule(roomId: string, actor: Actor, rule: JoinRuleValue): Promise<SetJoinRuleResult> {
   return prisma.$transaction(async (tx): Promise<SetJoinRuleResult> => {
     if (!(await lockRoomRow(tx, roomId))) return { ok: false, error: "roomGone" };
     const room = await tx.room.findUniqueOrThrow({ where: { id: roomId } });

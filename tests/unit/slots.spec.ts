@@ -32,26 +32,17 @@ describe("isWeekend", () => {
 
 describe("enumerateDates", () => {
   it("is inclusive of both endpoints", () => {
-    const dates = enumerateDates(
-      new Date("2026-08-21T00:00:00Z"),
-      new Date("2026-08-23T00:00:00Z"),
-    );
+    const dates = enumerateDates(new Date("2026-08-21T00:00:00Z"), new Date("2026-08-23T00:00:00Z"));
     expect(dates).toEqual(["2026-08-21", "2026-08-22", "2026-08-23"]);
   });
 
   it("returns a single date for a single-day room", () => {
-    const dates = enumerateDates(
-      new Date("2026-09-05T00:00:00Z"),
-      new Date("2026-09-05T00:00:00Z"),
-    );
+    const dates = enumerateDates(new Date("2026-09-05T00:00:00Z"), new Date("2026-09-05T00:00:00Z"));
     expect(dates).toEqual(["2026-09-05"]);
   });
 
   it("crosses a month boundary correctly", () => {
-    const dates = enumerateDates(
-      new Date("2026-01-30T00:00:00Z"),
-      new Date("2026-02-01T00:00:00Z"),
-    );
+    const dates = enumerateDates(new Date("2026-01-30T00:00:00Z"), new Date("2026-02-01T00:00:00Z"));
     expect(dates).toEqual(["2026-01-30", "2026-01-31", "2026-02-01"]);
   });
 });
@@ -92,12 +83,7 @@ describe("formatDateRange", () => {
   });
 
   it("shows both dates for a multi-day range", () => {
-    expect(
-      formatDateRange(
-        new Date("2026-08-21T00:00:00Z"),
-        new Date("2026-08-23T00:00:00Z"),
-      ),
-    ).toBe("2026-08-21 – 2026-08-23");
+    expect(formatDateRange(new Date("2026-08-21T00:00:00Z"), new Date("2026-08-23T00:00:00Z"))).toBe("2026-08-21 – 2026-08-23");
   });
 });
 

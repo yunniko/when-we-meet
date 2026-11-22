@@ -49,10 +49,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   const locale = await getLocale();
   const t = await getTranslations("Common");
   return (
-    <html
-      lang={locale}
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
+    <html lang={locale} className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider>
           <div className="flex justify-end px-4 py-2">

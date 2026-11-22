@@ -8,10 +8,7 @@
 // in create-room-form.tsx.
 export type DailyPresetKey = "evening" | "wholeDay" | "morning" | "midday" | "custom";
 
-export const DAILY_PRESETS: Record<
-  Exclude<DailyPresetKey, "custom">,
-  { start: number; end: number }
-> = {
+export const DAILY_PRESETS: Record<Exclude<DailyPresetKey, "custom">, { start: number; end: number }> = {
   evening: { start: 17, end: 22 },
   wholeDay: { start: 7, end: 22 },
   morning: { start: 7, end: 12 },

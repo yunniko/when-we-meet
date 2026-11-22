@@ -30,7 +30,7 @@ export function computeResults(
   rows: NamedAvailabilityRow[],
   // Invited names nobody has claimed yet (G-004). They don't count towards
   // the totals, but while any are pending no slot is "everyone".
-  options: { pendingInvites?: number } = {},
+  options: { pendingInvites?: number } = {}
 ): SlotResult[] {
   const pendingInvites = options.pendingInvites ?? 0;
   const totalParticipants = participantNames.length;
@@ -81,6 +81,6 @@ export function computeResults(
       a.cannotCount - b.cannotCount ||
       b.preferredCount - a.preferredCount ||
       a.date.localeCompare(b.date) ||
-      a.hour - b.hour,
+      a.hour - b.hour
   );
 }

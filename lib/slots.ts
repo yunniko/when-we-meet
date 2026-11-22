@@ -19,20 +19,8 @@ export function dateOnly(d: Date): string {
 
 export function enumerateDates(startDate: Date, endDate: Date): string[] {
   const dates: string[] = [];
-  const cur = new Date(
-    Date.UTC(
-      startDate.getUTCFullYear(),
-      startDate.getUTCMonth(),
-      startDate.getUTCDate(),
-    ),
-  );
-  const end = new Date(
-    Date.UTC(
-      endDate.getUTCFullYear(),
-      endDate.getUTCMonth(),
-      endDate.getUTCDate(),
-    ),
-  );
+  const cur = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate()));
+  const end = new Date(Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate()));
   while (cur.getTime() <= end.getTime()) {
     dates.push(dateOnly(cur));
     cur.setUTCDate(cur.getUTCDate() + 1);
@@ -119,8 +107,6 @@ export function summarizeAvailability(rows: AvailabilityRow[]): MarkSummary {
     }
     byDateMap.set(date, entry);
   }
-  const byDate = [...byDateMap.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, counts]) => ({ date, ...counts }));
+  const byDate = [...byDateMap.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([date, counts]) => ({ date, ...counts }));
   return { canCount, cannotCount, byDate };
 }

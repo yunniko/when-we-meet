@@ -12,9 +12,6 @@ export function roomExpiryDate(room: { endDate: Date; selectedDate: Date | null 
   return expiry;
 }
 
-export function isRoomExpired(
-  room: { endDate: Date; selectedDate: Date | null },
-  now: Date = new Date(),
-): boolean {
+export function isRoomExpired(room: { endDate: Date; selectedDate: Date | null }, now: Date = new Date()): boolean {
   return now.getTime() >= roomExpiryDate(room).getTime();
 }

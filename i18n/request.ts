@@ -13,8 +13,7 @@ export { DEFAULT_LOCALE };
 export default getRequestConfig(async () => {
   const locales = enabledUiLocales();
   const cookieLocale = (await cookies()).get("locale")?.value;
-  const locale =
-    cookieLocale && locales.includes(cookieLocale) ? cookieLocale : DEFAULT_LOCALE;
+  const locale = cookieLocale && locales.includes(cookieLocale) ? cookieLocale : DEFAULT_LOCALE;
 
   type Messages = Parameters<typeof mergeMessages>[0];
   let messages = enMessages as unknown as Messages;

@@ -57,9 +57,7 @@ function historyStorageKey(roomId: string, participantId: string): string {
 function cellClass(mark: CellMark | undefined, weekend: boolean): string {
   if (mark?.status === "CAN") return "bg-can/80 hover:bg-can";
   if (mark?.status === "CANNOT") return "bg-cannot/70 hover:bg-cannot/90";
-  return weekend
-    ? "bg-weekend hover:bg-text/[.07]"
-    : "bg-text/[.03] hover:bg-text/[.07]";
+  return weekend ? "bg-weekend hover:bg-text/[.07]" : "bg-text/[.03] hover:bg-text/[.07]";
 }
 
 function cellAt(x: number, y: number): CellIndex | null {
@@ -87,9 +85,7 @@ export function AvailabilityGrid({
   const router = useRouter();
   const [marks, setMarks] = useState<Marks>(initialAvailability);
   const [brush, setBrush] = useState<Brush>("CAN");
-  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error" | "removed">(
-    "idle",
-  );
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error" | "removed">("idle");
   const gridRef = useRef<HTMLDivElement>(null);
   // Mirror of `marks` for event handlers, so a stroke reads its own earlier
   // cells without waiting for a render.
@@ -125,7 +121,7 @@ export function AvailabilityGrid({
         setMarks(next);
       }
     },
-    [brush, dates, hours],
+    [brush, dates, hours]
   );
 
   const extendStroke = useCallback(
@@ -133,7 +129,7 @@ export function AvailabilityGrid({
       paintCells(cellsBetween(lastPainted.current, cell));
       lastPainted.current = cell;
     },
-    [paintCells],
+    [paintCells]
   );
 
   const beginStroke = useCallback(
@@ -146,7 +142,7 @@ export function AvailabilityGrid({
       }
       extendStroke(cell);
     },
-    [brush, dates, hours, extendStroke],
+    [brush, dates, hours, extendStroke]
   );
 
   const saveChanges = useCallback(
@@ -168,7 +164,7 @@ export function AvailabilityGrid({
         })
         .catch(() => setSaveState("error"));
     },
-    [roomId, participantId, router],
+    [roomId, participantId, router]
   );
 
   const [history, setHistory] = useState<HistoryEntry[]>([]);
@@ -189,7 +185,7 @@ export function AvailabilityGrid({
         // still works this session, it just won't survive a reload.
       }
     },
-    [historyKey],
+    [historyKey]
   );
 
   const endStroke = useCallback(() => {
@@ -231,25 +227,19 @@ export function AvailabilityGrid({
       paintCells(cells);
       endStroke();
     },
-    [brush, dates, hours, paintCells, endStroke],
+    [brush, dates, hours, paintCells, endStroke]
   );
 
-  const fillDateColumn = useCallback(
-    (dateIdx: number) => fillCells(hours.map((_, hourIdx) => ({ dateIdx, hourIdx }))),
-    [fillCells, hours],
-  );
+  const fillDateColumn = useCallback((dateIdx: number) => fillCells(hours.map((_, hourIdx) => ({ dateIdx, hourIdx }))), [fillCells, hours]);
 
-  const fillHourRow = useCallback(
-    (hourIdx: number) => fillCells(dates.map((_, dateIdx) => ({ dateIdx, hourIdx }))),
-    [fillCells, dates],
-  );
+  const fillHourRow = useCallback((hourIdx: number) => fillCells(dates.map((_, dateIdx) => ({ dateIdx, hourIdx }))), [fillCells, dates]);
 
   // Double-click/double-tap on the corner cell fills the entire grid.
   // Undo (below) is the safety net for a careless double-tap here, rather
   // than a confirmation prompt in front of every use.
   const fillAll = useCallback(
     () => fillCells(dates.flatMap((_, dateIdx) => hours.map((_, hourIdx) => ({ dateIdx, hourIdx })))),
-    [fillCells, dates, hours],
+    [fillCells, dates, hours]
   );
 
   // Undo/redo, one entry per completed stroke (including a day/hour/grid
@@ -368,7 +358,7 @@ export function AvailabilityGrid({
       if (e.button !== 0) return;
       beginStroke(cell);
     },
-    [beginStroke, cancelHold],
+    [beginStroke, cancelHold]
   );
 
   const onPointerMove = useCallback(
@@ -383,7 +373,7 @@ export function AvailabilityGrid({
         cancelHold(); // moved too soon: this touch is a scroll
       }
     },
-    [cancelHold, extendStroke],
+    [cancelHold, extendStroke]
   );
 
   return (
@@ -397,9 +387,7 @@ export function AvailabilityGrid({
               onClick={() => setBrush(b.value)}
               aria-pressed={brush === b.value}
               className={`flex items-center gap-1.5 rounded-md border px-3 py-2 text-xs font-medium transition-colors ${
-                brush === b.value
-                  ? "border-accent bg-accent/10"
-                  : "border-border"
+                brush === b.value ? "border-accent bg-accent/10" : "border-border"
               }`}
             >
               <span className={`size-3 rounded-sm ${b.swatchClass}`} />
@@ -517,9 +505,7 @@ export function AvailabilityGrid({
                     className={`relative h-10 border-l border-t border-border ${cellClass(mark, isWeekend(date))}`}
                   >
                     {mark?.preferred && (
-                      <span className="pointer-events-none absolute right-0.5 top-0.5 text-2xs leading-none text-prefer-mark">
-                        ★
-                      </span>
+                      <span className="pointer-events-none absolute right-0.5 top-0.5 text-2xs leading-none text-prefer-mark">★</span>
                     )}
                   </div>
                 );

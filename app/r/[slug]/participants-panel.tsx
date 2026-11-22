@@ -14,16 +14,7 @@ import {
   type RemoveParticipantResult,
 } from "@/app/r/[slug]/actions";
 import { confirmationMatches, type JoinRuleValue } from "@/lib/roster";
-import {
-  Button,
-  Choice,
-  ConfirmDialog,
-  EmptyState,
-  Field,
-  FieldGroup,
-  StatusSlot,
-  controlClass,
-} from "@/components/ui-kit";
+import { Button, Choice, ConfirmDialog, EmptyState, Field, FieldGroup, StatusSlot, controlClass } from "@/components/ui-kit";
 
 type ErrorOf<T> = T extends { ok: false; error: infer E } ? E : never;
 type ErrorKey =
@@ -271,22 +262,26 @@ export function ParticipantsPanel({
               void submit(target);
             }}
           >
-          <Field label={t("removeConfirm.typeLabel", { name: target.name })} error={formError ? t(`errors.${formError}`, { name: target.name }) : null} validates>
-            {(f) => (
-              <input
-                {...f}
-                type="text"
-                value={typed}
-                onChange={(e) => setTyped(e.target.value)}
-                autoComplete="off"
-                autoCapitalize="none"
-                autoCorrect="off"
-                spellCheck={false}
-                maxLength={80}
-                className={controlClass}
-              />
-            )}
-          </Field>
+            <Field
+              label={t("removeConfirm.typeLabel", { name: target.name })}
+              error={formError ? t(`errors.${formError}`, { name: target.name }) : null}
+              validates
+            >
+              {(f) => (
+                <input
+                  {...f}
+                  type="text"
+                  value={typed}
+                  onChange={(e) => setTyped(e.target.value)}
+                  autoComplete="off"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  maxLength={80}
+                  className={controlClass}
+                />
+              )}
+            </Field>
           </form>
         )}
       </ConfirmDialog>
@@ -323,7 +318,14 @@ export function ParticipantsPanel({
       <div className="mt-5 border-t border-border pt-4">
         <FieldGroup legend={t("joinRuleLegend")} error={ruleError ? t(`errors.${ruleError}`, { name: "" }) : null} validates>
           {JOIN_RULES.map((rule) => (
-            <Choice key={rule} type="radio" name="panel-join-rule" value={rule} checked={shownRule === rule} onChange={() => void chooseRule(rule)}>
+            <Choice
+              key={rule}
+              type="radio"
+              name="panel-join-rule"
+              value={rule}
+              checked={shownRule === rule}
+              onChange={() => void chooseRule(rule)}
+            >
               {rule === "ANYONE" ? t("joinRuleAnyone") : t("joinRuleListedOnly")}
             </Choice>
           ))}
