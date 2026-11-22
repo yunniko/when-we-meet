@@ -1,0 +1,9 @@
+{
+  "outputs": { "css": "app/tokens.css" },
+  "sources": ["app", "lib", "components"],
+  "catalogs": [{ "format": "next-intl", "path": "messages/en.json" }],
+  "contentNamespaces": ["Landing", "About"],
+  "ignoreNamespaces": ["Metadata"],
+  "kitDir": "components/ui-kit",
+  "e2eHelpers": "tests/e2e/ui-kit"
+}

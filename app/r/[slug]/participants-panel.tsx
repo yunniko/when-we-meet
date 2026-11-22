@@ -201,10 +201,10 @@ export function ParticipantsPanel({
       <h2 id="participants-heading" className="text-sm font-semibold">
         {t("heading")}
       </h2>
-      <p className="mt-1 text-xs text-muted">{t("ownerHint")}</p>
+      <p className="mt-1 text-xs text-text-muted">{t("ownerHint")}</p>
 
       {notice && (
-        <p role="status" className="mt-3 rounded-md bg-red-50 px-3 py-2 text-sm wrap-anywhere text-red-700">
+        <p role="status" className="mt-3 rounded-md bg-danger-soft px-3 py-2 text-sm wrap-anywhere text-danger">
           {t(`errors.${notice.key}`, { name: notice.name })}
         </p>
       )}
@@ -221,7 +221,7 @@ export function ParticipantsPanel({
                 <div className="flex min-w-0 flex-wrap items-center gap-x-2">
                   <span className="min-w-0 wrap-anywhere">{p.name}</span>
                   {p.invited && (
-                    <span className="rounded-full bg-foreground/5 px-1.5 py-0.5 text-[11px] text-muted">
+                    <span className="rounded-full bg-text/5 px-1.5 py-0.5 text-2xs text-text-muted">
                       {t(p.left ? "leftTag" : "notJoinedTag")}
                     </span>
                   )}
@@ -236,7 +236,7 @@ export function ParticipantsPanel({
                     }}
                     disabled={removingId === p.id}
                     aria-label={t("removeLabel", { name: p.name })}
-                    className="shrink-0 px-1 py-1 text-xs text-red-600 underline hover:text-red-700 disabled:opacity-50"
+                    className="shrink-0 px-1 py-1 text-xs text-danger underline hover:text-danger-hover disabled:opacity-50"
                   >
                     {t("remove")}
                   </button>
@@ -249,9 +249,9 @@ export function ParticipantsPanel({
                     e.preventDefault();
                     void submit(p);
                   }}
-                  className="mt-2 flex flex-col gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2"
+                  className="mt-2 flex flex-col gap-2 rounded-md border border-danger-border bg-danger-soft px-3 py-2"
                 >
-                  <p className="text-xs wrap-anywhere text-red-700">{t("warning", { name: p.name })}</p>
+                  <p className="text-xs wrap-anywhere text-danger">{t("warning", { name: p.name })}</p>
                   <label htmlFor={inputId} className="text-xs font-medium wrap-anywhere">
                     {t("typeToConfirm", { name: p.name })}
                   </label>
@@ -270,7 +270,7 @@ export function ParticipantsPanel({
                     className="w-full rounded-md border border-border bg-background px-3 py-2 text-base outline-none focus:border-accent sm:text-sm"
                   />
                   {formError && (
-                    <p role="alert" className="text-xs font-medium text-red-700">
+                    <p role="alert" className="text-xs font-medium text-danger">
                       {t(`errors.${formError}`, { name: p.name })}
                     </p>
                   )}
@@ -278,14 +278,14 @@ export function ParticipantsPanel({
                     <button
                       type="submit"
                       disabled={!matches || pending}
-                      className="max-w-full rounded-md bg-red-600 px-2.5 py-1.5 text-left text-xs font-medium wrap-anywhere text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="max-w-full rounded-md bg-danger px-2.5 py-1.5 text-left text-xs font-medium wrap-anywhere text-on-danger hover:bg-danger-hover disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {pending ? t("removing") : t("confirm", { name: p.name })}
                     </button>
                     <button
                       type="button"
                       onClick={cancel}
-                      className="rounded-md border border-border bg-surface px-2.5 py-1.5 text-xs font-medium hover:bg-foreground/5"
+                      className="rounded-md border border-border bg-surface px-2.5 py-1.5 text-xs font-medium hover:bg-text/5"
                     >
                       {t("cancel")}
                     </button>
@@ -296,7 +296,7 @@ export function ParticipantsPanel({
           );
         })}
       </ul>
-      {others.length === 0 && <p className="mt-1 text-sm text-muted">{t("nobodyElse")}</p>}
+      {others.length === 0 && <p className="mt-1 text-sm text-text-muted">{t("nobodyElse")}</p>}
 
       <form
         onSubmit={(e) => {
@@ -320,16 +320,16 @@ export function ParticipantsPanel({
           aria-invalid={addError ? true : undefined}
           className="w-full resize-y rounded-md border border-border bg-background px-3 py-2 text-base outline-none focus:border-accent sm:text-sm"
         />
-        <p id="add-invited-help" className="text-xs text-muted">
+        <p id="add-invited-help" className="text-xs text-text-muted">
           {t("addHelp")}
         </p>
         {addError && (
-          <p role="alert" className="text-xs font-medium text-red-700">
+          <p role="alert" className="text-xs font-medium text-danger">
             {t(`errors.${addError}`, { name: "" })}
           </p>
         )}
         {addResult && (
-          <p role="status" className="text-xs wrap-anywhere text-muted">
+          <p role="status" className="text-xs wrap-anywhere text-text-muted">
             {t("addedResult", { count: addResult.added })}
             {addResult.skipped.length > 0 && (
               <> {t("skippedResult", { names: addResult.skipped.join(", ") })}</>
@@ -364,7 +364,7 @@ export function ParticipantsPanel({
             </label>
           ))}
           {ruleError && (
-            <p role="alert" className="text-xs font-medium text-red-700">
+            <p role="alert" className="text-xs font-medium text-danger">
               {t(`errors.${ruleError}`, { name: "" })}
             </p>
           )}

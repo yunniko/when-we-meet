@@ -11,7 +11,9 @@
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:e2e": "playwright test",
     "test": "npm run test:unit && npm run test:integration && npm run test:e2e",
-    "cleanup": "tsx scripts/cleanup-expired-rooms.ts"
+    "cleanup": "tsx scripts/cleanup-expired-rooms.ts",
+    "ui:tokens": "node scripts/ui-kit/ui-tokens.mjs",
+    "ui:check": "node scripts/ui-kit/ui-check.mjs"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.1",
@@ -26,6 +28,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",

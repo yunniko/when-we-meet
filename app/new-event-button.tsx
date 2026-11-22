@@ -6,7 +6,7 @@ export async function NewEventButton() {
   return (
     <Link
       href="/"
-      className="inline-block rounded-md border border-border px-2.5 py-1 text-xs font-medium text-muted hover:border-accent hover:text-accent"
+      className="inline-block rounded-md border border-border px-2.5 py-1 text-xs font-medium text-text-muted hover:border-accent hover:text-accent"
     >
       + {t("newEvent")}
     </Link>

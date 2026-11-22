@@ -1,0 +1,30 @@
+{
+  "kit": "c1b3828",
+  "note": "Copied from projects/ui-kit by bin/sync.mjs; change the kit, not these files.",
+  "files": [
+    "components/ui-kit/button.tsx",
+    "components/ui-kit/confirm-dialog.tsx",
+    "components/ui-kit/cx.ts",
+    "components/ui-kit/empty-state.tsx",
+    "components/ui-kit/field.tsx",
+    "components/ui-kit/index.ts",
+    "components/ui-kit/inline-help.tsx",
+    "components/ui-kit/kitchen-sink.tsx",
+    "components/ui-kit/status-slot.tsx",
+    "components/ui-kit/toast.tsx",
+    "scripts/ui-kit/build-clean.mjs",
+    "scripts/ui-kit/lib/config.mjs",
+    "scripts/ui-kit/lib/contrast.mjs",
+    "scripts/ui-kit/lib/copy-lint.mjs",
+    "scripts/ui-kit/lib/generate.mjs",
+    "scripts/ui-kit/lib/kinds.mjs",
+    "scripts/ui-kit/lib/message-sites.mjs",
+    "scripts/ui-kit/lib/outputs.mjs",
+    "scripts/ui-kit/lib/raw-values.mjs",
+    "scripts/ui-kit/lib/tokens.mjs",
+    "scripts/ui-kit/ui-check.mjs",
+    "scripts/ui-kit/ui-tokens.mjs",
+    "tests/e2e/ui-kit/axe.ts",
+    "tests/e2e/ui-kit/layout-shift.ts"
+  ]
+}

@@ -38,7 +38,7 @@ export function LocaleSelect({
             formRef.current?.requestSubmit();
           })
         }
-        className="rounded-md border border-border bg-surface px-2 py-1 text-xs text-muted"
+        className="rounded-md border border-border bg-surface px-2 py-1 text-xs text-text-muted"
       >
         {options.map((o) => (
           <option key={o.code} value={o.code}>

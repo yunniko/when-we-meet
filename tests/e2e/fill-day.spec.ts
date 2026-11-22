@@ -41,7 +41,7 @@ test("double-click a date header fills the whole day with the current brush", as
   // Default brush is CAN.
   await fillDayAndWaitForSave(page, "date-header-2027-02-01");
   for (const hour of [7, 9, 15, 21]) {
-    await expect(page.getByTestId(`slot-2027-02-01-${hour}`)).toHaveClass(/bg-emerald/);
+    await expect(page.getByTestId(`slot-2027-02-01-${hour}`)).toHaveAttribute("data-state", "CAN");
   }
 
   // Switch brush and fill a different day: every cell in that column changes.
@@ -50,18 +50,18 @@ test("double-click a date header fills the whole day with the current brush", as
   await expect(cannotButton).toHaveAttribute("aria-pressed", "true");
   await fillDayAndWaitForSave(page, "date-header-2027-02-02");
   for (const hour of [7, 9, 15, 21]) {
-    await expect(page.getByTestId(`slot-2027-02-02-${hour}`)).toHaveClass(/bg-rose/);
+    await expect(page.getByTestId(`slot-2027-02-02-${hour}`)).toHaveAttribute("data-state", "CANNOT");
   }
   // The third day is untouched.
-  await expect(page.getByTestId("slot-2027-02-03-9")).not.toHaveClass(/bg-rose|bg-emerald/);
+  await expect(page.getByTestId("slot-2027-02-03-9")).toHaveAttribute("data-state", "EMPTY");
 
   // Reloading and re-reading from the server-rendered grid confirms both
   // saves actually persisted, not just that the optimistic local class
   // changed.
   await page.reload();
-  await expect(page.getByTestId("slot-2027-02-01-9")).toHaveClass(/bg-emerald/);
-  await expect(page.getByTestId("slot-2027-02-01-21")).toHaveClass(/bg-emerald/);
-  await expect(page.getByTestId("slot-2027-02-02-9")).toHaveClass(/bg-rose/);
-  await expect(page.getByTestId("slot-2027-02-02-21")).toHaveClass(/bg-rose/);
-  await expect(page.getByTestId("slot-2027-02-03-9")).not.toHaveClass(/bg-rose|bg-emerald/);
+  await expect(page.getByTestId("slot-2027-02-01-9")).toHaveAttribute("data-state", "CAN");
+  await expect(page.getByTestId("slot-2027-02-01-21")).toHaveAttribute("data-state", "CAN");
+  await expect(page.getByTestId("slot-2027-02-02-9")).toHaveAttribute("data-state", "CANNOT");
+  await expect(page.getByTestId("slot-2027-02-02-21")).toHaveAttribute("data-state", "CANNOT");
+  await expect(page.getByTestId("slot-2027-02-03-9")).toHaveAttribute("data-state", "EMPTY");
 });

@@ -99,7 +99,7 @@ export default async function RoomPage({
           <h1 className="text-2xl font-semibold tracking-tight">
             {room.title || tCommon("untitledRoom")}
           </h1>
-          <p className="mt-1 text-sm text-muted">
+          <p className="mt-1 text-sm text-text-muted">
             {formatDateRange(room.startDate, room.endDate)} ·{" "}
             {hoursLabel} · {room.timezone}
           </p>
@@ -120,7 +120,7 @@ export default async function RoomPage({
           <form action={leaveIdentity.bind(null, { roomId: room.id, slug: room.slug })}>
             <button
               type="submit"
-              className="text-xs text-muted underline hover:text-foreground"
+              className="text-xs text-text-muted underline hover:text-text"
             >
               {t("notYou")}
             </button>
@@ -140,7 +140,7 @@ export default async function RoomPage({
       <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           {others.joined.length + others.invited.length > 0 ? (
-            <div className="min-w-0 text-sm break-words text-muted">
+            <div className="min-w-0 text-sm break-words text-text-muted">
               {others.joined.length > 0 && (
                 <p>{t("alsoInRoom", { names: others.joined.map((p) => p.name).join(", ") })}</p>
               )}
@@ -160,7 +160,7 @@ export default async function RoomPage({
         </div>
 
         {isFinalized ? (
-          <p className="rounded-md border border-dashed border-border px-4 py-6 text-center text-sm text-muted">
+          <p className="rounded-md border border-dashed border-border px-4 py-6 text-center text-sm text-text-muted">
             {t("closedMessage")}
           </p>
         ) : (

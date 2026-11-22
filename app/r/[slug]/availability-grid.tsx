@@ -20,10 +20,10 @@ import {
 import { formatDayLabel, formatHour, isWeekend, slotKey, type CellMark } from "@/lib/slots";
 
 const BRUSH_KEYS: { value: Brush; swatchClass: string }[] = [
-  { value: "CAN", swatchClass: "bg-emerald-500" },
-  { value: "CANNOT", swatchClass: "bg-rose-500" },
-  { value: "PREFER", swatchClass: "bg-amber-400" },
-  { value: "CLEAR", swatchClass: "bg-transparent border border-muted" },
+  { value: "CAN", swatchClass: "bg-can" },
+  { value: "CANNOT", swatchClass: "bg-cannot" },
+  { value: "PREFER", swatchClass: "bg-prefer" },
+  { value: "CLEAR", swatchClass: "bg-transparent border border-text-muted" },
 ];
 
 const BRUSH_LABEL_KEYS: Record<Brush, string> = {
@@ -54,11 +54,11 @@ function historyStorageKey(roomId: string, participantId: string): string {
 }
 
 function cellClass(mark: CellMark | undefined, weekend: boolean): string {
-  if (mark?.status === "CAN") return "bg-emerald-500/80 hover:bg-emerald-500";
-  if (mark?.status === "CANNOT") return "bg-rose-500/70 hover:bg-rose-500/90";
+  if (mark?.status === "CAN") return "bg-can/80 hover:bg-can";
+  if (mark?.status === "CANNOT") return "bg-cannot/70 hover:bg-cannot/90";
   return weekend
-    ? "bg-weekend hover:bg-foreground/[.07]"
-    : "bg-foreground/[.03] hover:bg-foreground/[.07]";
+    ? "bg-weekend hover:bg-text/[.07]"
+    : "bg-text/[.03] hover:bg-text/[.07]";
 }
 
 function cellAt(x: number, y: number): CellIndex | null {
@@ -426,7 +426,7 @@ export function AvailabilityGrid({
             {t("redo")}
           </button>
         </div>
-        <span className="text-xs text-muted">
+        <span className="text-xs text-text-muted">
           {saveState === "saving" && t("saving")}
           {saveState === "saved" && t("saved")}
           {saveState === "error" && t("saveError")}
@@ -434,7 +434,7 @@ export function AvailabilityGrid({
         </span>
       </div>
 
-      <p className="text-xs text-muted">{t("instructions")}</p>
+      <p className="text-xs text-text-muted">{t("instructions")}</p>
 
       <div
         data-testid="grid-scroll"
@@ -483,7 +483,7 @@ export function AvailabilityGrid({
                 data-testid={`hour-header-${hour}`}
                 title={t("fillHourTitle")}
                 onDoubleClick={() => fillHourRow(hourIdx)}
-                className="sticky left-0 z-10 cursor-pointer select-none border-r border-t border-border bg-surface px-2 py-1.5 text-right text-xs text-muted"
+                className="sticky left-0 z-10 cursor-pointer select-none border-r border-t border-border bg-surface px-2 py-1.5 text-right text-xs text-text-muted"
               >
                 {formatHour(hour)}
               </div>
@@ -494,12 +494,13 @@ export function AvailabilityGrid({
                   <div
                     key={key}
                     data-testid={`slot-${date}-${hour}`}
+                    data-state={mark?.status ?? "EMPTY"}
                     data-date-idx={dateIdx}
                     data-hour-idx={hourIdx}
                     className={`relative h-10 border-l border-t border-border ${cellClass(mark, isWeekend(date))}`}
                   >
                     {mark?.preferred && (
-                      <span className="pointer-events-none absolute right-0.5 top-0.5 text-[10px] leading-none text-amber-900">
+                      <span className="pointer-events-none absolute right-0.5 top-0.5 text-2xs leading-none text-prefer-mark">
                         ★
                       </span>
                     )}

@@ -7,7 +7,6 @@ import { createRoom, joinRoom } from "./helpers";
 // tap paints one cell, hold-then-drag paints a run of cells.
 test.use({ ...devices["Pixel 5"] });
 
-const CAN_CLASS = /bg-emerald/;
 
 async function center(page: Page, testId: string): Promise<{ x: number; y: number }> {
   const box = await page.getByTestId(testId).boundingBox();
@@ -45,7 +44,7 @@ test("touch: swipe scrolls the days, tap paints one cell, hold-and-drag paints a
   await touch("touchEnd", []);
   await expect.poll(() => scroller.evaluate((el) => el.scrollLeft)).toBeGreaterThan(40);
   await page.waitForTimeout(400);
-  await expect(page.getByTestId("slot-2027-01-04-9")).not.toHaveClass(CAN_CLASS);
+  await expect(page.getByTestId("slot-2027-01-04-9")).not.toHaveAttribute("data-state", "CAN");
   expect(posts).toBe(0);
 
   await scroller.evaluate((el) => {
@@ -58,8 +57,8 @@ test("touch: swipe scrolls the days, tap paints one cell, hold-and-drag paints a
     page.waitForResponse((res) => res.request().method() === "POST" && res.status() === 200),
     page.touchscreen.tap(tapAt.x, tapAt.y),
   ]);
-  await expect(page.getByTestId("slot-2027-01-01-10")).toHaveClass(CAN_CLASS);
-  await expect(page.getByTestId("slot-2027-01-02-10")).not.toHaveClass(CAN_CLASS);
+  await expect(page.getByTestId("slot-2027-01-01-10")).toHaveAttribute("data-state", "CAN");
+  await expect(page.getByTestId("slot-2027-01-02-10")).not.toHaveAttribute("data-state", "CAN");
   expect(posts).toBe(1);
 
   // 3. Tapping the same CAN cell with the CAN brush changes nothing: no save.
@@ -82,7 +81,7 @@ test("touch: swipe scrolls the days, tap paints one cell, hold-and-drag paints a
   await touch("touchEnd", []);
   await savePromise;
   for (const day of ["02", "03", "04"]) {
-    await expect(page.getByTestId(`slot-2027-01-${day}-9`)).toHaveClass(CAN_CLASS);
+    await expect(page.getByTestId(`slot-2027-01-${day}-9`)).toHaveAttribute("data-state", "CAN");
   }
   expect(await scroller.evaluate((el) => el.scrollLeft)).toBe(0);
   expect(posts).toBe(2);

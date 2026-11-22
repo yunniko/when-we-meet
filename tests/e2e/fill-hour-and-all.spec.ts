@@ -18,14 +18,14 @@ test("double-click an hour label fills that hour across every day", async ({ pag
 
   await dblclickAndWaitForSave(page, "hour-header-9");
   for (const date of ["2027-03-01", "2027-03-02", "2027-03-03"]) {
-    await expect(page.getByTestId(`slot-${date}-9`)).toHaveClass(/bg-emerald/);
+    await expect(page.getByTestId(`slot-${date}-9`)).toHaveAttribute("data-state", "CAN");
   }
   // A different hour is untouched.
-  await expect(page.getByTestId("slot-2027-03-01-10")).not.toHaveClass(/bg-emerald/);
+  await expect(page.getByTestId("slot-2027-03-01-10")).not.toHaveAttribute("data-state", "CAN");
 
   await page.reload();
   for (const date of ["2027-03-01", "2027-03-02", "2027-03-03"]) {
-    await expect(page.getByTestId(`slot-${date}-9`)).toHaveClass(/bg-emerald/);
+    await expect(page.getByTestId(`slot-${date}-9`)).toHaveAttribute("data-state", "CAN");
   }
 });
 
@@ -43,7 +43,7 @@ test("double-click the corner fills the whole grid with no prompt", async ({ pag
   await page.reload();
   for (const date of ["2027-03-01", "2027-03-02"]) {
     for (const hour of [7, 9, 21]) {
-      await expect(page.getByTestId(`slot-${date}-${hour}`)).toHaveClass(/bg-rose/);
+      await expect(page.getByTestId(`slot-${date}-${hour}`)).toHaveAttribute("data-state", "CANNOT");
     }
   }
 });

@@ -32,7 +32,7 @@ export default async function AboutPage() {
       <Link href="/" className="text-sm font-medium text-accent underline hover:text-accent-hover">
         ← {t("backHome")}
       </Link>
-      <p className="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+      <p className="mt-4 rounded-md bg-danger-soft px-3 py-2 text-sm text-danger">
         {t("draftBanner")}
       </p>
       <article

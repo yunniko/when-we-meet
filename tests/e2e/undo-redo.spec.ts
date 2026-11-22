@@ -21,27 +21,27 @@ test("undo reverts the last stroke and persists it; redo reapplies and persists"
   await expect(redoButton).toBeDisabled();
 
   await clickAndWaitForSave(page, "slot-2027-04-01-9");
-  await expect(page.getByTestId("slot-2027-04-01-9")).toHaveClass(/bg-emerald/);
+  await expect(page.getByTestId("slot-2027-04-01-9")).toHaveAttribute("data-state", "CAN");
   await expect(undoButton).toBeEnabled();
   await expect(redoButton).toBeDisabled();
 
   await undoButton.click();
   await expect(page.getByText("Saved")).toBeVisible();
-  await expect(page.getByTestId("slot-2027-04-01-9")).not.toHaveClass(/bg-emerald/);
+  await expect(page.getByTestId("slot-2027-04-01-9")).not.toHaveAttribute("data-state", "CAN");
   await expect(undoButton).toBeDisabled();
   await expect(redoButton).toBeEnabled();
 
   // The revert itself round-tripped to the server, not just the local class.
   await page.reload();
-  await expect(page.getByTestId("slot-2027-04-01-9")).not.toHaveClass(/bg-emerald/);
+  await expect(page.getByTestId("slot-2027-04-01-9")).not.toHaveAttribute("data-state", "CAN");
 
   await redoButton.click();
   await expect(page.getByText("Saved")).toBeVisible();
-  await expect(page.getByTestId("slot-2027-04-01-9")).toHaveClass(/bg-emerald/);
+  await expect(page.getByTestId("slot-2027-04-01-9")).toHaveAttribute("data-state", "CAN");
   await expect(redoButton).toBeDisabled();
 
   await page.reload();
-  await expect(page.getByTestId("slot-2027-04-01-9")).toHaveClass(/bg-emerald/);
+  await expect(page.getByTestId("slot-2027-04-01-9")).toHaveAttribute("data-state", "CAN");
 });
 
 test("a new stroke after undo drops the redo stack", async ({ page }) => {
@@ -73,6 +73,6 @@ test("undo history persists across a reload, scoped to this room and name", asyn
   // survived the reload.
   await undoButton.click();
   await expect(page.getByText("Saved")).toBeVisible();
-  await expect(page.getByTestId("slot-2027-04-02-10")).not.toHaveClass(/bg-emerald/);
-  await expect(page.getByTestId("slot-2027-04-01-9")).toHaveClass(/bg-emerald/);
+  await expect(page.getByTestId("slot-2027-04-02-10")).not.toHaveAttribute("data-state", "CAN");
+  await expect(page.getByTestId("slot-2027-04-01-9")).toHaveAttribute("data-state", "CAN");
 });

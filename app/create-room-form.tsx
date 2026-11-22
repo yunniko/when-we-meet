@@ -182,14 +182,14 @@ export function CreateRoomForm() {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       {state.error && (
-        <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p role="alert" className="rounded-md bg-danger-soft px-3 py-2 text-sm text-danger">
           {t(`errors.${state.error}`)}
         </p>
       )}
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="title" className="text-sm font-medium">
-          {t("roomNameLabel")} <span className="text-muted">{t("optional")}</span>
+          {t("roomNameLabel")} <span className="text-text-muted">{t("optional")}</span>
         </label>
         <input
           id="title"
@@ -204,7 +204,7 @@ export function CreateRoomForm() {
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="description" className="text-sm font-medium">
-          {t("descriptionLabel")} <span className="text-muted">{t("optional")}</span>
+          {t("descriptionLabel")} <span className="text-text-muted">{t("optional")}</span>
         </label>
         <textarea
           id="description"
@@ -216,7 +216,7 @@ export function CreateRoomForm() {
           className={`${inputClass} resize-y`}
         />
         {fieldError("description") && (
-          <p className="text-xs text-red-600">{fieldError("description")}</p>
+          <p className="text-xs text-danger">{fieldError("description")}</p>
         )}
       </div>
 
@@ -234,7 +234,7 @@ export function CreateRoomForm() {
             className={inputClass}
           />
           {fieldError("startDate") && (
-            <p className="text-xs text-red-600">{fieldError("startDate")}</p>
+            <p className="text-xs text-danger">{fieldError("startDate")}</p>
           )}
         </div>
         <div className="flex flex-col gap-1.5">
@@ -250,7 +250,7 @@ export function CreateRoomForm() {
             className={inputClass}
           />
           {fieldError("endDate") && (
-            <p className="text-xs text-red-600">{fieldError("endDate")}</p>
+            <p className="text-xs text-danger">{fieldError("endDate")}</p>
           )}
         </div>
       </div>
@@ -302,9 +302,9 @@ export function CreateRoomForm() {
             </button>
           </div>
         )}
-        <p className="text-xs text-muted">{t("timezoneHelp")}</p>
+        <p className="text-xs text-text-muted">{t("timezoneHelp")}</p>
         {fieldError("timezone") && (
-          <p className="text-xs text-red-600">{fieldError("timezone")}</p>
+          <p className="text-xs text-danger">{fieldError("timezone")}</p>
         )}
       </div>
 
@@ -356,13 +356,13 @@ export function CreateRoomForm() {
           </div>
         )}
         {fieldError("dayEndHour") && (
-          <p className="text-xs text-red-600">{fieldError("dayEndHour")}</p>
+          <p className="text-xs text-danger">{fieldError("dayEndHour")}</p>
         )}
       </fieldset>
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="invitedNames" className="text-sm font-medium">
-          {t("invitedLabel")} <span className="text-muted">{t("optional")}</span>
+          {t("invitedLabel")} <span className="text-text-muted">{t("optional")}</span>
         </label>
         <textarea
           id="invitedNames"
@@ -376,11 +376,11 @@ export function CreateRoomForm() {
           placeholder={t("invitedPlaceholder")}
           className={`${inputClass} resize-y`}
         />
-        <p id="invitedNames-help" className="text-xs text-muted">
+        <p id="invitedNames-help" className="text-xs text-text-muted">
           {t("invitedHelp")}
         </p>
         {fieldError("invitedNames") && (
-          <p id="invitedNames-error" className="text-xs text-red-600">
+          <p id="invitedNames-error" className="text-xs text-danger">
             {fieldError("invitedNames")}
           </p>
         )}
@@ -403,7 +403,7 @@ export function CreateRoomForm() {
           </label>
         ))}
         {fieldError("joinRule") && (
-          <p id="joinRule-error" className="text-xs text-red-600">
+          <p id="joinRule-error" className="text-xs text-danger">
             {fieldError("joinRule")}
           </p>
         )}
@@ -412,7 +412,7 @@ export function CreateRoomForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="mt-2 rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
+        className="mt-2 rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-50"
       >
         {isPending ? t("submitting") : t("submit")}
       </button>

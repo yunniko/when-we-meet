@@ -94,7 +94,7 @@ test("removing an invited name someone claimed meanwhile asks for the typed conf
 
   // The refused one-click removal deleted nothing: Fay's mark is still there.
   await guest.page.reload();
-  await expect(guest.page.getByTestId("slot-2027-12-02-9")).toHaveClass(/bg-emerald/);
+  await expect(guest.page.getByTestId("slot-2027-12-02-9")).toHaveAttribute("data-state", "CAN");
 
   // Cancel clears the instruction along with the confirmation.
   await panel.getByRole("button", { name: "Cancel" }).click();
@@ -143,7 +143,7 @@ test("leaving a listed-only room keeps the name on the list, and the owner sees 
 
   // Claiming the name again starts fresh: the old mark and the tag are gone.
   await claim(guest.page, "Gus");
-  await expect(guest.page.getByTestId("slot-2027-12-03-9")).not.toHaveClass(/bg-emerald/);
+  await expect(guest.page.getByTestId("slot-2027-12-03-9")).not.toHaveAttribute("data-state", "CAN");
   await page.reload();
   await expect(gusRow).not.toContainText("left the room");
 

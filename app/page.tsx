@@ -21,7 +21,7 @@ export default async function Home() {
           />
         </div>
 
-        <p className="mt-5 text-center text-sm text-muted">{t("tagline")}</p>
+        <p className="mt-5 text-center text-sm text-text-muted">{t("tagline")}</p>
 
         <div className="mt-6 rounded-2xl border border-border bg-surface p-6 shadow-sm sm:p-8">
           <CreateRoomForm />

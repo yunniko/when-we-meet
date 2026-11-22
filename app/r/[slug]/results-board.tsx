@@ -12,7 +12,7 @@ function cellStyle(result: SlotResult): CSSProperties {
   // set via className (see cell below) can show through underneath at low
   // intensity instead of being clobbered by an inline background-color.
   const intensity = result.totalParticipants > 0 ? result.canCount / result.totalParticipants : 0;
-  const c = `rgba(16, 185, 129, ${intensity.toFixed(3)})`;
+  const c = `color-mix(in srgb, var(--color-can) ${(intensity * 100).toFixed(1)}%, transparent)`;
   return { backgroundImage: `linear-gradient(${c}, ${c})` };
 }
 
@@ -52,22 +52,22 @@ export function ResultsBoard({
   return (
     <>
       {error && (
-        <p className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p className="mb-4 rounded-md bg-danger-soft px-3 py-2 text-sm text-danger">
           {t(`errors.${error}`)}
         </p>
       )}
 
-      <div className="mb-6 flex flex-wrap items-center gap-4 text-xs text-muted">
+      <div className="mb-6 flex flex-wrap items-center gap-4 text-xs text-text-muted">
         <span className="flex items-center gap-1.5">
-          <span className="size-3 rounded-sm border border-border" style={{ backgroundColor: "rgba(16,185,129,0.15)" }} />
+          <span className="size-3 rounded-sm border border-border" style={{ backgroundColor: "color-mix(in srgb, var(--color-can) 15%, transparent)" }} />
           {t("legend.fewerCan")}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="size-3 rounded-sm" style={{ backgroundColor: "rgba(16,185,129,1)" }} />
+          <span className="size-3 rounded-sm bg-can" />
           {t("legend.moreCan")}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="size-3 rounded-sm ring-2 ring-amber-400" />
+          <span className="size-3 rounded-sm ring-2 ring-highlight" />
           {t("legend.everyoneCan")}
         </span>
         <span className="flex items-center gap-1.5">{t("legend.preferHint")}</span>
@@ -93,7 +93,7 @@ export function ResultsBoard({
 
           {hours.map((hour) => (
             <div key={`row-${hour}`} className="contents">
-              <div className="sticky left-0 z-10 border-r border-t border-border bg-surface px-2 py-1.5 text-right text-xs text-muted">
+              <div className="sticky left-0 z-10 border-r border-t border-border bg-surface px-2 py-1.5 text-right text-xs text-text-muted">
                 {formatHour(hour)}
               </div>
               {dates.map((date) => {
@@ -113,12 +113,12 @@ export function ResultsBoard({
                     style={cellStyle(result)}
                     className={`relative h-10 border-l border-t border-border ${
                       isWeekend(date) ? "bg-weekend" : ""
-                    } ${result.isFullGroup ? "ring-2 ring-inset ring-amber-400" : ""} ${
+                    } ${result.isFullGroup ? "ring-2 ring-inset ring-highlight" : ""} ${
                       canPick ? "cursor-pointer hover:ring-2 hover:ring-accent" : ""
                     } ${pendingKey === key ? "opacity-50" : ""}`}
                   >
                     {result.preferredCount > 0 && (
-                      <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-[10px] font-medium text-emerald-950">
+                      <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-2xs font-medium text-on-can">
                         ★{result.preferredCount}
                       </span>
                     )}
@@ -132,7 +132,7 @@ export function ResultsBoard({
 
       <h2 className="mt-8 mb-3 text-sm font-semibold">{t("bestTimesHeading")}</h2>
       {topResults.length === 0 ? (
-        <p className="text-sm text-muted">{t("noSlotsYet")}</p>
+        <p className="text-sm text-text-muted">{t("noSlotsYet")}</p>
       ) : (
         <ol className="flex flex-col gap-1.5 text-sm">
           {topResults.map((r) => {
@@ -143,10 +143,10 @@ export function ResultsBoard({
                   <span>
                     {formatDayLabel(r.date)}, {formatHour(r.hour)}–{formatHour((r.hour + 1) % 24)}
                   </span>
-                  <span className="flex flex-wrap items-center gap-2 text-muted">
+                  <span className="flex flex-wrap items-center gap-2 text-text-muted">
                     {t("cellTitleBase", { can: r.canCount, total: r.totalParticipants })}
                     {r.isFullGroup && (
-                      <span className="rounded-full bg-amber-400/20 px-1.5 py-0.5 text-xs font-medium text-amber-700">
+                      <span className="rounded-full bg-highlight/20 px-1.5 py-0.5 text-xs font-medium text-warning">
                         {t("everyoneBadge")}
                       </span>
                     )}
@@ -164,7 +164,7 @@ export function ResultsBoard({
                   </span>
                 </div>
                 {r.missingNames.length > 0 && (
-                  <p className="text-xs text-muted">
+                  <p className="text-xs text-text-muted">
                     {t("cantLabel", { names: r.missingNames.join(", ") })}
                   </p>
                 )}

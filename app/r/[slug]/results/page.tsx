@@ -70,16 +70,16 @@ export default async function ResultsPage({
           <h1 className="text-2xl font-semibold tracking-tight">
             {t("pageTitle", { title: room.title || tCommon("untitledRoom") })}
           </h1>
-          <p className="mt-1 text-sm text-muted">
+          <p className="mt-1 text-sm text-text-muted">
             {formatDateRange(room.startDate, room.endDate)} ·{" "}
             {formatHoursWindow(room.dayStartHour, room.dayEndHour)} · {room.timezone} ·{" "}
             {t("peopleCount", { count: totalParticipants })}
           </p>
-          <p className="mt-1 text-sm wrap-anywhere text-muted">
+          <p className="mt-1 text-sm wrap-anywhere text-text-muted">
             {t("participantsLabel", { names: participants.map((p) => p.name).join(", ") })}
           </p>
           {roster.invited.length > 0 && (
-            <p className="mt-1 text-sm wrap-anywhere text-muted">
+            <p className="mt-1 text-sm wrap-anywhere text-text-muted">
               {t("joinedOfExpected", {
                 joined: participants.length,
                 expected: participants.length + roster.invited.length,

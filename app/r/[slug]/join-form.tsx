@@ -67,25 +67,25 @@ export function JoinForm({
       <h1 className="text-2xl font-semibold tracking-tight">
         {roomTitle || tCommon("untitledRoom")}
       </h1>
-      <p className="mt-1 text-sm text-muted">
+      <p className="mt-1 text-sm text-text-muted">
         {dateRangeLabel} · {hoursLabel} · {timezone}
       </p>
       {roomDescription && (
         <p className="mt-3 text-sm whitespace-pre-wrap">{roomDescription}</p>
       )}
-      <p className="mt-2 text-sm text-muted">{t("intro")}</p>
+      <p className="mt-2 text-sm text-text-muted">{t("intro")}</p>
       {listedOnly && (
-        <p className="mt-2 text-sm text-muted">
+        <p className="mt-2 text-sm text-text-muted">
           {t(canUseAnyName ? "listedOnlyCreatorNote" : "listedOnlyNote")}
         </p>
       )}
       {joinedNames.length > 0 && (
-        <div className="mt-3 text-sm wrap-anywhere text-muted">
+        <div className="mt-3 text-sm wrap-anywhere text-text-muted">
           {t("alreadyInRoom")} {nameButtons(joinedNames)} {t("clickYourName")}
         </div>
       )}
       {invitedNames.length > 0 && (
-        <div className="mt-3 text-sm wrap-anywhere text-muted">
+        <div className="mt-3 text-sm wrap-anywhere text-text-muted">
           {t("invitedLabel")} {nameButtons(invitedNames)} {t("clickYourName")}
         </div>
       )}
@@ -104,14 +104,14 @@ export function JoinForm({
                 {effective.summary.byDate.map((d) => (
                   <li key={d.date} className="flex justify-between gap-4">
                     <span>{formatDayLabel(d.date)}</span>
-                    <span className="text-muted">
+                    <span className="text-text-muted">
                       {t("collision.summaryLine", { can: d.canCount, cannot: d.cannotCount })}
                     </span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-muted">{t("collision.noMarks")}</p>
+              <p className="text-sm text-text-muted">{t("collision.noMarks")}</p>
             )}
             <p className="text-sm font-medium">{t("collision.isThisYou")}</p>
             <div className="flex gap-3">
@@ -124,7 +124,7 @@ export function JoinForm({
                 <button
                   type="submit"
                   disabled={pending}
-                  className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
+                  className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-on-accent hover:bg-accent-hover disabled:opacity-50"
                 >
                   {t("collision.yesConfirm")}
                 </button>
@@ -132,7 +132,7 @@ export function JoinForm({
               <button
                 type="button"
                 onClick={() => setDismissed(true)}
-                className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-foreground/5"
+                className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-text/5"
               >
                 {t("collision.noDifferent")}
               </button>
@@ -147,7 +147,7 @@ export function JoinForm({
             <label htmlFor="name" className="text-sm font-medium">
               {t("nameLabel")}
             </label>
-            <p className="-mt-1.5 text-xs text-muted">{t("nameHelp")}</p>
+            <p className="-mt-1.5 text-xs text-text-muted">{t("nameHelp")}</p>
             <input
               id="name"
               name="name"
@@ -160,14 +160,14 @@ export function JoinForm({
               className="rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent"
             />
             {effective.step === "form" && effective.error && (
-              <p className="text-xs text-red-600">
+              <p className="text-xs text-danger">
                 {t(`errors.${effective.error}`, { max: MAX_PARTICIPANTS_PER_ROOM })}
               </p>
             )}
             <button
               type="submit"
               disabled={pending}
-              className="mt-1 rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
+              className="mt-1 rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-on-accent hover:bg-accent-hover disabled:opacity-50"
             >
               {pending ? t("submitting") : t("submit")}
             </button>

@@ -51,12 +51,12 @@ test("a grid rendered for one name refuses to save once the cookie names someone
   // marks untouched (the cell is not green on Second's fresh grid).
   await page.getByTestId("slot-2027-08-11-10").click();
   await expect(page.getByText("Marking as Second")).toBeVisible();
-  await expect(page.getByTestId("slot-2027-08-11-10")).not.toHaveClass(/bg-emerald/);
-  await expect(page.getByTestId("slot-2027-08-11-9")).not.toHaveClass(/bg-emerald/);
+  await expect(page.getByTestId("slot-2027-08-11-10")).not.toHaveAttribute("data-state", "CAN");
+  await expect(page.getByTestId("slot-2027-08-11-9")).not.toHaveAttribute("data-state", "CAN");
 
   // And First's original mark is still there for First.
   await page.getByRole("button", { name: "Not you? Use a different name" }).click();
   await page.getByRole("button", { name: "First", exact: true }).click();
   await page.getByRole("button", { name: "Yes, that's me" }).click();
-  await expect(page.getByTestId("slot-2027-08-11-9")).toHaveClass(/bg-emerald/);
+  await expect(page.getByTestId("slot-2027-08-11-9")).toHaveAttribute("data-state", "CAN");
 });

@@ -60,7 +60,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           </div>
           <div className="flex-1 flex flex-col">{children}</div>
           <footer className="px-4 py-4 text-center">
-            <Link href="/about" className="text-xs text-muted underline hover:text-foreground">
+            <Link href="/about" className="text-xs text-text-muted underline hover:text-text">
               {t("aboutLink")}
             </Link>
           </footer>

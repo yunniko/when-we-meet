@@ -52,7 +52,7 @@ export default async function StatusPage({
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-8">
       <h1 className="text-2xl font-semibold tracking-tight">Status</h1>
-      <p className="mt-1 text-sm text-muted">
+      <p className="mt-1 text-sm text-text-muted">
         {totalRooms} {totalRooms === 1 ? "room" : "rooms"} ·{" "}
         {joinedParticipants} joined · {invitedParticipants} invited, not yet joined
       </p>
@@ -60,7 +60,7 @@ export default async function StatusPage({
       <div className="mt-6 overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b border-border text-xs text-muted">
+            <tr className="border-b border-border text-xs text-text-muted">
               <th className="px-4 py-2 font-medium">Room</th>
               <th className="px-4 py-2 font-medium">Created</th>
               <th className="px-4 py-2 font-medium">Status</th>
@@ -75,19 +75,19 @@ export default async function StatusPage({
               return (
                 <tr key={room.id} className="border-b border-border last:border-0">
                   <td className="px-4 py-2">{room.title || "Untitled room"}</td>
-                  <td className="px-4 py-2 text-muted">{formatTimestamp(room.createdAt)}</td>
+                  <td className="px-4 py-2 text-text-muted">{formatTimestamp(room.createdAt)}</td>
                   <td className="px-4 py-2">
                     <span
                       className={
                         expired
-                          ? "rounded-full bg-muted/20 px-2 py-0.5 text-xs font-medium text-muted"
-                          : "rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-700"
+                          ? "rounded-full bg-text-muted/20 px-2 py-0.5 text-xs font-medium text-text-muted"
+                          : "rounded-full bg-can/15 px-2 py-0.5 text-xs font-medium text-success"
                       }
                     >
                       {expired ? "expired" : "active"}
                     </span>
                   </td>
-                  <td className="px-4 py-2 text-muted">
+                  <td className="px-4 py-2 text-text-muted">
                     {joined}
                     {invited > 0 && <> (+{invited} invited)</>}
                   </td>
@@ -96,7 +96,7 @@ export default async function StatusPage({
             })}
             {rooms.length === 0 && (
               <tr>
-                <td className="px-4 py-6 text-center text-muted" colSpan={4}>
+                <td className="px-4 py-6 text-center text-text-muted" colSpan={4}>
                   No rooms.
                 </td>
               </tr>
@@ -113,7 +113,7 @@ export default async function StatusPage({
         ) : (
           <span />
         )}
-        <span className="text-muted">
+        <span className="text-text-muted">
           Page {page} of {totalPages}
         </span>
         {page < totalPages ? (
