@@ -56,3 +56,10 @@ After ui-kit D009 (6% headroom) these were shortened as well: en `ParticipantsPa
 `invitedNameTooLong`; ru `CreateRoom.errors.listedOnlyNeedsNames`, `ParticipantsPanel.errors.failed`,
 `invitedNameTooLong`, `addFailed`, `ruleFailed`; cs `listedOnlyNeedsNames`, `LeaveRoom.errors.ruleChanged`; de
 `JoinForm.errors.confirmFailed`, `notOnList`, `LeaveRoom.errors.ruleChanged`.
+
+Linux CI renders about 5% wider than Windows, so the 6% headroom is in effect about 11% there; these were
+shortened for it: cs `AvailabilityGrid.errors.save`, `ParticipantsPanel.errors.notOwner`, `self`,
+`invitedNameTooLong`; de `CreateRoom.errors.endBeforeStart`, `dayEndBeforeStart`, `rangeTooLong`,
+`ParticipantsPanel.errors.roomGone`, `full`; en `JoinForm.errors.confirmFailed`,
+`AvailabilityGrid.removedStatus`, `ParticipantsPanel.errors.ruleFailed`; ru `CreateRoom.errors.endBeforeStart`,
+`rangeTooLong`, `tooManyInvitedNames`.

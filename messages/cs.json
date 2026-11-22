@@ -117,7 +117,7 @@
     "savingStatus": "Ukládání…",
     "savedStatus": "Uloženo",
     "errors": {
-      "save": "Uložení se nezdařilo — zkuste to znovu"
+      "save": "Uložení selhalo — zkuste znovu"
     },
     "removedStatus": "Už nejste v místnosti; načítám znovu…",
     "instructionsHint": "Klepněte nebo táhněte. Dvojklepnutí na záhlaví ho vyplní.",
@@ -155,12 +155,12 @@
     "errors": {
       "nameMismatch": "Napsané jméno nesouhlasí.",
       "notFound": "{name} už v této místnosti není.",
-      "notOwner": "Už nejste organizátor. Obnovte stránku.",
+      "notOwner": "Už nejste organizátor. Obnovte.",
       "roomGone": "Místnost už není. Obnovte stránku.",
-      "self": "Sebe odeberete přes „Opustit místnost“.",
+      "self": "Použijte „Opustit místnost“.",
       "failed": "Odebrání se nepovedlo. Zkuste znovu.",
       "full": "Místnost pojme nejvýš 100 lidí.",
-      "invitedNameTooLong": "Každé jméno může mít nejvýš 60 znaků.",
+      "invitedNameTooLong": "Jméno může mít nejvýš 60 znaků.",
       "tooManyInvitedNames": "Najednou lze přidat nejvýš 99 jmen.",
       "nothingToAdd": "Napište aspoň jedno jméno.",
       "claimed": "{name} už je tu. Napište jméno níže.",

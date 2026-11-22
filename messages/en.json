@@ -84,7 +84,7 @@
     "errors": {
       "nameRequired": "Enter a name.",
       "nameTooLong": "Name is too long.",
-      "confirmFailed": "That didn't work. Enter your name again.",
+      "confirmFailed": "Please enter your name again.",
       "roomFull": "This room is full ({max} people).",
       "notOnList": "Only invited names. Pick yours above."
     },
@@ -119,7 +119,7 @@
     "errors": {
       "save": "Couldn't save — try again"
     },
-    "removedStatus": "You're no longer in this room; reloading…",
+    "removedStatus": "No longer in this room; reloading…",
     "instructionsHint": "Tap or drag to paint. Double-tap a header to fill it.",
     "instructionsLabel": "How to mark",
     "instructionsDetail": "On a touch screen, press and hold, then drag; swipe to scroll. Double-click or double-tap a day's header, an hour's label or the top-left corner to fill that day, that hour or the whole grid. \"Prefer\" only applies to slots already marked Can.",
@@ -166,7 +166,7 @@
       "claimed": "{name} just joined. Type the name below.",
       "invalidRule": "Pick who can join.",
       "addFailed": "Couldn't add the names. Try again.",
-      "ruleFailed": "Couldn't change who can join. Try again."
+      "ruleFailed": "Couldn't change it. Try again."
     },
     "notJoinedTag": "not joined yet",
     "leftTag": "left the room",
