@@ -1,6 +1,6 @@
 "use client";
-// A group of radios or checkboxes: one legend, one reserved message slot (Field's twin for a fieldset;
-// COMPANY/UI_STANDARDS.md §3, §4). The hint and the error share the slot, and the group is described by it.
+// A group of controls that share one question: radios, checkboxes, or a pair such as a date range. One legend,
+// one reserved message slot (Field's twin for a fieldset; COMPANY/UI_STANDARDS.md §3, §4). The group is described by it.
 import { useId, type InputHTMLAttributes, type ReactNode } from "react";
 import { cx } from "./cx";
 
