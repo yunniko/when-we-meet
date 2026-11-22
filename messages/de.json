@@ -44,15 +44,15 @@
       "startDateInvalid": "Gib ein gültiges Startdatum ein",
       "endDateInvalid": "Gib ein gültiges Enddatum ein",
       "endBeforeStart": "Das Enddatum liegt vor dem Startdatum",
-      "dayEndBeforeStart": "Die Tages-Endzeit muss nach der Tages-Startzeit liegen",
+      "dayEndBeforeStart": "Das Ende muss nach dem Beginn liegen",
       "rangeTooLong": "Der Zeitraum ist zu lang (max. 60 Tage)",
       "dayHourInvalid": "Gib eine gültige Stunde ein",
       "dayStartHourRange": "Die Startstunde muss zwischen 0 und 23 liegen",
       "dayEndHourRange": "Die Endstunde muss zwischen 1 und 24 liegen",
       "descriptionTooLong": "Die Beschreibung darf nicht länger als 2000 Zeichen sein",
-      "invitedNameTooLong": "Jeder eingeladene Name darf höchstens 60 Zeichen haben.",
-      "tooManyInvitedNames": "Du kannst höchstens 99 Namen einladen.",
-      "listedOnlyNeedsNames": "Füge mindestens einen eingeladenen Namen hinzu oder lass alle mit dem Link beitreten.",
+      "invitedNameTooLong": "Ein Name darf max. 60 Zeichen haben.",
+      "tooManyInvitedNames": "Höchstens 99 Namen einladen.",
+      "listedOnlyNeedsNames": "Namen eintragen oder alle zulassen.",
       "joinRuleInvalid": "Wähle aus, wer beitreten kann."
     },
     "invitedLabel": "Eingeladene",
@@ -60,7 +60,7 @@
     "joinRuleLegend": "Wer beitreten kann",
     "joinRuleAnyone": "Alle mit dem Link",
     "joinRuleListedOnly": "Nur eingeladene Namen",
-    "timezoneHint": "Alle tragen Zeiten in dieser Zone ein und sehen sie so.",
+    "timezoneHint": "Alle sehen die Zeiten in dieser Zone.",
     "invitedHint": "Ein Name pro Zeile, höchstens 99.",
     "joinRuleHint": "Deinem eigenen Raum kannst du immer beitreten.",
     "datesLegend": "Zeitraum"
@@ -84,9 +84,9 @@
     "errors": {
       "nameRequired": "Gib einen Namen ein.",
       "nameTooLong": "Der Name ist zu lang.",
-      "confirmFailed": "Das hat nicht funktioniert — versuche, den Namen erneut einzugeben.",
-      "roomFull": "Dieser Raum hat sein Limit von {max} Teilnehmern erreicht.",
-      "notOnList": "Dieser Raum nimmt nur eingeladene Namen an — wähle deinen aus der Liste oben."
+      "confirmFailed": "Hat nicht geklappt. Gib den Namen neu ein.",
+      "roomFull": "Der Raum ist voll ({max} Personen).",
+      "notOnList": "Nur für Eingeladene. Wähl dich oben aus."
     },
     "invitedLabel": "Eingeladen",
     "pickYourNameHint": "Tippe auf deinen Namen, wenn du dabei bist.",
@@ -117,7 +117,7 @@
     "savingStatus": "Wird gespeichert…",
     "savedStatus": "Gespeichert",
     "errors": {
-      "save": "Speichern fehlgeschlagen — versuche es erneut"
+      "save": "Speichern fehlgeschlagen. Nochmal?"
     },
     "removedStatus": "Du bist nicht mehr im Raum; lädt neu…",
     "instructionsHint": "Tippen oder ziehen zum Markieren. Doppeltippen auf eine Kopfzeile füllt sie.",
@@ -141,7 +141,7 @@
       "title": "Raum verlassen?"
     },
     "errors": {
-      "ruleChanged": "Die Einstellungen des Raums haben sich gerade geändert. Bitte lies das noch einmal, bevor du bestätigst."
+      "ruleChanged": "Die Regeln haben sich geändert. Lies neu."
     }
   },
   "ParticipantsPanel": {
@@ -153,20 +153,20 @@
     "removing": "Wird entfernt …",
     "cancel": "Abbrechen",
     "errors": {
-      "nameMismatch": "Der eingegebene Name stimmt nicht überein.",
+      "nameMismatch": "Der Name stimmt nicht überein.",
       "notFound": "{name} ist nicht mehr in diesem Raum.",
-      "notOwner": "Du organisierst diesen Raum nicht mehr. Lade die Seite neu.",
-      "roomGone": "Diesen Raum gibt es nicht mehr. Lade die Seite neu.",
-      "self": "Um dich selbst zu entfernen, nutze „Raum verlassen“.",
-      "failed": "Entfernen fehlgeschlagen — versuch es noch einmal.",
-      "full": "Ein Raum fasst höchstens 100 Personen, eingeladene Namen eingeschlossen.",
-      "invitedNameTooLong": "Jeder Name darf höchstens 60 Zeichen haben.",
-      "tooManyInvitedNames": "Du kannst höchstens 99 Namen auf einmal hinzufügen.",
+      "notOwner": "Du organisierst nicht mehr. Lade neu.",
+      "roomGone": "Den Raum gibt es nicht mehr. Lade neu.",
+      "self": "Dich selbst: „Raum verlassen“.",
+      "failed": "Entfernen fehlgeschlagen. Nochmal?",
+      "full": "Ein Raum fasst höchstens 100 Personen.",
+      "invitedNameTooLong": "Namen: höchstens 60 Zeichen.",
+      "tooManyInvitedNames": "Höchstens 99 Namen auf einmal.",
       "nothingToAdd": "Gib mindestens einen Namen ein.",
-      "claimed": "{name} ist schon im Raum. Zum Entfernen gib den Namen unten ein.",
+      "claimed": "{name} ist schon da. Gib den Namen ein.",
       "invalidRule": "Wähle aus, wer beitreten kann.",
-      "addFailed": "Die Namen konnten nicht hinzugefügt werden — versuch es noch einmal.",
-      "ruleFailed": "Konnte nicht ändern, wer beitreten kann — versuch es noch einmal."
+      "addFailed": "Hinzufügen fehlgeschlagen. Nochmal?",
+      "ruleFailed": "Änderung fehlgeschlagen. Nochmal?"
     },
     "notJoinedTag": "noch nicht beigetreten",
     "leftTag": "hat den Raum verlassen",
@@ -214,10 +214,10 @@
     "cantLabel": "Kann nicht: {names}",
     "errors": {
       "roomNotFound": "Raum nicht gefunden.",
-      "notOwner": "Nur der Ersteller des Raums kann die Besprechungszeit festlegen.",
+      "notOwner": "Nur der Ersteller legt die Zeit fest.",
       "invalidSlot": "Ungültige Zeit.",
-      "outOfRange": "Diese Zeit liegt außerhalb des Zeitraums dieses Raums.",
-      "notFuture": "Du kannst nur eine Zeit in der Zukunft wählen."
+      "outOfRange": "Diese Zeit liegt außerhalb des Raums.",
+      "notFuture": "Nur Zeiten in der Zukunft."
     },
     "slotsEmpty": "Noch niemand hat eine verfügbare Zeit markiert.",
     "gridLabel": "Verfügbarkeit nach Zeit"

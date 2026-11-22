@@ -114,7 +114,7 @@ test("the server refuses a wrong name, a target who already left, and a browser 
   await joinRoom(otherTab, "Someone Else");
   await expect(otherTab.getByText("Marking as Someone Else")).toBeVisible();
   await panel.getByRole("button", { name: "Yes, remove Alice" }).click();
-  await expect(panel.getByText("You're no longer this room's organizer. Reload the page.")).toBeVisible();
+  await expect(panel.getByText("You're no longer the organizer. Reload.")).toBeVisible();
   await expect(otherTab.getByRole("region", { name: "Participants" })).toHaveCount(0);
   await otherTab.reload();
   await expect(otherTab.getByText(/Also in this room:.*Alice/)).toBeVisible();

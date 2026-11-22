@@ -6,6 +6,8 @@ import { createRoom, type CreateRoomState } from "@/app/actions";
 import { DAILY_PRESETS, type DailyPresetKey } from "@/lib/room-presets";
 import { formatHoursWindow } from "@/lib/slots";
 import { pickGuessedTimezone } from "@/lib/timezone-guess";
+import { reserveFor } from "@/lib/message-slots";
+import { MAX_DESCRIPTION_LENGTH } from "@/lib/validation";
 import { Button, Choice, Field, FieldGroup, StatusSlot, controlClass } from "@/components/ui-kit";
 
 const PRESET_KEYS: DailyPresetKey[] = ["evening", "wholeDay", "morning", "midday", "custom"];
@@ -205,14 +207,13 @@ export function CreateRoomForm() {
           </>
         }
         error={fieldError("description")}
-        validates
       >
         {(p) => (
           <textarea
             {...p}
             name="description"
             rows={3}
-            maxLength={2000}
+            maxLength={MAX_DESCRIPTION_LENGTH}
             defaultValue={state.values.description}
             placeholder={t("descriptionPlaceholder")}
             className={`${controlClass} resize-y py-2`}
@@ -222,7 +223,11 @@ export function CreateRoomForm() {
 
       {/* One question, one message: the pair shares a full-width slot, so a date error never wraps in a half
           column and pushes the form down (found at 390px; see tests/e2e/ui-quality.spec.ts). */}
-      <FieldGroup legend={t("datesLegend")} error={fieldError("startDate") ?? fieldError("endDate")} validates>
+      <FieldGroup
+        legend={t("datesLegend")}
+        error={fieldError("startDate") ?? fieldError("endDate")}
+        reserve={reserveFor(t, "CreateRoom", "dates")}
+      >
         <div className="grid grid-cols-2 gap-4">
           <Field label={t("fromLabel")}>
             {(p) => (
@@ -253,7 +258,12 @@ export function CreateRoomForm() {
         </div>
       </FieldGroup>
 
-      <Field label={t("timezoneLabel")} hint={t("timezoneHint")} error={fieldError("timezone")}>
+      <Field
+        label={t("timezoneLabel")}
+        hint={t("timezoneHint")}
+        error={fieldError("timezone")}
+        reserve={reserveFor(t, "CreateRoom", "timezone")}
+      >
         {(p) => (
           <>
             {/* The submitted value always comes from this hidden input, whichever view shows: the <select> is
@@ -292,7 +302,11 @@ export function CreateRoomForm() {
         )}
       </Field>
 
-      <FieldGroup legend={t("dailyWindowLegend")} error={fieldError("dayStartHour") ?? fieldError("dayEndHour")} validates>
+      <FieldGroup
+        legend={t("dailyWindowLegend")}
+        error={fieldError("dayStartHour") ?? fieldError("dayEndHour")}
+        reserve={reserveFor(t, "CreateRoom", "dailyWindow")}
+      >
         {presetOptions.map((p) => (
           <Choice key={p.value} type="radio" name="preset" value={p.value} checked={preset === p.value} onChange={() => setPreset(p.value)}>
             {p.label}
@@ -307,6 +321,7 @@ export function CreateRoomForm() {
                   aria-invalid={fieldError("dayStartHour") ? true : undefined}
                   name="dayStartHour"
                   type="number"
+                  required
                   min={0}
                   max={23}
                   defaultValue={state.values.dayStartHour}
@@ -321,6 +336,7 @@ export function CreateRoomForm() {
                   aria-invalid={fieldError("dayEndHour") ? true : undefined}
                   name="dayEndHour"
                   type="number"
+                  required
                   min={1}
                   max={24}
                   defaultValue={state.values.dayEndHour}
@@ -340,6 +356,7 @@ export function CreateRoomForm() {
         }
         hint={t("invitedHint")}
         error={fieldError("invitedNames")}
+        reserve={reserveFor(t, "CreateRoom", "invitedNames")}
       >
         {(p) => (
           <textarea
@@ -353,7 +370,12 @@ export function CreateRoomForm() {
         )}
       </Field>
 
-      <FieldGroup legend={t("joinRuleLegend")} hint={t("joinRuleHint")} error={fieldError("joinRule")}>
+      <FieldGroup
+        legend={t("joinRuleLegend")}
+        hint={t("joinRuleHint")}
+        error={fieldError("joinRule")}
+        reserve={reserveFor(t, "CreateRoom", "joinRule")}
+      >
         {(["ANYONE", "LISTED_ONLY"] as const).map((rule) => (
           <Choice key={rule} type="radio" name="joinRule" value={rule} checked={joinRule === rule} onChange={() => setJoinRule(rule)}>
             {rule === "ANYONE" ? t("joinRuleAnyone") : t("joinRuleListedOnly")}
@@ -365,7 +387,7 @@ export function CreateRoomForm() {
         <Button type="submit" busy={isPending} busyLabel={t("submitting")}>
           {t("submit")}
         </Button>
-        <StatusSlot message={state.error ? t(`errors.${state.error}`) : null} tone="danger" />
+        <StatusSlot message={state.error ? t(`errors.${state.error}`) : null} tone="danger" reserve={reserveFor(t, "CreateRoom", "form")} />
       </div>
     </form>
   );

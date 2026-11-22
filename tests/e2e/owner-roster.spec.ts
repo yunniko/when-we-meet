@@ -46,7 +46,7 @@ test("owner adds names, removes an unclaimed one in one click, and switches who 
   const guest = await visitorAt(browser, page.url());
   await expect(guest.page.getByText("Only invited names can join")).toBeVisible();
   await joinRoom(guest.page, "Mallory");
-  await expect(guest.page.getByText("This room only accepts invited names")).toBeVisible();
+  await expect(guest.page.getByText("Only invited names. Pick yours above.")).toBeVisible();
   await claim(guest.page, "Dana");
 
   // Back to anyone with the link: a new name can join again.
@@ -77,7 +77,7 @@ test("removing an invited name someone claimed meanwhile asks for the typed conf
 
   // The owner's list is stale and still shows Fay as not joined.
   await panel.getByRole("button", { name: "Remove Fay" }).click();
-  const claimedNotice = panel.getByText("Fay has just joined. Type their name below to remove them.");
+  const claimedNotice = panel.getByText("Fay just joined. Type the name below.");
   await expect(claimedNotice).toBeVisible();
   await expect(panel.getByLabel("Type “Fay” to confirm")).toBeVisible();
   await expect(panel.getByRole("listitem").filter({ hasText: "Fay" })).not.toContainText("not joined yet");
@@ -95,7 +95,7 @@ test("removing an invited name someone claimed meanwhile asks for the typed conf
   await panel.getByLabel("Type “Fay” to confirm").fill("Fay");
   await panel.getByRole("button", { name: "Yes, remove Fay" }).click();
   await expect(panel.getByText("Fay", { exact: true })).toHaveCount(0);
-  await expect(panel.getByText("Fay has just joined")).toHaveCount(0);
+  await expect(panel.getByText("Fay just joined")).toHaveCount(0);
 
   await guest.context.close();
 });
@@ -155,7 +155,7 @@ test("a leave confirmed after the owner changed the rule is refused and shows th
   await Promise.all([serverActionDone(page), panel.getByLabel("Only names on this list").check()]);
 
   await guest.page.getByRole("button", { name: "Yes, delete my data" }).click();
-  await expect(guest.page.getByText("The room's settings just changed.")).toBeVisible();
+  await expect(guest.page.getByText("The settings changed. Read this again.")).toBeVisible();
   await expect(guest.page.getByText("Your name stays on the invite list")).toBeVisible();
   await expect(guest.page.getByText("Marking as Ida")).toBeVisible();
 

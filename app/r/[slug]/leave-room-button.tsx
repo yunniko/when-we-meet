@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { leaveRoom } from "@/app/r/[slug]/actions";
 import type { JoinRuleValue } from "@/lib/roster";
+import { reserveFor } from "@/lib/message-slots";
 import { ConfirmDialog, StatusSlot } from "@/components/ui-kit";
 
 export function LeaveRoomButton({
@@ -63,7 +64,7 @@ export function LeaveRoomButton({
         }}
       >
         {/* Reserved whether or not the room's rule changed under the dialog, so the buttons never move. */}
-        <StatusSlot message={ruleChanged ? t("errors.ruleChanged") : null} tone="danger" />
+        <StatusSlot message={ruleChanged ? t("errors.ruleChanged") : null} tone="danger" reserve={reserveFor(t, "LeaveRoom", "confirm")} />
       </ConfirmDialog>
     </>
   );

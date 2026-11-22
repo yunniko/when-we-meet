@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { selectFinalSlot } from "@/app/r/[slug]/actions";
 import { formatDayLabel, formatHour, isWeekend, slotKey } from "@/lib/slots";
 import type { SlotResult } from "@/lib/results";
+import { reserveFor } from "@/lib/message-slots";
 import { EmptyState, StatusSlot } from "@/components/ui-kit";
 
 function cellStyle(result: SlotResult): CSSProperties {
@@ -52,7 +53,12 @@ export function ResultsBoard({
 
   return (
     <>
-      <StatusSlot message={error ? t(`errors.${error}`) : null} tone="danger" className="mb-2" />
+      <StatusSlot
+        message={error ? t(`errors.${error}`) : null}
+        tone="danger"
+        reserve={reserveFor(t, "ResultsBoard", "pick")}
+        className="mb-2"
+      />
 
       <div className="mb-6 flex flex-wrap items-center gap-4 text-xs text-text-muted">
         <span className="flex items-center gap-1.5">

@@ -18,6 +18,7 @@ import {
   type SlotUpdate,
 } from "@/lib/paint";
 import { formatDayLabel, formatHour, isWeekend, slotKey, type CellMark } from "@/lib/slots";
+import { reserveFor } from "@/lib/message-slots";
 import { InlineHelp, StatusSlot } from "@/components/ui-kit";
 
 const BRUSH_KEYS: { value: Brush; swatchClass: string }[] = [
@@ -428,6 +429,7 @@ export function AvailabilityGrid({
                     : null
           }
           tone={saveState === "error" ? "danger" : saveState === "saved" ? "success" : "neutral"}
+          reserve={reserveFor(t, "AvailabilityGrid", "save")}
           className="min-w-32"
         />
       </div>

@@ -1,9 +1,11 @@
 "use client";
 // A form field with one message slot under the control (COMPANY/UI_STANDARDS.md §3, §4). The slot holds the hint
 // or, when there is one, the error in its place, so the two never stack. When the field can show an error
-// (`validates`) or has a hint, the slot's line is reserved before anything appears in it: no layout shift.
+// (`validates`) or has a hint, the slot is reserved before anything appears in it; pass the field's possible errors
+// as `reserve` and it is as tall as the longest of them, so nothing below moves (see message-slot.tsx).
 import { useId, type ReactNode } from "react";
 import { cx } from "./cx";
+import { MessageSlot } from "./message-slot";
 
 export type FieldControlProps = { id: string; "aria-describedby"?: string; "aria-invalid"?: true };
 
@@ -14,6 +16,8 @@ export type FieldProps = {
   error?: ReactNode;
   /** The field can show an error: reserve its line even with no hint. */
   validates?: boolean;
+  /** Every error this field can show, so the slot is sized for the longest (a string hint is included already). */
+  reserve?: string[];
   /** Placed after the label, e.g. an InlineHelp. */
   labelExtra?: ReactNode;
   className?: string;
@@ -21,10 +25,10 @@ export type FieldProps = {
   children: (control: FieldControlProps) => ReactNode;
 };
 
-export function Field({ label, hint, error, validates = false, labelExtra, className, children }: FieldProps) {
+export function Field({ label, hint, error, validates = false, reserve, labelExtra, className, children }: FieldProps) {
   const id = useId();
   const slotId = `${id}-message`;
-  const hasSlot = validates || hint != null || error != null;
+  const hasSlot = validates || hint != null || error != null || (reserve?.length ?? 0) > 0;
   const message = error ?? hint;
   return (
     <div className={cx("flex flex-col gap-1", className)}>
@@ -36,10 +40,13 @@ export function Field({ label, hint, error, validates = false, labelExtra, class
       </div>
       {children({ id, "aria-describedby": message != null ? slotId : undefined, "aria-invalid": error != null ? true : undefined })}
       {hasSlot && (
-        <p id={slotId} className={cx("m-0 min-h-lh text-sm", error != null ? "text-danger" : "text-text-muted")}>
-          {error != null && <span aria-hidden className="mr-1 inline-block size-2 rounded-full bg-danger align-middle" />}
-          {message}
-        </p>
+        <MessageSlot
+          id={slotId}
+          message={message}
+          error={error != null}
+          reserve={typeof hint === "string" ? [hint, ...(reserve ?? [])] : reserve}
+          toneClass={error != null ? "text-danger" : "text-text-muted"}
+        />
       )}
     </div>
   );

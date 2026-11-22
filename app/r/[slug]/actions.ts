@@ -22,7 +22,7 @@ import {
   type SetJoinRuleResult,
 } from "@/lib/membership";
 import type { JoinRuleValue } from "@/lib/roster";
-import { MAX_INVITED_TEXT_LENGTH, parseInvitedNames } from "@/lib/validation";
+import { MAX_INVITED_TEXT_LENGTH, MAX_NAME_LENGTH, parseInvitedNames } from "@/lib/validation";
 import { isRoomOwner } from "@/lib/owner";
 import { isSlotInFuture } from "@/lib/time";
 import { summarizeAvailability, type MarkSummary } from "@/lib/slots";
@@ -77,7 +77,7 @@ export async function joinRoom(ctx: { roomId: string; slug: string }, _prev: Joi
 
   const name = String(formData.get("name") ?? "").trim();
   if (!name) return { step: "form", error: "nameRequired" };
-  if (name.length > 60) return { step: "form", error: "nameTooLong", name };
+  if (name.length > MAX_NAME_LENGTH) return { step: "form", error: "nameTooLong", name };
 
   const joined = await joinByName(ctx.roomId, name, ownerToken);
   if (joined.kind === "roomGone") {

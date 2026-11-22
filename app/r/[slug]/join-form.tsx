@@ -4,7 +4,8 @@ import { useActionState, useState } from "react";
 import { useTranslations } from "next-intl";
 import { joinRoom, type JoinState } from "@/app/r/[slug]/actions";
 import { formatDayLabel } from "@/lib/slots";
-import { MAX_PARTICIPANTS_PER_ROOM } from "@/lib/validation";
+import { MAX_NAME_LENGTH, MAX_PARTICIPANTS_PER_ROOM } from "@/lib/validation";
+import { reserveFor } from "@/lib/message-slots";
 import { Button, Field, controlClass } from "@/components/ui-kit";
 
 const initialState: JoinState = { step: "form" };
@@ -121,14 +122,19 @@ export function JoinForm({
           </div>
         ) : (
           <form action={formAction} onSubmit={() => setDismissed(false)} className="flex flex-col gap-2">
-            <Field label={t("nameLabel")} hint={t("nameHint")} error={error}>
+            <Field
+              label={t("nameLabel")}
+              hint={t("nameHint")}
+              error={error}
+              reserve={reserveFor(t, "JoinForm", "name", { max: MAX_PARTICIPANTS_PER_ROOM })}
+            >
               {(p) => (
                 <input
                   {...p}
                   name="name"
                   type="text"
                   required
-                  maxLength={60}
+                  maxLength={MAX_NAME_LENGTH}
                   autoFocus
                   defaultValue={effective.step === "form" ? effective.name : ""}
                   placeholder={t("namePlaceholder")}

@@ -30,7 +30,7 @@ test("listed-only room: invited names join by tapping, unlisted names are refuse
 
   // A name that isn't on the list is refused.
   await joinRoom(guest, "Mallory");
-  await expect(guest.getByText("This room only accepts invited names")).toBeVisible();
+  await expect(guest.getByText("Only invited names. Pick yours above.")).toBeVisible();
   await expect(guest.getByText("Marking as Mallory")).toHaveCount(0);
 
   // Tapping an invited name claims it through "is this you?".
@@ -96,14 +96,14 @@ test("room creation rejects a listed-only room without names and an over-long na
     listedOnly: true,
   });
   await createButton.click();
-  await expect(page.getByText("Add at least one invited name, or let anyone with the link join.")).toBeVisible();
+  await expect(page.getByText("Add names above, or let anyone join.")).toBeVisible();
   await expect(page).toHaveURL(/\/$/);
   await expect(listedOnly).toBeChecked();
 
   const tooLong = `Fine Name\n${"x".repeat(61)}`;
   await invitedBox.fill(tooLong);
   await createButton.click();
-  await expect(page.getByText("Each invited name can be at most 60 characters.")).toBeVisible();
+  await expect(page.getByText("A name can be at most 60 characters.")).toBeVisible();
   await expect(page).toHaveURL(/\/$/);
   // A failed submit keeps what was entered, and marks the field invalid.
   await expect(invitedBox).toHaveValue(tooLong);

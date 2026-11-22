@@ -14,6 +14,7 @@ import {
   type RemoveParticipantResult,
 } from "@/app/r/[slug]/actions";
 import { confirmationMatches, type JoinRuleValue } from "@/lib/roster";
+import { reserveFor } from "@/lib/message-slots";
 import { Button, Choice, ConfirmDialog, EmptyState, Field, FieldGroup, StatusSlot, controlClass } from "@/components/ui-kit";
 
 type ErrorOf<T> = T extends { ok: false; error: infer E } ? E : never;
@@ -203,6 +204,7 @@ export function ParticipantsPanel({
       <StatusSlot
         message={notice ? t(`errors.${notice.key}`, { name: notice.name }) : t("ownerHint")}
         tone={notice ? "danger" : "neutral"}
+        reserve={reserveFor(t, "ParticipantsPanel", "notice")}
         className="mt-1 wrap-anywhere"
       />
 
@@ -265,7 +267,7 @@ export function ParticipantsPanel({
             <Field
               label={t("removeConfirm.typeLabel", { name: target.name })}
               error={formError ? t(`errors.${formError}`, { name: target.name }) : null}
-              validates
+              reserve={reserveFor(t, "ParticipantsPanel", "removeConfirm", { name: target.name })}
             >
               {(f) => (
                 <input
@@ -293,7 +295,12 @@ export function ParticipantsPanel({
         }}
         className="mt-5 flex flex-col gap-2 border-t border-border pt-4"
       >
-        <Field label={t("addLabel")} hint={t("addHint")} error={addError ? t(`errors.${addError}`, { name: "" }) : null}>
+        <Field
+          label={t("addLabel")}
+          hint={t("addHint")}
+          error={addError ? t(`errors.${addError}`, { name: "" }) : null}
+          reserve={reserveFor(t, "ParticipantsPanel", "add")}
+        >
           {(f) => (
             <textarea
               {...f}
@@ -316,7 +323,11 @@ export function ParticipantsPanel({
       </form>
 
       <div className="mt-5 border-t border-border pt-4">
-        <FieldGroup legend={t("joinRuleLegend")} error={ruleError ? t(`errors.${ruleError}`, { name: "" }) : null} validates>
+        <FieldGroup
+          legend={t("joinRuleLegend")}
+          error={ruleError ? t(`errors.${ruleError}`, { name: "" }) : null}
+          reserve={reserveFor(t, "ParticipantsPanel", "joinRule")}
+        >
           {JOIN_RULES.map((rule) => (
             <Choice
               key={rule}

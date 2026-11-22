@@ -15,6 +15,8 @@ import { useToast } from "./toast";
 
 export const SINK_MARKER = "data-ui-kit-sink";
 
+const NAME_ERRORS = { empty: "Enter a name.", long: "Room names can be at most 20 characters, so they fit on a phone screen." };
+
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="flex flex-col gap-2 rounded-md border border-border bg-surface-raised p-4">
@@ -36,8 +38,8 @@ export function KitchenSink({ children }: { children?: ReactNode }) {
   const [ruleError, setRuleError] = useState<string | null>(null);
 
   const save = () => {
-    if (!name.trim()) {
-      setNameError("Enter a name.");
+    if (!name.trim() || name.length > 20) {
+      setNameError(name.trim() ? NAME_ERRORS.long : NAME_ERRORS.empty);
       setStatus(null);
       return;
     }
@@ -58,7 +60,7 @@ export function KitchenSink({ children }: { children?: ReactNode }) {
           label="Room name"
           hint="Shown to everyone you invite"
           error={nameError}
-          validates
+          reserve={Object.values(NAME_ERRORS)}
           labelExtra={<InlineHelp label="About room names">Anyone with the link sees it, so avoid private details.</InlineHelp>}
         >
           {(p) => <input {...p} className={controlClass} value={name} onChange={(e) => setName(e.target.value)} data-testid="name" />}

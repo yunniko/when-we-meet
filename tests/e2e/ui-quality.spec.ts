@@ -2,6 +2,12 @@ import { test, expect, type Page } from "@playwright/test";
 import { createRoom, fillRoomForm, joinRoom, paintAndWaitForSave } from "./helpers";
 import { expectNoSeriousA11yViolations } from "./ui-kit/axe";
 import { expectStableLayout, expectUnmoved, recordLayoutShifts, resetLayoutShifts } from "./ui-kit/layout-shift";
+import { expectMessagesFit } from "./ui-kit/message-fit";
+import { MESSAGE_SLOTS } from "@/lib/message-slots";
+import en from "../../messages/en.json";
+import ru from "../../messages/ru.json";
+import cs from "../../messages/cs.json";
+import de from "../../messages/de.json";
 
 // The UI standard's checks on every screen (COMPANY/UI_STANDARDS.md §5): no serious accessibility violation, no
 // layout shift when a message appears or changes, and no console error (a hydration mismatch is otherwise silent:
@@ -93,5 +99,32 @@ for (const locale of ["en", "ru", "cs", "de"]) {
         .click()
         .then(() => page.locator('[aria-invalid="true"]').first().waitFor())
     );
+  });
+}
+
+// Every message a slot reserves space for fits one line on the narrowest common phone, in every language: the
+// slot is then one line tall and nothing waits empty below a field (ui-kit D007). Measured in the create form's
+// invited-names slot, the narrowest full-width slot; a name inside a message is counted as empty.
+type Catalog = { [key: string]: string | Catalog };
+const catalogs: Record<string, Catalog> = { en, ru, cs, de };
+const lookup = (catalog: Catalog, path: string) =>
+  path.split(".").reduce<unknown>((node, part) => (node as Catalog)[part], catalog) as string;
+
+for (const [locale, catalog] of Object.entries(catalogs)) {
+  test(`every reserved message fits one line at 360px, ${locale}`, async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 780 });
+    await page.goto("/");
+    const slot = page.locator(`#${await page.locator('textarea[name="invitedNames"]').getAttribute("aria-describedby")}`);
+    const messages = Object.entries(MESSAGE_SLOTS).flatMap(([namespace, slots]) =>
+      Object.values(slots)
+        .flat()
+        .map((key) =>
+          lookup(catalog, `${namespace}.${key}`)
+            .replace(/\{max\}/g, "100")
+            .replace(/\{\w+\}/g, "")
+        )
+    );
+    expect(messages.length).toBeGreaterThan(40);
+    await expectMessagesFit(slot, messages);
   });
 }

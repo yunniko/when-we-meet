@@ -12,6 +12,9 @@ export const MAX_INVITED_TEXT_LENGTH = 25_000;
 //
 // Hour-of-day bounds: 0-24, end exclusive (24 = through 23:00-24:00), and
 // end must be strictly after start so the window isn't empty.
+/** Also the description box's maxLength, so the browser stops the text before the server would refuse it. */
+export const MAX_DESCRIPTION_LENGTH = 2000;
+
 export const createRoomSchema = z
   .object({
     title: z
@@ -23,7 +26,7 @@ export const createRoomSchema = z
     description: z
       .string()
       .trim()
-      .max(2000, "descriptionTooLong")
+      .max(MAX_DESCRIPTION_LENGTH, "descriptionTooLong")
       .optional()
       .transform((v) => (v ? v : undefined)),
     timezone: z.string().min(1, "timezoneRequired"),

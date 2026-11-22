@@ -44,15 +44,15 @@
       "startDateInvalid": "Enter a valid start date",
       "endDateInvalid": "Enter a valid end date",
       "endBeforeStart": "The end date is before the start date",
-      "dayEndBeforeStart": "Daily end time must be after the daily start time",
+      "dayEndBeforeStart": "The end must be after the start",
       "rangeTooLong": "The range can't exceed 60 days",
       "dayHourInvalid": "Enter a valid hour",
       "dayStartHourRange": "Daily start hour must be between 0 and 23",
       "dayEndHourRange": "Daily end hour must be between 1 and 24",
       "descriptionTooLong": "Description can't be longer than 2000 characters",
-      "invitedNameTooLong": "Each invited name can be at most 60 characters.",
+      "invitedNameTooLong": "A name can be at most 60 characters.",
       "tooManyInvitedNames": "You can invite at most 99 names.",
-      "listedOnlyNeedsNames": "Add at least one invited name, or let anyone with the link join.",
+      "listedOnlyNeedsNames": "Add names above, or let anyone join.",
       "joinRuleInvalid": "Pick who can join."
     },
     "invitedLabel": "Invited people",
@@ -84,9 +84,9 @@
     "errors": {
       "nameRequired": "Enter a name.",
       "nameTooLong": "Name is too long.",
-      "confirmFailed": "That didn't work — try entering your name again.",
-      "roomFull": "This room has reached its limit of {max} participants.",
-      "notOnList": "This room only accepts invited names — pick yours from the list above."
+      "confirmFailed": "That didn't work. Enter your name again.",
+      "roomFull": "This room is full ({max} people).",
+      "notOnList": "Only invited names. Pick yours above."
     },
     "invitedLabel": "Invited",
     "pickYourNameHint": "Tap your name if it's you.",
@@ -141,7 +141,7 @@
       "title": "Leave this room?"
     },
     "errors": {
-      "ruleChanged": "The room's settings just changed. Please read this again before confirming."
+      "ruleChanged": "The settings changed. Read this again."
     }
   },
   "ParticipantsPanel": {
@@ -155,18 +155,18 @@
     "errors": {
       "nameMismatch": "The name you typed doesn't match.",
       "notFound": "{name} is no longer in this room.",
-      "notOwner": "You're no longer this room's organizer. Reload the page.",
-      "roomGone": "This room no longer exists. Reload the page.",
+      "notOwner": "You're no longer the organizer. Reload.",
+      "roomGone": "This room is gone. Reload the page.",
       "self": "Use “Leave the room” to remove yourself.",
-      "failed": "Couldn't remove — try again.",
-      "full": "A room can hold at most 100 people, invited names included.",
+      "failed": "Couldn't remove. Try again.",
+      "full": "A room holds at most 100 people.",
       "invitedNameTooLong": "Each name can be at most 60 characters.",
       "tooManyInvitedNames": "Add at most 99 names at a time.",
       "nothingToAdd": "Type at least one name.",
-      "claimed": "{name} has just joined. Type their name below to remove them.",
+      "claimed": "{name} just joined. Type the name below.",
       "invalidRule": "Pick who can join.",
-      "addFailed": "Couldn't add the names — try again.",
-      "ruleFailed": "Couldn't change who can join — try again."
+      "addFailed": "Couldn't add the names. Try again.",
+      "ruleFailed": "Couldn't change who can join. Try again."
     },
     "notJoinedTag": "not joined yet",
     "leftTag": "left the room",
@@ -214,7 +214,7 @@
     "cantLabel": "Can't: {names}",
     "errors": {
       "roomNotFound": "Room not found.",
-      "notOwner": "Only the room's creator can set the meeting time.",
+      "notOwner": "Only the creator can set the time.",
       "invalidSlot": "Invalid slot.",
       "outOfRange": "That slot isn't in this room's range.",
       "notFuture": "You can only pick a time in the future."
