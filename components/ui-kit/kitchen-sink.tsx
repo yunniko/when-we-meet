@@ -8,6 +8,7 @@ import { Button } from "./button";
 import { ConfirmDialog } from "./confirm-dialog";
 import { EmptyState } from "./empty-state";
 import { Field, controlClass } from "./field";
+import { Choice, FieldGroup } from "./field-group";
 import { InlineHelp } from "./inline-help";
 import { StatusSlot } from "./status-slot";
 import { useToast } from "./toast";
@@ -31,6 +32,8 @@ export function KitchenSink({ children }: { children?: ReactNode }) {
   const [status, setStatus] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleted, setDeleted] = useState<string | null>(null);
+  const [rule, setRule] = useState<string | null>(null);
+  const [ruleError, setRuleError] = useState<string | null>(null);
 
   const save = () => {
     if (!name.trim()) {
@@ -68,6 +71,21 @@ export function KitchenSink({ children }: { children?: ReactNode }) {
             Save
           </Button>
           <StatusSlot message={status} tone="success" />
+        </div>
+      </Section>
+
+      <Section title="FieldGroup">
+        <FieldGroup legend="Who can join" hint="You can always join your own room" error={ruleError}>
+          {["Anyone with the link", "Only invited names"].map((label) => (
+            <Choice key={label} type="radio" name="rule" checked={rule === label} onChange={() => (setRule(label), setRuleError(null))}>
+              {label}
+            </Choice>
+          ))}
+        </FieldGroup>
+        <div>
+          <Button variant="secondary" onClick={() => setRuleError(rule ? null : "Pick who can join.")} data-testid="check-rule">
+            Check
+          </Button>
         </div>
       </Section>
 

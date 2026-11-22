@@ -43,7 +43,8 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
         e.preventDefault();
         if (!busy) onCancel();
       }}
-      className="m-auto max-w-md rounded-md border border-border bg-surface-raised p-4 text-text shadow-raised backdrop:bg-text/40"
+      // 1rem from the screen edges on a phone; long words (a pasted name) wrap instead of widening it.
+      className="mx-4 my-auto max-w-md rounded-md wrap-anywhere sm:mx-auto border border-border bg-surface-raised p-4 text-text shadow-raised backdrop:bg-text/40"
     >
       <h2 id={`${id}-title`} className="m-0 text-lg">
         {title}
