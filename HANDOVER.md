@@ -1,16 +1,18 @@
 # Handover — When We Meet
-Last verified: 2026-09-28 at ee8e689
+Last verified: 2026-11-22 at b8057c3
 
 Account-free group scheduling: a room with a date range, participants paint CAN/CANNOT/prefer
 in 1-hour slots, results rank the overlaps, the creator can finalize a time. Goals: `GOALS.md`
 G-001 and G-002 (both fully built, both ACTIVE pending Owner sign-off); G-003 (owner removes a
-participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004 (invited-names list) is built and deployed, ACTIVE pending Owner sign-off. Conventions:
-`AGENTS.md`. Charter: `E:\CLAUDE\COMPANY\`.
+participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004 (invited-names list) is built and deployed, ACTIVE pending Owner sign-off. The project
+is the pilot of the Company ui-kit (G-001 in `E:\CLAUDE\projects\ui-kit\GOALS.md`), on branch
+`goal/ui-kit-g001` in the worktree `E:\CLAUDE\worktrees\when-we-meet--ui-kit-g001`. Conventions: `AGENTS.md`. Charter: `E:\CLAUDE\COMPANY\`.
 
 ## Current state
 
-- **Live** at https://meet.app.julienika.cz (HTTP 200 re-checked 2026-09-28). App port 30010,
-  Postgres 54321 (127.0.0.1). Live build is ee8e689 (deployed 2026-09-28).
+- **Live** at https://meet.app.julienika.cz (HTTP 200 re-checked 2026-11-22). App port 30010,
+  Postgres 54321 (127.0.0.1). Live build is ee8e689 (deployed 2026-09-28); the ui-kit pilot
+  below is not deployed.
 - Done and deployed: G-001 M1–M5 (rooms, cookie identity with "is this you?", drag-painted grid,
   prefer layer, results heatmap + Best times, creator finalize/clear, 3-day expiry), the
   post-launch rounds (weekend shading, sticky headers, leave-room with ownership transfer,
@@ -34,9 +36,14 @@ participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004
   with the current brush. The corner (whole-grid) fill has no confirmation prompt; instead the
   grid has Undo/Redo buttons backed by a stroke-level history, persisted per room+participant in
   `localStorage`, capped at 20 entries each way (D014).
-- Verification on 2026-09-28: `npm run test:unit` 113/113, `npm run test:e2e` 25/25 (incl. under
-  parallel-worker load) against the local dev Postgres; live browser check on the deployed site —
-  filled a day/hour/grid, undo/redo round-tripped and persisted across a reload.
+- ui-kit pilot (2026-11-22, branch only): every screen uses design tokens and the kit's
+  components, so each hint, error, status, confirmation and empty state has one form and a
+  reserved place; UI copy is 12% shorter (`docs/reviews/2026-11-22-ui-message-inventory.md`);
+  the accent was darkened for contrast (D016); Prettier added (D017). The kit's kitchen sink is
+  at `/dev/ui-kit` under `npm run dev` only (D018).
+- Verification on 2026-11-22 (branch, b8057c3): unit 119/119, integration 29/29, e2e 32/32 with
+  no retries (twice), `npm run ui:check` clean (4 static sections, 7 UI specs), `format:check`
+  clean, `build:check` reports no kitchen sink in `.next`.
 
 ## How things fit together
 
@@ -51,8 +58,12 @@ participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004
 - `app/r/[slug]/`: join form, availability grid (pointer events; brush rules and stroke
   interpolation in `lib/paint.ts`; touch gestures per D009),
   owner participants panel, results board, finalized banner. `app/status/page.tsx` needs `?key=STATUS_PAGE_TOKEN`.
-- i18n: `i18n/request.ts`, `lib/ui-locales.ts`, `messages/{en,ru,cs,de}.json` (97 keys, parity
-  checked). Legal text: `docs/legal/about-terms-privacy.md` via `marked`, copied into the image.
+- i18n: `i18n/request.ts`, `lib/ui-locales.ts`, `messages/{en,ru,cs,de}.json` (177 keys; keys
+  and ICU arguments checked by `tests/unit/messages-parity.spec.ts`).
+- UI: `design/tokens.json` generates `app/tokens.css` (`node scripts/ui-kit/ui-tokens.mjs`);
+  `design/ui-kit.json` configures the checks. `components/ui-kit/`, `scripts/ui-kit/` and
+  `tests/e2e/ui-kit/` are copies synced from `E:\CLAUDE\projects\ui-kit` (run its bin/sync.mjs
+  with this directory); `tests/e2e/ui-quality.spec.ts` holds this project's UI checks. Legal text: `docs/legal/about-terms-privacy.md` via `marked`, copied into the image.
 - Tests: Vitest in `tests/unit/` (no database) and in `tests/integration/` against the dev Postgres
   (`vitest.integration.config.ts`); Playwright in `tests/e2e/` on port 30099 (own dev server),
   asserting through the UI (Prisma's ESM client can't load under Playwright's transform).
@@ -74,6 +85,9 @@ participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004
 - `HistoryEntry.before`/`after` (grid undo/redo, `lib/paint.ts`) use `null` for "empty", never
   `undefined` — `JSON.stringify` silently drops an `undefined`-valued property, corrupting the
   persisted history across a reload (D014).
+- Show every hint, error, status, confirmation and empty state through a kit component, never a
+  hand-made element; never edit the kit copies here (D015; `ui:check` enforces the first).
+- Deploy from a tree where `npm run build:check` passes, not a bare `next build` (D018).
 - Forms that must keep state after a failed action call the `useActionState` action manually
   from `onSubmit`, not through the native `action` prop (React 19 resets the form otherwise).
 - Env vars reach the container only if listed in `docker-compose.yml`'s `app` service
@@ -83,6 +97,12 @@ participant) is DONE (signed off 2026-09-13, see `docs/goals-archive.md`); G-004
   `/var/www/repositories/when-we-meet`; then confirm the other sites still respond.
 
 ## Next steps and open questions
+
+- PENDING APPROVAL: deploy the ui-kit pilot (branch `goal/ui-kit-g001`) to production. No migration.
+- The availability grid cannot be marked from the keyboard (WCAG 2.1.1): a feature for the Owner to
+  schedule, not a copy change.
+- `playwright.config.ts` has `retries: 1`, which hides flakes; `create-join-mark-results` fails
+  rarely at its `toHaveURL` without retries, cause unknown (evidence: ui-kit G-001 progress log).
 
 - Owner: sign off G-004 after trying it on the live site. Then delete the pre-G-004 database
   backup in the host's backups folder (it holds participant names).
