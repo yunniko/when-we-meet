@@ -1,5 +1,5 @@
 # Handover — When We Meet
-Last verified: 2026-11-23 at the head of goal/ui-kit-g001
+Last verified: 2026-11-23 at f6f3f5b (deployed)
 
 Account-free group scheduling: a room with a date range, participants paint CAN/CANNOT/prefer
 in 1-hour slots, results rank the overlaps, the creator can finalize a time. Goals: `GOALS.md`
@@ -11,7 +11,7 @@ is the pilot of the Company ui-kit (G-001 in `E:\CLAUDE\projects\ui-kit\GOALS.md
 ## Current state
 
 - **Live** at https://meet.app.julienika.cz (HTTP 200 re-checked 2026-11-22). App port 30010,
-  Postgres 54321 (127.0.0.1). Live build is 2046ba4 (deployed 2026-11-22), which includes the ui-kit
+  Postgres 54321 (127.0.0.1). Live build is f6f3f5b (deployed 2026-11-23), which includes the ui-kit
   pilot below.
 - Done and deployed: G-001 M1–M5 (rooms, cookie identity with "is this you?", drag-painted grid,
   prefer layer, results heatmap + Best times, creator finalize/clear, 3-day expiry), the
@@ -43,7 +43,7 @@ is the pilot of the Company ui-kit (G-001 in `E:\CLAUDE\projects\ui-kit\GOALS.md
   at `/dev/ui-kit` under `npm run dev` only (D018). Each message slot is sized for the longest
   message it can show, listed in `lib/message-slots.ts`, and every such message fits one line at
   360px in all four locales with 6% of the line to spare (D021, ui-kit D009).
-- ui-kit page (2026-11-23, branch only, not deployed): built from the real components. Every component file
+- ui-kit page (2026-11-23, deployed in f6f3f5b): built from the real components. Every component file
   has a sibling `.states.tsx` that imports it and only passes it sample data (`app/dev/ui-kit/samples.ts`);
   `app/dev/ui-kit/registry.ts` is generated from them, and the Messages section renders every key in
   `lib/message-slots.ts`. Route files only load data and compose components (`PageColumn`, `Panel`, `TextLink`
@@ -151,6 +151,7 @@ is the pilot of the Company ui-kit (G-001 in `E:\CLAUDE\projects\ui-kit\GOALS.md
 | 2026-09-28 | ee8e689 | Owner feedback: replaces the corner-fill confirmation with Undo/Redo (D014); fixes an `undefined`-in-JSON history bug the new persistence surfaced | Local unit 113/113, e2e 25/25 incl. under parallel-worker load; no migration; migrate exit 0; live 200, undo/redo exercised live incl. persistence across a reload; only when-we-meet app+cleanup restarted |
 | 2026-11-22 | 6272b32 | ui-kit pilot: tokens, kit components, message slots sized for their messages, shorter copy (D015–D021) | Local unit 122/122, integration 29/29, e2e 36/36; live create form at 360px in en/ru/cs/de: error moves nothing, axe 0 serious, no console error; 16 sites 200, no other container restarted |
 | 2026-11-22 | 2046ba4 | CI route types; 27 messages shortened to fit one line with headroom on Linux (ui-kit D009) | GitHub CI green incl. e2e; no migration; live check repeated, same results; 16 sites 200, only app+cleanup restarted |
+| 2026-11-23 | f6f3f5b | Route files compose components; buttons, links and controls take kit looks (ui-kit D011, D012) | GitHub CI green incl. e2e (run 45215710765); no migration, migrate exit 0; live landing: no control under 44px, no console error; 16 sites 200, only app+cleanup restarted |
 
 ## Decisions
 
