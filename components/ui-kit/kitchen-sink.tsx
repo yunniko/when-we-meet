@@ -5,10 +5,11 @@
 // root carries SINK_MARKER, which `build-clean` looks for in production builds: it must never ship. The sample
 // text is fixed English on purpose; it shows components, not the project's copy.
 import { useState, type ReactNode } from "react";
-import { Button, linkClass, type ButtonVariant } from "./button";
+import { Button } from "./button";
+import { buttonClass, controlClass, dangerLinkClass, linkClass, mutedLinkClass, type ButtonVariant } from "./looks";
 import { ConfirmDialog } from "./confirm-dialog";
 import { EmptyState } from "./empty-state";
-import { Field, controlClass } from "./field";
+import { Field } from "./field";
 import { Choice, FieldGroup } from "./field-group";
 import { InlineHelp } from "./inline-help";
 import { StatusSlot, type StatusTone } from "./status-slot";
@@ -61,7 +62,7 @@ function ControlInState({ type, value, state }: { type: string; value: string; s
 }
 
 function StaticStates() {
-  const variants: ButtonVariant[] = ["primary", "secondary", "danger", "link"];
+  const variants: ButtonVariant[] = ["primary", "secondary", "danger", "link", "muted-link", "danger-link"];
   const tones: StatusTone[] = ["neutral", "success", "danger"];
   return (
     <>
@@ -144,10 +145,40 @@ function StaticStates() {
             </Button>
           </div>
         ))}
-        <StateFrame name="router link (linkClass)">
-          <a href="#buttons" className={linkClass}>
-            See results
-          </a>
+        <StateFrame name="size sm: normal, pressed (a toggle), disabled, busy">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="secondary" size="sm">
+              Undo
+            </Button>
+            <Button variant="secondary" size="sm" aria-pressed>
+              Pressed
+            </Button>
+            <Button variant="secondary" size="sm" aria-pressed={false}>
+              Not pressed
+            </Button>
+            <Button variant="secondary" size="sm" disabled>
+              Disabled
+            </Button>
+            <Button variant="secondary" size="sm" busy busyLabel="Working">
+              Busy
+            </Button>
+          </div>
+        </StateFrame>
+        <StateFrame name="router links: linkClass, mutedLinkClass, dangerLinkClass, buttonClass">
+          <div className="flex flex-wrap items-center gap-4">
+            <a href="#buttons" className={linkClass}>
+              See results
+            </a>
+            <a href="#buttons" className={mutedLinkClass}>
+              About
+            </a>
+            <a href="#buttons" className={dangerLinkClass}>
+              Leave
+            </a>
+            <a href="#buttons" className={buttonClass("secondary", "sm")}>
+              + New event
+            </a>
+          </div>
         </StateFrame>
       </Section>
 

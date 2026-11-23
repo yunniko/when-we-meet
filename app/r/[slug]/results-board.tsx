@@ -7,7 +7,7 @@ import { selectFinalSlot } from "@/app/r/[slug]/actions";
 import { formatDayLabel, formatHour, isWeekend, slotKey } from "@/lib/slots";
 import type { SlotResult } from "@/lib/results";
 import { reserveFor } from "@/lib/message-slots";
-import { EmptyState, StatusSlot } from "@/components/ui-kit";
+import { Button, EmptyState, StatusSlot } from "@/components/ui-kit";
 
 function cellStyle(result: SlotResult): CSSProperties {
   // A solid-color "image" layer (not backgroundColor) so the weekend shade
@@ -109,6 +109,7 @@ export function ResultsBoard({
                 const key = slotKey(date, hour);
                 const result = resultByKey.get(key);
                 if (!result) return <div key={key} className="h-10 border-l border-t border-border" />;
+                // ui-kit-allow: a heat-map cell; its colour is the result itself, not a button look.
                 return (
                   <button
                     key={key}
@@ -161,14 +162,17 @@ export function ResultsBoard({
                     )}
                     {r.preferredCount > 0 && t("preferSuffix", { count: r.preferredCount })}
                     {canPick && (
-                      <button
-                        type="button"
-                        disabled={pendingKey !== null}
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="ml-1"
+                        busy={pendingKey === key}
+                        busyLabel={t("settingButton")}
+                        disabled={pendingKey !== null && pendingKey !== key}
                         onClick={() => pick(r.date, r.hour)}
-                        className="ml-1 rounded-md border border-accent px-2 py-1 text-xs font-medium text-accent hover:bg-accent/10 disabled:opacity-50"
                       >
-                        {pendingKey === key ? t("settingButton") : t("pickButton")}
-                      </button>
+                        {t("pickButton")}
+                      </Button>
                     )}
                   </span>
                 </div>

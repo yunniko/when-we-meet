@@ -19,7 +19,7 @@ import {
 } from "@/lib/paint";
 import { formatDayLabel, formatHour, isWeekend, slotKey, type CellMark } from "@/lib/slots";
 import { reserveFor } from "@/lib/message-slots";
-import { InlineHelp, StatusSlot } from "@/components/ui-kit";
+import { Button, InlineHelp, StatusSlot } from "@/components/ui-kit";
 
 const BRUSH_KEYS: { value: Brush; swatchClass: string }[] = [
   { value: "CAN", swatchClass: "bg-can" },
@@ -382,39 +382,19 @@ export function AvailabilityGrid({
       <div className="flex flex-wrap items-center gap-4">
         <div className="flex flex-wrap gap-1.5">
           {BRUSH_KEYS.map((b) => (
-            <button
-              key={b.value}
-              type="button"
-              onClick={() => setBrush(b.value)}
-              aria-pressed={brush === b.value}
-              className={`flex items-center gap-1.5 rounded-md border px-3 py-2 text-xs font-medium transition-colors ${
-                brush === b.value ? "border-accent bg-accent/10" : "border-border"
-              }`}
-            >
+            <Button key={b.value} variant="secondary" size="sm" onClick={() => setBrush(b.value)} aria-pressed={brush === b.value}>
               <span className={`size-3 rounded-sm ${b.swatchClass}`} />
               {t(`brushes.${BRUSH_LABEL_KEYS[b.value]}`)}
-            </button>
+            </Button>
           ))}
         </div>
         <div className="flex gap-1.5">
-          <button
-            type="button"
-            data-testid="undo-button"
-            onClick={undo}
-            disabled={history.length === 0}
-            className="rounded-md border border-border px-3 py-2 text-xs font-medium disabled:opacity-40"
-          >
+          <Button variant="secondary" size="sm" data-testid="undo-button" onClick={undo} disabled={history.length === 0}>
             {t("undo")}
-          </button>
-          <button
-            type="button"
-            data-testid="redo-button"
-            onClick={redo}
-            disabled={redoStack.length === 0}
-            className="rounded-md border border-border px-3 py-2 text-xs font-medium disabled:opacity-40"
-          >
+          </Button>
+          <Button variant="secondary" size="sm" data-testid="redo-button" onClick={redo} disabled={redoStack.length === 0}>
             {t("redo")}
-          </button>
+          </Button>
         </div>
         <StatusSlot
           message={

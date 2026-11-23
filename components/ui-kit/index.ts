@@ -1,8 +1,10 @@
 // The kit's web components. Copied into a project's kitDir by bin/sync.mjs; import from there, never edit there.
-export { Button, linkClass, type ButtonProps, type ButtonVariant } from "./button";
+export { Button, type ButtonProps } from "./button";
+// Looks are plain strings and functions, usable from server components (D012).
+export { buttonClass, controlClass, dangerLinkClass, linkClass, mutedLinkClass, type ButtonSize, type ButtonVariant } from "./looks";
 export { ConfirmDialog, type ConfirmDialogProps } from "./confirm-dialog";
 export { EmptyState, type EmptyStateProps } from "./empty-state";
-export { Field, controlClass, type FieldControlProps, type FieldProps } from "./field";
+export { Field, type FieldControlProps, type FieldProps } from "./field";
 export { Choice, FieldGroup, type FieldGroupProps } from "./field-group";
 export { InlineHelp, type InlineHelpProps } from "./inline-help";
 // KitchenSink is deliberately not exported here: a barrel export puts it in every bundle that imports the kit.

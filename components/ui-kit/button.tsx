@@ -3,23 +3,11 @@
 // stays in the layout, invisible, with the spinner over it), ignores presses and is named by `busyLabel`.
 import type { ButtonHTMLAttributes, MouseEvent } from "react";
 import { cx } from "./cx";
-
-export type ButtonVariant = "primary" | "secondary" | "danger" | "link";
-
-/** The look of a text link, for a router link (`<Link className={linkClass}>`) as well as `variant="link"`. */
-export const linkClass =
-  "font-medium text-accent underline underline-offset-2 hover:decoration-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
-
-const VARIANTS: Record<ButtonVariant, string> = {
-  primary: "px-4 text-base bg-accent text-on-accent hover:bg-accent/90",
-  secondary: "px-4 text-base border border-border bg-surface-raised text-text hover:bg-surface",
-  danger: "px-4 text-base border border-danger bg-surface text-danger hover:bg-surface-raised",
-  // An action that reads as a link (\"Change\", \"It's me\"): a button to assistive tech, a link to the eye.
-  link: `px-1 ${linkClass}`,
-};
+import { buttonClass, type ButtonSize, type ButtonVariant } from "./looks";
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
+  size?: ButtonSize;
   busy?: boolean;
   /** What a screen reader hears while busy, e.g. "Saving". Give it whenever `busy` can be true. */
   busyLabel?: string;
@@ -27,6 +15,7 @@ export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 export function Button({
   variant = "primary",
+  size = "md",
   busy = false,
   busyLabel,
   className,
@@ -44,21 +33,8 @@ export function Button({
     onClick?.(e);
   };
   return (
-    <button
-      {...rest}
-      type={type}
-      onClick={press}
-      aria-disabled={inert || undefined}
-      className={cx(
-        // min-h-11 is the standard's 44px target (§4), not a spacing step.
-        "inline-grid min-h-11 place-items-center rounded-md font-body",
-        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
-        "disabled:opacity-60 aria-disabled:cursor-not-allowed",
-        VARIANTS[variant],
-        className
-      )}
-    >
-      <span className={cx("col-start-1 row-start-1", busy && "invisible")}>{children}</span>
+    <button {...rest} type={type} onClick={press} aria-disabled={inert || undefined} className={cx(buttonClass(variant, size), className)}>
+      <span className={cx("col-start-1 row-start-1 inline-flex items-center gap-[inherit]", busy && "invisible")}>{children}</span>
       {busy && (
         <span className="col-start-1 row-start-1 inline-flex items-center" data-ui-kit-busy="">
           <span aria-hidden className="size-4 rounded-full border-2 border-current border-t-transparent motion-safe:animate-spin" />

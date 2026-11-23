@@ -1,4 +1,4 @@
-// The ui-kit page is complete by construction (COMPANY/UI_STANDARDS.md §2, ui-kit D010). Every project component
+// The ui-kit page is complete by construction (COMPANY/UI_STANDARDS.md §2, ui-kit D010, D011). Every project component
 // file has a sibling `<name>.states.tsx` listing its states; the page renders them all from a generated registry;
 // and every form control the project uses is one the kit's section of the page draws. Nothing on the page is
 // written by hand, so nothing can fall behind the app unnoticed.
@@ -68,29 +68,6 @@ export function renderRegistry(root, config) {
   return lines.join("\n");
 }
 
-// Raw interactive elements a project draws itself. The same element with the same classes in several places is a
-// component that was never made, or a kit component that was not found (D010: search, then extend or create).
-const RAW_INTERACTIVE = /<(button|a|Link|input|select|textarea)\b([^>]*?)\bclassName=["']([^"']+)["']/g;
-export const REPEAT_LIMIT = 3;
-
-/** Raw interactive markup repeated by hand: `<tag> "classes"` → file:line list, only entries at or over REPEAT_LIMIT. */
-export function repeatedMarkup(root, config) {
-  const seen = new Map();
-  for (const source of config.sources) {
-    for (const file of walk(join(root, source), root)) {
-      if (![".tsx", ".jsx"].includes(extname(file)) || file.endsWith(STATES) || file.endsWith(".dev.tsx")) continue;
-      if (config.kitDir && file.startsWith(`${config.kitDir}/`)) continue;
-      const text = readFileSync(join(root, file), "utf8");
-      for (const m of text.matchAll(RAW_INTERACTIVE)) {
-        const key = `<${m[1]}> "${m[3].split(/\s+/).filter(Boolean).sort().join(" ")}"`;
-        if (!seen.has(key)) seen.set(key, []);
-        seen.get(key).push(`${file}:${text.slice(0, m.index).split("\n").length}`);
-      }
-    }
-  }
-  return new Map([...seen].filter(([, at]) => at.length >= REPEAT_LIMIT));
-}
-
 /**
  * A states file shows the real component, never a copy: it imports its sibling and draws no markup of its own, so
  * a change to the component is the change on the ui-kit page (D010). Its job is data, not drawing.
@@ -111,6 +88,99 @@ export function checkStatesFile(path, text) {
   return problems;
 }
 
+/** JSX opening tags named `names`, with their attribute text; braces are tracked so `onClick={() => x}` stays inside. */
+export function tagsIn(text, names) {
+  const tags = [];
+  const start = new RegExp(`<(${names.join("|")})(?=[\\s/>])`, "g");
+  for (const m of text.matchAll(start)) {
+    let depth = 0;
+    let i = m.index + m[0].length;
+    for (; i < text.length; i++) {
+      const c = text[i];
+      if (c === "{") depth++;
+      else if (c === "}") depth--;
+      else if (c === ">" && depth === 0) break;
+    }
+    tags.push({ name: m[1], attrs: text.slice(m.index + m[0].length, i), line: text.slice(0, m.index).split("\n").length });
+  }
+  return tags;
+}
+
+/** The kit's exported looks: a raw interactive element takes its classes from one of these, or is the kit's Button. */
+export const KIT_LOOKS = ["linkClass", "mutedLinkClass", "dangerLinkClass", "buttonClass", "controlClass"];
+const ALLOW_MARK = "ui-kit-allow:";
+
+/** An allow mark on the tag's line or up to three lines above it, and after the previous tag: it covers one tag only. */
+function allowedBy(lines, tag, previous) {
+  const from = Math.max(previous, tag.line - 4);
+  return lines.slice(from, tag.line).some((l) => l.includes(ALLOW_MARK));
+}
+
+/**
+ * A raw `<button>`, `<a>` or router `<Link>` outside the kit gets its look from the kit, and a styled raw control uses
+ * `controlClass`, so one change restyles every one of them (D011). A deliberate exception carries `ui-kit-allow: <why>`
+ * on the tag's line or up to three lines above it, and covers that one tag.
+ */
+export function checkKitLooks(path, text) {
+  const lines = text.split("\n");
+  const problems = [];
+  let previous = 0;
+  for (const tag of tagsIn(text, ["button", "a", "Link", "input", "select", "textarea"])) {
+    const styled = /\bclassName=/.test(tag.attrs);
+    const control = ["input", "select", "textarea"].includes(tag.name);
+    const after = previous;
+    previous = tag.line;
+    if (control && !styled) continue; // hidden inputs and unstyled controls draw nothing of their own
+    if (KIT_LOOKS.some((look) => new RegExp(`\\b${look}\\b`).test(tag.attrs))) continue;
+    if (allowedBy(lines, tag, after)) continue;
+    const use = control
+      ? "controlClass (or Field)"
+      : tag.name === "button"
+        ? "the kit Button"
+        : "linkClass, mutedLinkClass, dangerLinkClass or buttonClass(...)";
+    problems.push(
+      `${path}:${tag.line}  <${tag.name}> draws its own look: use ${use}. If none fits, extend the kit; mark a real exception with "${ALLOW_MARK} <why>"`
+    );
+  }
+  return problems;
+}
+
+// Tags a route file may hold: the document shell Next.js requires, and non-visual data such as JSON-LD.
+const ROUTE_TAGS = new Set(["html", "head", "body", "script"]);
+
+/**
+ * A route file loads data and composes components; it draws nothing, because nothing it draws could appear on the
+ * ui-kit page (D011). Markup and classes belong in a component with its own states file.
+ */
+export function checkRouteFile(path, text) {
+  const drawn = new Set();
+  const at = [];
+  text.split(/\r?\n/).forEach((line, i) => {
+    if (/^\s*(\/\/|\*|\{\/\*)/.test(line)) return;
+    const tag = /(?:^|[^\w$.])<([a-z][\w-]*)[\s/>]/.exec(line);
+    const shell = tag && ROUTE_TAGS.has(tag[1]);
+    if (tag && !shell) drawn.add(`<${tag[1]}>`);
+    else if (/className=/.test(line) && !shell) drawn.add("className");
+    else return;
+    at.push(i + 1);
+  });
+  if (at.length === 0) return [];
+  return [
+    `${path}:${at[0]}  draws ${[...drawn].join(", ")} on ${at.length} line(s): a route file loads data and composes components; move the markup into a component with a states file, so the ui-kit page shows it`,
+  ];
+}
+
+/** Route files under `uiPage.components`, relative to the project root. */
+export function routeFiles(root, config) {
+  const files = [];
+  for (const dir of config.uiPage.components) {
+    for (const file of walk(join(root, dir), root)) {
+      if (ROUTE_FILES.test(basename(file)) && !(config.kitDir && file.startsWith(`${config.kitDir}/`))) files.push(file);
+    }
+  }
+  return files.sort();
+}
+
 const REUSE =
   "first look for a kit or project component that already does this (docs/usage.md, the ui-kit page); extend it if it nearly fits, create a new one only if its role differs";
 
@@ -129,11 +199,18 @@ export function checkUiPage(root, config) {
     const states = statesFileOf(file);
     if (existsSync(join(root, states))) problems.push(...checkStatesFile(states, readFileSync(join(root, states), "utf8")));
   }
+  for (const file of routeFiles(root, config)) {
+    if (!allowed[file]) problems.push(...checkRouteFile(file, readText(join(root, file))));
+  }
+  for (const source of config.sources) {
+    for (const file of walk(join(root, source), root)) {
+      if (![".tsx", ".jsx"].includes(extname(file)) || file.endsWith(STATES) || file.endsWith(".dev.tsx")) continue;
+      if (config.kitDir && file.startsWith(`${config.kitDir}/`)) continue;
+      problems.push(...checkKitLooks(file, readText(join(root, file))));
+    }
+  }
   for (const [type, where] of usedControls(root, config)) {
     if (!PAGE_CONTROLS.includes(type)) problems.push(`${where}  uses a "${type}" control the ui-kit page does not draw: ${REUSE}`);
-  }
-  for (const [key, at] of repeatedMarkup(root, config)) {
-    if (!allowed[key]) problems.push(`${at[0]}  ${key} is drawn by hand ${at.length} times (also ${at.slice(1).join(", ")}): ${REUSE}`);
   }
   const current = readText(join(root, config.uiPage.registry));
   if (current !== renderRegistry(root, config))

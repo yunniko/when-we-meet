@@ -1,5 +1,3 @@
-import Link from "next/link";
-import { linkClass } from "@/components/ui-kit";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
@@ -12,6 +10,10 @@ import { splitRoster } from "@/lib/roster";
 import { FinalizedBanner } from "@/app/r/[slug]/finalized-banner";
 import { ResultsBoard } from "@/app/r/[slug]/results-board";
 import { NewEventButton } from "@/app/new-event-button";
+import { RoomHeader } from "@/app/r/[slug]/room-header";
+import { PageColumn } from "@/components/layout/page-column";
+import { Panel } from "@/components/layout/panel";
+import { TextLink } from "@/components/layout/text-link";
 
 export default async function ResultsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -60,37 +62,30 @@ export default async function ResultsPage({ params }: { params: Promise<{ slug: 
   );
   const topResults = results.filter((r) => r.canCount > 0).slice(0, 10);
 
+  const details = [
+    `${formatDateRange(room.startDate, room.endDate)} · ${formatHoursWindow(room.dayStartHour, room.dayEndHour)} · ${room.timezone} · ${t("peopleCount", { count: totalParticipants })}`,
+    t("participantsLabel", { names: participants.map((p) => p.name).join(", ") }),
+  ];
+  if (roster.invited.length > 0) {
+    const joinedOfExpected = t("joinedOfExpected", { joined: participants.length, expected: participants.length + roster.invited.length });
+    details.push(`${joinedOfExpected} · ${t("notJoinedYet", { names: roster.invited.map((p) => p.name).join(", ") })}`);
+  }
+
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-8">
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{t("pageTitle", { title: room.title || tCommon("untitledRoom") })}</h1>
-          <p className="mt-1 text-sm text-text-muted">
-            {formatDateRange(room.startDate, room.endDate)} · {formatHoursWindow(room.dayStartHour, room.dayEndHour)} · {room.timezone} ·{" "}
-            {t("peopleCount", { count: totalParticipants })}
-          </p>
-          <p className="mt-1 text-sm wrap-anywhere text-text-muted">
-            {t("participantsLabel", { names: participants.map((p) => p.name).join(", ") })}
-          </p>
-          {roster.invited.length > 0 && (
-            <p className="mt-1 text-sm wrap-anywhere text-text-muted">
-              {t("joinedOfExpected", {
-                joined: participants.length,
-                expected: participants.length + roster.invited.length,
-              })}
-              {" · "}
-              {t("notJoinedYet", { names: roster.invited.map((p) => p.name).join(", ") })}
-            </p>
-          )}
-          {room.description && <p className="mt-2 text-sm whitespace-pre-wrap">{room.description}</p>}
-        </div>
-        <div className="flex flex-col gap-2 sm:items-end">
-          <NewEventButton />
-          <Link href={`/r/${room.slug}`} className={`text-sm ${linkClass}`}>
-            {t("editLink")}
-          </Link>
-        </div>
-      </div>
+    <PageColumn width="wide">
+      <RoomHeader
+        title={t("pageTitle", { title: room.title || tCommon("untitledRoom") })}
+        details={details}
+        description={room.description}
+        actions={
+          <>
+            <NewEventButton />
+            <TextLink href={`/r/${room.slug}`} size="sm">
+              {t("editLink")}
+            </TextLink>
+          </>
+        }
+      />
 
       {isFinalized && (
         <FinalizedBanner
@@ -102,7 +97,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ slug: 
         />
       )}
 
-      <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
+      <Panel>
         <ResultsBoard
           roomId={room.id}
           slug={room.slug}
@@ -112,7 +107,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ slug: 
           topResults={topResults}
           canPick={isOwner && !isFinalized}
         />
-      </div>
-    </div>
+      </Panel>
+    </PageColumn>
   );
 }

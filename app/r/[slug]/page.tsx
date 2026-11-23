@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
@@ -12,18 +11,20 @@ import type { CellMark } from "@/lib/slots";
 import { JoinForm } from "@/app/r/[slug]/join-form";
 import { AvailabilityGrid } from "@/app/r/[slug]/availability-grid";
 import { FinalizedBanner } from "@/app/r/[slug]/finalized-banner";
-import { LeaveRoomButton } from "@/app/r/[slug]/leave-room-button";
 import { ParticipantsPanel } from "@/app/r/[slug]/participants-panel";
-import { leaveIdentity } from "@/app/r/[slug]/actions";
 import { NewEventButton } from "@/app/new-event-button";
-import { EmptyState, linkClass } from "@/components/ui-kit";
+import { IdentityPanel } from "@/app/r/[slug]/identity-panel";
+import { PlanningClosed } from "@/app/r/[slug]/planning-closed";
+import { RoomHeader } from "@/app/r/[slug]/room-header";
+import { RoomRoster } from "@/app/r/[slug]/room-roster";
+import { PageColumn } from "@/components/layout/page-column";
+import { Panel } from "@/components/layout/panel";
 
 export default async function RoomPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const room = await findActiveRoom(slug);
   if (!room) notFound();
 
-  const t = await getTranslations("RoomPage");
   const tCommon = await getTranslations("Common");
 
   const isFinalized = room.selectedDate !== null && room.selectedHour !== null;
@@ -45,10 +46,7 @@ export default async function RoomPage({ params }: { params: Promise<{ slug: str
   if (!participant) {
     const canUseAnyName = (await getOwnerToken(room.id)) === room.ownerToken;
     return (
-      <div className="mx-auto w-full max-w-md px-4 pt-12">
-        <div className="flex justify-end">
-          <NewEventButton />
-        </div>
+      <PageColumn width="narrow" actions={<NewEventButton />}>
         {banner}
         <JoinForm
           roomId={room.id}
@@ -63,7 +61,7 @@ export default async function RoomPage({ params }: { params: Promise<{ slug: str
           listedOnly={room.joinRule === "LISTED_ONLY"}
           canUseAnyName={canUseAnyName}
         />
-      </div>
+      </PageColumn>
     );
   }
 
@@ -84,55 +82,25 @@ export default async function RoomPage({ params }: { params: Promise<{ slug: str
   const hoursLabel = formatHoursWindow(room.dayStartHour, room.dayEndHour);
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-8">
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{room.title || tCommon("untitledRoom")}</h1>
-          <p className="mt-1 text-sm text-text-muted">
-            {formatDateRange(room.startDate, room.endDate)} · {hoursLabel} · {room.timezone}
-          </p>
-          {room.description && <p className="mt-2 text-sm whitespace-pre-wrap">{room.description}</p>}
-        </div>
-        <div className="min-w-0 text-sm wrap-anywhere sm:text-right">
-          <div className="mb-2">
-            <NewEventButton />
-          </div>
-          <p>
-            {t.rich("markingAs", {
-              name: participant.name,
-              b: (chunks) => <span className="font-medium">{chunks}</span>,
-            })}
-          </p>
-          <form action={leaveIdentity.bind(null, { roomId: room.id, slug: room.slug })}>
-            <button type="submit" className="text-xs text-text-muted underline hover:text-text">
-              {t("notYou")}
-            </button>
-          </form>
-          <div className="mt-1">
-            <LeaveRoomButton roomId={room.id} slug={room.slug} joinRule={room.joinRule} />
-          </div>
-        </div>
-      </div>
+    <PageColumn width="wide">
+      <RoomHeader
+        title={room.title || tCommon("untitledRoom")}
+        details={[`${formatDateRange(room.startDate, room.endDate)} · ${hoursLabel} · ${room.timezone}`]}
+        description={room.description}
+        actions={<IdentityPanel roomId={room.id} slug={room.slug} name={participant.name} joinRule={room.joinRule} />}
+      />
 
       {banner}
 
-      <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          {others.joined.length + others.invited.length > 0 ? (
-            <div className="min-w-0 text-sm break-words text-text-muted">
-              {others.joined.length > 0 && <p>{t("alsoInRoom", { names: others.joined.map((p) => p.name).join(", ") })}</p>}
-              {others.invited.length > 0 && <p>{t("notJoinedYet", { names: others.invited.map((p) => p.name).join(", ") })}</p>}
-            </div>
-          ) : (
-            <span />
-          )}
-          <Link href={`/r/${room.slug}/results`} className={`text-sm ${linkClass}`}>
-            {t("seeResults")}
-          </Link>
-        </div>
+      <Panel>
+        <RoomRoster
+          joined={others.joined.map((p) => p.name)}
+          invited={others.invited.map((p) => p.name)}
+          resultsHref={`/r/${room.slug}/results`}
+        />
 
         {isFinalized ? (
-          <EmptyState title={t("closedEmpty")} className="rounded-md border border-dashed border-border py-6" />
+          <PlanningClosed />
         ) : (
           <AvailabilityGrid
             // Keyed by identity so a server re-render for a different
@@ -146,7 +114,7 @@ export default async function RoomPage({ params }: { params: Promise<{ slug: str
             initialAvailability={initialAvailability}
           />
         )}
-      </div>
+      </Panel>
 
       {isOwner && (
         <ParticipantsPanel
@@ -165,6 +133,6 @@ export default async function RoomPage({ params }: { params: Promise<{ slug: str
           ]}
         />
       )}
-    </div>
+    </PageColumn>
   );
 }

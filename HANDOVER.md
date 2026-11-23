@@ -46,8 +46,14 @@ is the pilot of the Company ui-kit (G-001 in `E:\CLAUDE\projects\ui-kit\GOALS.md
 - ui-kit page (2026-11-23, branch only, not deployed): built from the real components. Every component file
   has a sibling `.states.tsx` that imports it and only passes it sample data (`app/dev/ui-kit/samples.ts`);
   `app/dev/ui-kit/registry.ts` is generated from them, and the Messages section renders every key in
-  `lib/message-slots.ts`. Text links use the kit's `linkClass` and `Button variant="link"`; their hover is now a
-  thicker underline instead of the accent-hover colour (ui-kit D010).
+  `lib/message-slots.ts`. Route files only load data and compose components (`PageColumn`, `Panel`, `TextLink`
+  in `components/layout/`; `SiteShell`, `Landing`, `RoomHeader`, `IdentityPanel`, `RoomRoster`, `StatusView`…),
+  and every button and link takes its look from the kit (`Button` sizes `md`/`sm`, `buttonClass`, the link
+  classes), so `ui-check` fails on markup the page cannot show (ui-kit D010, D011). Visible effects: link hover is
+  a thicker underline; small buttons, the new-event link and the language select now have 44px targets.
+- Verification on 2026-11-23 (this branch, components move): unit 122/122; `ui-check`, `tsc`, `format:check`
+  clean; `build:check` clean; e2e 35/35 against a production build (`next start`) plus the ui-kit page spec
+  under `next dev` — a stray dev server held the directory, so the standard config could not start its own.
 - Verification on 2026-11-22 (2046ba4): GitHub CI green (run 45060186882); locally unit 122/122,
   e2e 36/36 with no retries (1 worker), `ui-check` clean (4 static sections), `format:check` and `tsc` clean,
   lint 1 old warning (`_formData` in `app/r/[slug]/actions.ts`), `build:check` reports no ui-kit

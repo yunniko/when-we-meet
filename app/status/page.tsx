@@ -1,8 +1,8 @@
-import Link from "next/link";
-import { linkClass } from "@/components/ui-kit";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { isRoomExpired } from "@/lib/expiry";
+import { PageColumn } from "@/components/layout/page-column";
+import { StatusView } from "./status-view";
 
 // Internal ops tool, not a user-facing page — deliberately not wired into
 // next-intl (see HANDOVER "Status page"). Gated by a shared-secret query
@@ -47,79 +47,25 @@ export default async function StatusPage({ searchParams }: { searchParams: Promi
   const pageLink = (p: number) => `/status?key=${encodeURIComponent(token)}&page=${p}`;
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-8">
-      <h1 className="text-2xl font-semibold tracking-tight">Status</h1>
-      <p className="mt-1 text-sm text-text-muted">
-        {totalRooms} {totalRooms === 1 ? "room" : "rooms"} · {joinedParticipants} joined · {invitedParticipants} invited, not yet joined
-      </p>
-
-      <div className="mt-6 overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
-        <table className="w-full text-left text-sm">
-          <thead>
-            <tr className="border-b border-border text-xs text-text-muted">
-              <th className="px-4 py-2 font-medium">Room</th>
-              <th className="px-4 py-2 font-medium">Created</th>
-              <th className="px-4 py-2 font-medium">Status</th>
-              <th className="px-4 py-2 font-medium">Participants</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rooms.map((room) => {
-              const expired = isRoomExpired(room);
-              const joined = room.participants.filter((p) => p.joinedAt !== null).length;
-              const invited = room.participants.length - joined;
-              return (
-                <tr key={room.id} className="border-b border-border last:border-0">
-                  <td className="px-4 py-2">{room.title || "Untitled room"}</td>
-                  <td className="px-4 py-2 text-text-muted">{formatTimestamp(room.createdAt)}</td>
-                  <td className="px-4 py-2">
-                    <span
-                      className={
-                        expired
-                          ? "rounded-full bg-text-muted/20 px-2 py-0.5 text-xs font-medium text-text-muted"
-                          : "rounded-full bg-can/15 px-2 py-0.5 text-xs font-medium text-success"
-                      }
-                    >
-                      {expired ? "expired" : "active"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2 text-text-muted">
-                    {joined}
-                    {invited > 0 && <> (+{invited} invited)</>}
-                  </td>
-                </tr>
-              );
-            })}
-            {rooms.length === 0 && (
-              <tr>
-                <td className="px-4 py-6 text-center text-text-muted" colSpan={4}>
-                  No rooms.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="mt-4 flex items-center justify-between text-sm">
-        {page > 1 ? (
-          <Link href={pageLink(page - 1)} className={linkClass}>
-            ← Previous
-          </Link>
-        ) : (
-          <span />
-        )}
-        <span className="text-text-muted">
-          Page {page} of {totalPages}
-        </span>
-        {page < totalPages ? (
-          <Link href={pageLink(page + 1)} className={linkClass}>
-            Next →
-          </Link>
-        ) : (
-          <span />
-        )}
-      </div>
-    </div>
+    <PageColumn width="table">
+      <StatusView
+        totals={{ rooms: totalRooms, joined: joinedParticipants, invited: invitedParticipants }}
+        rooms={rooms.map((room) => {
+          const joined = room.participants.filter((p) => p.joinedAt !== null).length;
+          return {
+            id: room.id,
+            title: room.title,
+            created: formatTimestamp(room.createdAt),
+            expired: isRoomExpired(room),
+            joined,
+            invited: room.participants.length - joined,
+          };
+        })}
+        page={page}
+        totalPages={totalPages}
+        prevHref={page > 1 ? pageLink(page - 1) : null}
+        nextHref={page < totalPages ? pageLink(page + 1) : null}
+      />
+    </PageColumn>
   );
 }

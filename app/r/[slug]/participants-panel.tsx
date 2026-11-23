@@ -1,5 +1,6 @@
 "use client";
 
+import { Panel } from "@/components/layout/panel";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -196,7 +197,7 @@ export function ParticipantsPanel({
     : null;
 
   return (
-    <section aria-labelledby="participants-heading" className="mt-6 rounded-2xl border border-border bg-surface p-6 shadow-sm">
+    <Panel as="section" aria-labelledby="participants-heading" className="mt-6">
       <h2 id="participants-heading" className="text-sm font-semibold">
         {t("heading")}
       </h2>
@@ -342,6 +343,6 @@ export function ParticipantsPanel({
           ))}
         </FieldGroup>
       </div>
-    </section>
+    </Panel>
   );
 }

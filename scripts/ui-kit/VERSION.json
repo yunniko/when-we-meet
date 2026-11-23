@@ -1,5 +1,5 @@
 {
-  "kit": "2f33d26",
+  "kit": "ee02b18",
   "note": "Copied from projects/ui-kit by bin/sync.mjs; change the kit, not these files.",
   "files": [
     "components/ui-kit/button.tsx",
@@ -11,6 +11,7 @@
     "components/ui-kit/index.ts",
     "components/ui-kit/inline-help.tsx",
     "components/ui-kit/kitchen-sink.tsx",
+    "components/ui-kit/looks.ts",
     "components/ui-kit/message-slot.tsx",
     "components/ui-kit/status-slot.tsx",
     "components/ui-kit/toast.tsx",

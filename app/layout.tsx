@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
-import { LocaleSwitcher } from "@/app/locale-switcher";
+import { SiteShell } from "@/app/site-shell";
 import "./globals.css";
 
 // latin-ext covers Czech/German diacritics, cyrillic covers Russian — the
@@ -47,20 +46,11 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const locale = await getLocale();
-  const t = await getTranslations("Common");
   return (
     <html lang={locale} className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider>
-          <div className="flex justify-end px-4 py-2">
-            <LocaleSwitcher />
-          </div>
-          <div className="flex-1 flex flex-col">{children}</div>
-          <footer className="px-4 py-4 text-center">
-            <Link href="/about" className="text-xs text-text-muted underline hover:text-text">
-              {t("aboutLink")}
-            </Link>
-          </footer>
+          <SiteShell>{children}</SiteShell>
         </NextIntlClientProvider>
       </body>
     </html>

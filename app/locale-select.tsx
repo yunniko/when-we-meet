@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useTransition } from "react";
+import { controlClass } from "@/components/ui-kit";
 
 // Client half of the language switcher: submits the locale server action on
 // change (no separate save button).
@@ -38,7 +39,7 @@ export function LocaleSelect({
             formRef.current?.requestSubmit();
           })
         }
-        className="rounded-md border border-border bg-surface px-2 py-1 text-xs text-text-muted"
+        className={controlClass}
       >
         {options.map((o) => (
           <option key={o.code} value={o.code}>

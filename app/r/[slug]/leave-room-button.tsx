@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { leaveRoom } from "@/app/r/[slug]/actions";
 import type { JoinRuleValue } from "@/lib/roster";
 import { reserveFor } from "@/lib/message-slots";
-import { ConfirmDialog, StatusSlot } from "@/components/ui-kit";
+import { Button, ConfirmDialog, StatusSlot } from "@/components/ui-kit";
 
 export function LeaveRoomButton({
   roomId,
@@ -42,13 +42,9 @@ export function LeaveRoomButton({
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setConfirming(true)}
-        className="min-h-11 px-1 text-sm text-danger underline hover:text-danger-hover"
-      >
+      <Button variant="danger-link" className="text-sm" onClick={() => setConfirming(true)}>
         {t("link")}
-      </button>
+      </Button>
       <ConfirmDialog
         open={confirming}
         title={t("confirm.title")}
