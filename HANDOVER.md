@@ -39,14 +39,14 @@ is the pilot of the Company ui-kit (G-001 in `E:\CLAUDE\projects\ui-kit\GOALS.md
 - ui-kit pilot (2026-11-22, branch only): every screen uses design tokens and the kit's
   components, so each hint, error, status, confirmation and empty state has one form and a
   reserved place; UI copy is 12% shorter (`docs/reviews/2026-11-22-ui-message-inventory.md`);
-  the accent was darkened for contrast (D016); Prettier added (D017). The kit's kitchen sink is
+  the accent was darkened for contrast (D016); Prettier added (D017). The ui-kit page is
   at `/dev/ui-kit` under `npm run dev` only (D018). Each message slot is sized for the longest
   message it can show, listed in `lib/message-slots.ts`, and every such message fits one line at
   360px in all four locales with 6% of the line to spare (D021, ui-kit D009).
 - Verification on 2026-11-22 (2046ba4): GitHub CI green (run 45060186882); locally unit 122/122,
   e2e 36/36 with no retries (1 worker), `ui-check` clean (4 static sections), `format:check` and `tsc` clean,
-  lint 1 old warning (`_formData` in `app/r/[slug]/actions.ts`), `build:check` reports no kitchen
-  sink in `.next`.
+  lint 1 old warning (`_formData` in `app/r/[slug]/actions.ts`), `build:check` reports no ui-kit
+  page in `.next`.
 - CI: `.github/workflows/ci.yml` runs format, lint, route types (`next typegen`), types, the ui-kit
   static checks, unit, integration, `build:check` and e2e on every push to `master`.
 
