@@ -4,12 +4,18 @@
 import type { ButtonHTMLAttributes, MouseEvent } from "react";
 import { cx } from "./cx";
 
-export type ButtonVariant = "primary" | "secondary" | "danger";
+export type ButtonVariant = "primary" | "secondary" | "danger" | "link";
+
+/** The look of a text link, for a router link (`<Link className={linkClass}>`) as well as `variant="link"`. */
+export const linkClass =
+  "font-medium text-accent underline underline-offset-2 hover:decoration-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
 
 const VARIANTS: Record<ButtonVariant, string> = {
-  primary: "bg-accent text-on-accent hover:bg-accent/90",
-  secondary: "border border-border bg-surface-raised text-text hover:bg-surface",
-  danger: "border border-danger bg-surface text-danger hover:bg-surface-raised",
+  primary: "px-4 text-base bg-accent text-on-accent hover:bg-accent/90",
+  secondary: "px-4 text-base border border-border bg-surface-raised text-text hover:bg-surface",
+  danger: "px-4 text-base border border-danger bg-surface text-danger hover:bg-surface-raised",
+  // An action that reads as a link (\"Change\", \"It's me\"): a button to assistive tech, a link to the eye.
+  link: `px-1 ${linkClass}`,
 };
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -45,7 +51,7 @@ export function Button({
       aria-disabled={inert || undefined}
       className={cx(
         // min-h-11 is the standard's 44px target (§4), not a spacing step.
-        "inline-grid min-h-11 place-items-center rounded-md px-4 font-body text-base",
+        "inline-grid min-h-11 place-items-center rounded-md font-body",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
         "disabled:opacity-60 aria-disabled:cursor-not-allowed",
         VARIANTS[variant],

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { linkClass } from "@/components/ui-kit";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
@@ -85,7 +86,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ slug: 
         </div>
         <div className="flex flex-col gap-2 sm:items-end">
           <NewEventButton />
-          <Link href={`/r/${room.slug}`} className="text-sm font-medium text-accent underline hover:text-accent-hover">
+          <Link href={`/r/${room.slug}`} className={`text-sm ${linkClass}`}>
             {t("editLink")}
           </Link>
         </div>

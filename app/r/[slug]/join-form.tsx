@@ -6,7 +6,7 @@ import { joinRoom, type JoinState } from "@/app/r/[slug]/actions";
 import { formatDayLabel } from "@/lib/slots";
 import { MAX_NAME_LENGTH, MAX_PARTICIPANTS_PER_ROOM } from "@/lib/validation";
 import { reserveFor } from "@/lib/message-slots";
-import { Button, Field, controlClass } from "@/components/ui-kit";
+import { Button, Field, controlClass, linkClass } from "@/components/ui-kit";
 
 const initialState: JoinState = { step: "form" };
 
@@ -53,7 +53,8 @@ export function JoinForm({
         {i > 0 && ", "}
         <form action={formAction} onSubmit={() => setDismissed(false)} className="inline">
           <input type="hidden" name="name" value={name} />
-          <button type="submit" className="text-accent underline hover:text-accent-hover" title={t("itsMeTitle", { name })}>
+          {/* Inline in a sentence, so the 44px target rule's inline exception applies: a link look, not a Button. */}
+          <button type="submit" className={linkClass} title={t("itsMeTitle", { name })}>
             {name}
           </button>
         </form>

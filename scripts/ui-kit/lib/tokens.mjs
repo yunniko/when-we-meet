@@ -44,7 +44,10 @@ export const DEFAULT_PAIRS = [
   ["danger", "surface", 4.5],
   ["danger", "surface-raised", 4.5],
   ["focus", "surface", 3],
-  ["accent", "surface", 3],
+  // linkClass draws text in the accent colour, so it must read as text wherever a link can sit (ui-kit D010).
+  ["accent", "background", 4.5],
+  ["accent", "surface", 4.5],
+  ["accent", "surface-raised", 4.5],
 ];
 
 const NAME = /^[a-z0-9][a-z0-9-]*$/;

@@ -23,6 +23,7 @@ export function loadConfig(root) {
     kitDir: null,
     kitImport: "ui-kit",
     e2eHelpers: "e2e/ui-kit",
+    uiPage: null,
     ...config,
   };
 }

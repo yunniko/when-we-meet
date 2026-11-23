@@ -1,5 +1,5 @@
 {
-  "kit": "e0d88b6",
+  "kit": "2f33d26",
   "note": "Copied from projects/ui-kit by bin/sync.mjs; change the kit, not these files.",
   "files": [
     "components/ui-kit/button.tsx",
@@ -14,6 +14,7 @@
     "components/ui-kit/message-slot.tsx",
     "components/ui-kit/status-slot.tsx",
     "components/ui-kit/toast.tsx",
+    "components/ui-kit/ui-page.tsx",
     "scripts/ui-kit/build-clean.mjs",
     "scripts/ui-kit/lib/config.mjs",
     "scripts/ui-kit/lib/contrast.mjs",
@@ -24,6 +25,7 @@
     "scripts/ui-kit/lib/outputs.mjs",
     "scripts/ui-kit/lib/raw-values.mjs",
     "scripts/ui-kit/lib/tokens.mjs",
+    "scripts/ui-kit/lib/ui-page.mjs",
     "scripts/ui-kit/ui-check.mjs",
     "scripts/ui-kit/ui-tokens.mjs",
     "tests/e2e/ui-kit/axe.ts",

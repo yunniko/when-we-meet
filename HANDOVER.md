@@ -1,5 +1,5 @@
 # Handover — When We Meet
-Last verified: 2026-11-22 at 2046ba4
+Last verified: 2026-11-23 at the head of goal/ui-kit-g001
 
 Account-free group scheduling: a room with a date range, participants paint CAN/CANNOT/prefer
 in 1-hour slots, results rank the overlaps, the creator can finalize a time. Goals: `GOALS.md`
@@ -43,6 +43,11 @@ is the pilot of the Company ui-kit (G-001 in `E:\CLAUDE\projects\ui-kit\GOALS.md
   at `/dev/ui-kit` under `npm run dev` only (D018). Each message slot is sized for the longest
   message it can show, listed in `lib/message-slots.ts`, and every such message fits one line at
   360px in all four locales with 6% of the line to spare (D021, ui-kit D009).
+- ui-kit page (2026-11-23, branch only, not deployed): built from the real components. Every component file
+  has a sibling `.states.tsx` that imports it and only passes it sample data (`app/dev/ui-kit/samples.ts`);
+  `app/dev/ui-kit/registry.ts` is generated from them, and the Messages section renders every key in
+  `lib/message-slots.ts`. Text links use the kit's `linkClass` and `Button variant="link"`; their hover is now a
+  thicker underline instead of the accent-hover colour (ui-kit D010).
 - Verification on 2026-11-22 (2046ba4): GitHub CI green (run 45060186882); locally unit 122/122,
   e2e 36/36 with no retries (1 worker), `ui-check` clean (4 static sections), `format:check` and `tsc` clean,
   lint 1 old warning (`_formData` in `app/r/[slug]/actions.ts`), `build:check` reports no ui-kit
@@ -68,7 +73,7 @@ is the pilot of the Company ui-kit (G-001 in `E:\CLAUDE\projects\ui-kit\GOALS.md
 - UI: `design/tokens.json` generates `app/tokens.css` (`node scripts/ui-kit/ui-tokens.mjs`);
   `design/ui-kit.json` configures the checks. `components/ui-kit/`, `scripts/ui-kit/` and
   `tests/e2e/ui-kit/` are copies synced from `E:\CLAUDE\projects\ui-kit` (run its bin/sync.mjs
-  with this directory); `tests/e2e/ui-quality.spec.ts` holds this project's UI checks. Legal text: `docs/legal/about-terms-privacy.md` via `marked`, copied into the image.
+  with this directory); a new component needs its `.states.tsx`, then `node scripts/ui-kit/ui-check.mjs . --write`; `tests/e2e/ui-quality.spec.ts` holds this project's UI checks. Legal text: `docs/legal/about-terms-privacy.md` via `marked`, copied into the image.
 - Tests: Vitest in `tests/unit/` (no database) and in `tests/integration/` against the dev Postgres
   (`vitest.integration.config.ts`); Playwright in `tests/e2e/` on port 30099 (own dev server),
   asserting through the UI (Prisma's ESM client can't load under Playwright's transform).

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { linkClass } from "@/components/ui-kit";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { isRoomExpired } from "@/lib/expiry";
@@ -102,7 +103,7 @@ export default async function StatusPage({ searchParams }: { searchParams: Promi
 
       <div className="mt-4 flex items-center justify-between text-sm">
         {page > 1 ? (
-          <Link href={pageLink(page - 1)} className="font-medium text-accent underline hover:text-accent-hover">
+          <Link href={pageLink(page - 1)} className={linkClass}>
             ← Previous
           </Link>
         ) : (
@@ -112,7 +113,7 @@ export default async function StatusPage({ searchParams }: { searchParams: Promi
           Page {page} of {totalPages}
         </span>
         {page < totalPages ? (
-          <Link href={pageLink(page + 1)} className="font-medium text-accent underline hover:text-accent-hover">
+          <Link href={pageLink(page + 1)} className={linkClass}>
             Next →
           </Link>
         ) : (

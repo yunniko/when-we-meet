@@ -16,7 +16,7 @@ import { LeaveRoomButton } from "@/app/r/[slug]/leave-room-button";
 import { ParticipantsPanel } from "@/app/r/[slug]/participants-panel";
 import { leaveIdentity } from "@/app/r/[slug]/actions";
 import { NewEventButton } from "@/app/new-event-button";
-import { EmptyState } from "@/components/ui-kit";
+import { EmptyState, linkClass } from "@/components/ui-kit";
 
 export default async function RoomPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -126,7 +126,7 @@ export default async function RoomPage({ params }: { params: Promise<{ slug: str
           ) : (
             <span />
           )}
-          <Link href={`/r/${room.slug}/results`} className="text-sm font-medium text-accent underline hover:text-accent-hover">
+          <Link href={`/r/${room.slug}/results`} className={`text-sm ${linkClass}`}>
             {t("seeResults")}
           </Link>
         </div>

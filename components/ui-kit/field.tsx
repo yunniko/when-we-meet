@@ -54,4 +54,4 @@ export function Field({ label, hint, error, validates = false, reserve, labelExt
 
 /** The classes every text control shares, so inputs look alike across the project. */
 export const controlClass =
-  "min-h-11 rounded-md border border-border bg-surface-raised px-2 text-base text-text aria-invalid:border-danger focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus";
+  "min-h-11 rounded-md border border-border bg-surface-raised px-2 text-base text-text aria-invalid:border-danger disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus";

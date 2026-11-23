@@ -289,13 +289,9 @@ export function CreateRoomForm() {
             ) : (
               <div {...p} className={`${controlClass} flex items-center justify-between gap-3`}>
                 <span>{timezone ? fullTimezoneLabel(timezone) : t("timezoneDetecting")}</span>
-                <button
-                  type="button"
-                  onClick={() => setIsEditingTimezone(true)}
-                  className="-mr-2 min-h-11 shrink-0 px-2 text-sm font-medium text-accent underline hover:text-accent-hover"
-                >
+                <Button variant="link" onClick={() => setIsEditingTimezone(true)} className="-mr-1 shrink-0 text-sm">
                   {t("timezoneChange")}
-                </button>
+                </Button>
               </div>
             )}
           </>

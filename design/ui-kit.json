@@ -5,5 +5,6 @@
   "contentNamespaces": ["Landing", "About"],
   "ignoreNamespaces": ["Metadata"],
   "kitDir": "components/ui-kit",
-  "e2eHelpers": "tests/e2e/ui-kit"
+  "e2eHelpers": "tests/e2e/ui-kit",
+  "uiPage": { "components": ["app", "components"], "registry": "app/dev/ui-kit/registry.ts" }
 }

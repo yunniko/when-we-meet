@@ -44,7 +44,7 @@ export function FieldGroup({ legend, hint, error, validates = false, reserve, cl
 /** A radio or checkbox with its label, at least 44px tall to hit (§4). */
 export function Choice({ children, ...input }: InputHTMLAttributes<HTMLInputElement> & { children: ReactNode }) {
   return (
-    <label className="flex min-h-11 cursor-pointer items-center gap-2 text-base text-text">
+    <label className="flex min-h-11 cursor-pointer items-center gap-2 text-base text-text has-disabled:cursor-not-allowed has-disabled:opacity-60">
       <input {...input} className="size-4 shrink-0 accent-accent" />
       <span>{children}</span>
     </label>
